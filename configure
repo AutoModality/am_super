@@ -1,0 +1,24 @@
+#!/bin/bash
+PACKAGE=ros_debian_template
+source /opt/ros/melodic/setup.bash
+echo "We are $(pwd)"
+CURDIR=$(readlink -f $(pwd))
+mkdir -p catkin_ws/src/${PACKAGE}
+WORKSPACE=$(readlink -f ./catkin_ws)
+echo "AM_PLATFORM is ${AM_PLATFORM}"
+if [[ ! -f package.xml ]]; then
+    echo "package.xml is REQUIRED"
+    exit 1
+fi
+
+if [[ ! -f CMakeLists.txt ]] ; then
+   echo "CMakeLists.txt is REQUIRED"
+   exit 1
+fi
+cp -r -p {package.xml,CMakeLists.txt} catkin_ws/src/${PACKAGE}
+cp -r -p {msg,srv,scripts,src,cfg,include,test,launch} catkin_ws/src/${PACKAGE}
+cd catkin_ws
+catkin init --workspace .
+echo "PWD: $(pwd)"
+catkin config --install
+echo "Changelog $(cat debian/changelog)"

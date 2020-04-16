@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<launch>
+    <node pkg="vb_super" type="super2" name="super" output="screen">
+    	<rosparam command="load" file="$(find vb_super)/launch/super2_standalone.yaml"/>    	
+    </node>
+</launch>
+

@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<launch>
+    <node pkg="am_super" type="am_super" name="am_super" output="screen">
+    	<rosparam command="load" file="$(find am_super)/launch/super.yaml"/>    	
+    </node>
+</launch>
+

@@ -1,1 +1,0 @@
-* Configurations go here

@@ -1,13 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ros_debian_template)
+project(am_super)
 
 ## Compile as C++11, supported in ROS melodic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
+find_package(catkin REQUIRED
+  am_utils
   rosbag
   roscpp
   rospy
@@ -16,7 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(DJIOSDK REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -74,10 +75,15 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES 
-#  CATKIN_DEPENDS ros rosbag roscpp rospy std_msgs std_srvs
-#  DEPENDS system_lib
+  INCLUDE_DIRS include
+  LIBRARIES 
+  CATKIN_DEPENDS 
+  am_utils
+  rosbag
+  roscpp
+  rospy
+  std_msgs
+  std_srvs
 )
 
 ###########
@@ -87,14 +93,18 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}
-   src/code1.cpp
-)
+# add_library(${PROJECT_NAME}
+#   src/code1.cpp
+# )
+
+add_executable(am_super src/super/super.cpp)
+target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES})
+add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##
@@ -104,10 +114,10 @@ add_library(${PROJECT_NAME}
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-install(PROGRAMS
-  scripts/my_python_script
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+# install(PROGRAMS
+#  scripts/my_python_script
+#  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
@@ -117,20 +127,20 @@ install(PROGRAMS
 
 # Mark libraries for installation
 # See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
-install(TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-)
+# install(TARGETS ${PROJECT_NAME}
+#  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+# )
 
 #Mark cpp header files for installation
-if (EXISTS include/${PROJECT_NAME})
-  install(DIRECTORY include/${PROJECT_NAME}/
-    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-    FILES_MATCHING PATTERN "*.h"
-    PATTERN ".svn" EXCLUDE
-    )
-endif()
+#if (EXISTS include/${PROJECT_NAME})
+#  install(DIRECTORY include/${PROJECT_NAME}/
+#    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#    FILES_MATCHING PATTERN "*.h"
+#    PATTERN ".svn" EXCLUDE
+#    )
+#endif()
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

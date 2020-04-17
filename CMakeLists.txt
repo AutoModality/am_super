@@ -98,9 +98,9 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/code1.cpp
-# )
+add_library(super_lib
+  src/super/AMLifeCycle.cpp
+)
 
 add_executable(am_super src/super/super.cpp)
 target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES})

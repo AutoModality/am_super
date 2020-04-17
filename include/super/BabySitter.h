@@ -1,12 +1,5 @@
-/*
- * TopicMonitor.h
- *
- *  Created on: Jan 11, 2019
- *      Author: ubuntu
- */
-
-#ifndef VISBOX_PACKAGES_SYSTEM_SUPER_INCLUDE_SUPER_BABYSITTER_H_
-#define VISBOX_PACKAGES_SYSTEM_SUPER_INCLUDE_SUPER_BABYSITTER_H_
+#ifndef AM_SUPER_INCLUDE_SUPER_BABYSITTER_H_
+#define AM_SUPER_INCLUDE_SUPER_BABYSITTER_H_
 
 #include <functional>
 #include <ros/ros.h>

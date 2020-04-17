@@ -1,4 +1,5 @@
 #include <functional>
+#include <memory>
 
 #include <ros/ros.h>
 
@@ -16,6 +17,10 @@
 #include <vb_util_lib/topics.h>
 #include <vb_util_lib/trace.h>
 #include <vb_util_lib/vb_main.h>
+
+#if CUDA_FOUND
+#include <cuda/cuda_utility_class.h>
+#endif
 
 #define NODE_NAME 		"Super"
 
@@ -71,6 +76,10 @@ private:
 	am::BabySitter<sensor_msgs::PointCloud2> *lidar_bs_;
 	am::BabySitter<brain_box_msgs::StampedAltimeter> *altimeter_bs_;
 	am::BabySitter<sensor_msgs::Joy> *dji_bs_;
+
+#if CUDA_FOUND
+	std::shared_ptr<am::CudaUtility> gpu_info_;
+#endif
 
 public:
 Super()
@@ -133,6 +142,10 @@ Super()
 		}
 	}
 	printStatus();
+
+#if CUDA_FOUND
+	gpu_info_ = std::make_shared<am::CudaUtility>(nh);
+#endif
 
 	super_status_pub_ = nh_.advertise<brain_box_msgs::Super2Status>("/super/status", 1000);
 	vstate_summary_pub_ = nh_.advertise<brain_box_msgs::VxState>("/vstate/summary", 1000);

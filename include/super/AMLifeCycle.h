@@ -1,3 +1,6 @@
+#ifndef AM_SUPER_INCLUDE_SUPER_LIFECYCLE_H_
+#define AM_SUPER_INCLUDE_SUPER_LIFECYCLE_H_
+
 #include <cstdint>
 
 #include <ros/ros.h>
@@ -97,3 +100,4 @@ protected:
 
 }; // namespace am
 
+#endif

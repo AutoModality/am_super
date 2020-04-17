@@ -17,6 +17,10 @@ find_package(catkin REQUIRED
 )
 
 find_package(CUDA)
+
+#add_definitions(-DCUDA_FOUND=${CUDA_FOUND})
+ADD_DEFINITIONS(-DCUDA_FOUND)
+
 if(CUDA_FOUND)
 	message([STATUS] "CUDA FOUND")
 	SET(CUDA_NVCC_FLAGS "-arch=sm_62" CACHE STRING "nvcc flags" FORCE)

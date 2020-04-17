@@ -36,6 +36,11 @@ void CudaUtility::timerCB(const ros::TimerEvent &event)
 {
 	device_info_ = getDeviceUpdate();
 }
+
+void CudaUtility::display()
+{
+	ROS_INFO("GPU INFO: FreeMemory: %d, TotalMemory: %d", (int)device_info_.freeMemory, (int)device_info_.totalMemory);
+}
 }
 
 

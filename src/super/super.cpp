@@ -143,8 +143,12 @@ Super()
 	}
 	printStatus();
 
+
+
+
 #if CUDA_FOUND
-	gpu_info_ = std::make_shared<am::CudaUtility>(nh);
+	ROS_INFO("##########GPU Monitoring is ON##########");
+	gpu_info_ = std::make_shared<am::CudaUtility>(nh_);
 #endif
 
 	super_status_pub_ = nh_.advertise<brain_box_msgs::Super2Status>("/super/status", 1000);
@@ -258,6 +262,10 @@ void logControlCB(const brain_box_msgs::LogControl::ConstPtr& msg)
 
 void heartbeatCB(const ros::TimerEvent& event)
 {
+#if CUDA_FOUND
+	gpu_info_->display();
+#endif
+
 	if(state_ == brain_box_msgs::VxState::UNKNOWN)
 	{
 		setState(brain_box_msgs::VxState::BOOTING);

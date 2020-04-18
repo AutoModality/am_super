@@ -1,4 +1,4 @@
-v3-perceptionname: Release Candidate
+name: Release Candidate
 on: 
   pull_request:
     branches:

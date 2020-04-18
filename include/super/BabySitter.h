@@ -1,19 +1,12 @@
-/*
- * TopicMonitor.h
- *
- *  Created on: Jan 11, 2019
- *      Author: ubuntu
- */
-
-#ifndef VISBOX_PACKAGES_SYSTEM_SUPER_INCLUDE_SUPER_BABYSITTER_H_
-#define VISBOX_PACKAGES_SYSTEM_SUPER_INCLUDE_SUPER_BABYSITTER_H_
+#ifndef AM_SUPER_INCLUDE_SUPER_BABYSITTER_H_
+#define AM_SUPER_INCLUDE_SUPER_BABYSITTER_H_
 
 #include <functional>
 #include <ros/ros.h>
-#include <robot_activity/robot_activity.h>
 
 #include <brain_box_msgs/BabySitterStatus.h>
 #include <brain_box_msgs/NodeStatus.h>
+#include <super/AMLifeCycle.h>
 #include <vb_util_lib/bag_logger.h>
 #include <vb_util_lib/trace.h>
 
@@ -59,7 +52,7 @@ private:
 
 //	ErrorCB error_cb_;
 
-	robot_activity::State node_state_;
+	LifeCycleState node_state_;
 	DeviceState device_state_;
 	long start_time_ms_;
 	long start_delay_ms_;
@@ -90,8 +83,8 @@ private:
 	void deviceCB(const ros::MessageEvent<M const>& event);
 	void heartbeatCB(const ros::TimerEvent& event);
 	void checkNodeState();
-	void setNodeState(robot_activity::State node_state);
-	std::string parseNodeState(robot_activity::State state);
+	void setNodeState(LifeCycleState node_state);
+	std::string parseNodeState(LifeCycleState state);
 	std::string parseDeviceState(DeviceState state);
 	void printStatus();
 	long nowMS();
@@ -134,7 +127,7 @@ BabySitter<M>::BabySitter(const ros::NodeHandle &nh, BagLogger *logger, const st
 	curr_max_ms_ = 0;
 	node_name_ = node_name;
 	// error_cb_ = error_cb;
-	node_state_ = robot_activity::State::STOPPED;
+	node_state_ = LifeCycleState::INACTIVE;
 	device_state_ = DeviceState::ERROR;
 	checkNodeState();
 	start_time_ms_ = nowMS();
@@ -178,15 +171,15 @@ int BabySitter<M>::getAveLatencyMs()
 }
 
 template <class M>
-std::string BabySitter<M>::parseNodeState(robot_activity::State state)
+std::string BabySitter<M>::parseNodeState(LifeCycleState state)
 {
 	switch(state)
 	{
-	case robot_activity::State::STOPPED:
-		return "STOPPED";
+	case LifeCycleState::INACTIVE:
+		return "INACTIVE";
 		break;
-	case robot_activity::State::RUNNING:
-		return "RUNNING";
+	case LifeCycleState::ACTIVE:
+		return "ACTIVE";
 		break;
 	default:
 		return "UNKNOWN";
@@ -226,16 +219,16 @@ void BabySitter<M>::checkNodeState()
 {
 	switch(node_state_)
 	{
-	case robot_activity::State::STOPPED:
+	case LifeCycleState::INACTIVE:
 		if(device_state_ != DeviceState::ERROR)
 		{
-			setNodeState(robot_activity::State::RUNNING);
+			setNodeState(LifeCycleState::ACTIVE);
 		}
 		break;
-	case robot_activity::State::RUNNING:
+	case LifeCycleState::ACTIVE:
 		if(device_state_ == DeviceState::ERROR)
 		{
-			setNodeState(robot_activity::State::STOPPED);
+			setNodeState(LifeCycleState::INACTIVE);
 		}
 		break;
 	default:
@@ -245,17 +238,17 @@ void BabySitter<M>::checkNodeState()
 }
 
 template <class M>
-void BabySitter<M>::setNodeState(robot_activity::State node_state)
+void BabySitter<M>::setNodeState(LifeCycleState node_state)
 {
 	ROS_INFO_STREAM(NODE_FUNC << node_name_ << ": changing state from: " << parseNodeState(node_state_) <<
 			" to: " << parseNodeState(node_state));
 
 	switch(node_state_)
 	{
-	case robot_activity::State::STOPPED:
+	case LifeCycleState::INACTIVE:
 		node_state_ = node_state;
 		break;
-	case robot_activity::State::RUNNING:
+	case LifeCycleState::ACTIVE:
 		node_state_ = node_state;
 		break;
 	default:
@@ -358,7 +351,7 @@ void BabySitter<M>::heartbeatCB(const ros::TimerEvent& event)
 	log_msg.max_min_ave.ave = ave_ms_;
 	LOG_MSG("/status/super/" + node_name_, log_msg, 1);
 
-	if(node_state_ == robot_activity::State::RUNNING)
+	if(node_state_ == LifeCycleState::ACTIVE)
 	{
 		int time_since_contact = nowMS() - last_contact_ms_;
 		if(time_since_contact > timeout_ms_)
@@ -369,7 +362,7 @@ void BabySitter<M>::heartbeatCB(const ros::TimerEvent& event)
 		}
 	}
 
-	if(node_state_ == robot_activity::State::RUNNING)
+	if(node_state_ == LifeCycleState::ACTIVE)
 	{
 		brain_box_msgs::NodeStatus ns_msg;
 		ns_msg.node_name = node_name_;

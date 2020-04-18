@@ -6,11 +6,13 @@
 #include <sensor_msgs/PointCloud2.h>
 
 #include <brain_box_msgs/BlinkMCommand.h>
+#include <brain_box_msgs/LifeCycleState.h>
 #include <brain_box_msgs/LogControl.h>
+#include <brain_box_msgs/StampedAltimeter.h>
 #include <brain_box_msgs/Super2Status.h>
 #include <brain_box_msgs/VxState.h>
-#include <brain_box_msgs/StampedAltimeter.h>
 
+#include <super/AMLifeCycle.h>
 #include <super/BabySitter.h>
 #include <vb_util_lib/bag_logger.h>
 #include <vb_util_lib/topics.h>
@@ -20,6 +22,9 @@
 #define NODE_NAME 		"Super"
 
 using namespace std;
+
+namespace am
+{
 
 struct NodeRec
 {
@@ -53,6 +58,7 @@ private:
 	ros::Publisher super_status_pub_;
 	ros::Publisher vstate_summary_pub_;
 	ros::Publisher led_pub_;
+	ros::Subscriber node_state_sub_;
 	ros::Subscriber node_status_sub_;
 	ros::Subscriber log_control_sub_;
 	ros::Subscriber lidar_sub_;
@@ -145,6 +151,7 @@ Super()
     BagLogger::instance()->startLogging("SU", LOG_LEVEL);
 
     // subs should always come at the end
+	node_state_sub_ = nh_.subscribe("/node_state",100, &Super::nodeStateCB, this);
 	node_status_sub_ = nh_.subscribe("/process/status",100, &Super::statusCB, this);
 	log_control_sub_ = nh_.subscribe<brain_box_msgs::LogControl>("/ctrl/log_control", 10, &Super::logControlCB, this);
 	// lidar_sub_ = nh_.subscribe<sensor_msgs::PointCloud2>(am::am_topics::SENSOR_LIDAR_POINTCLOUD2, 10, &Super::lidarPC2CB, this);
@@ -158,6 +165,21 @@ Super()
     BagLogger::instance()->stopLogging();
 }
 
+
+void nodeStateCB(const ros::MessageEvent<brain_box_msgs::LifeCycleState const>& event)
+{
+	if(test_mode_)
+	{
+		return;
+	}
+
+	const brain_box_msgs::LifeCycleState::ConstPtr& rmsg = event.getMessage();
+
+	processState(rmsg->node_name, (LifeCycleState)(rmsg->state), rmsg->status, rmsg->value, rmsg->process_id,
+			event.getReceiptTime());
+	LOG_MSG("/node_state", rmsg, LOG_LEVEL);
+}
+
 void statusCB(const ros::MessageEvent<brain_box_msgs::NodeStatus const>& event)
 {
 	if(test_mode_)
@@ -165,17 +187,26 @@ void statusCB(const ros::MessageEvent<brain_box_msgs::NodeStatus const>& event)
 		return;
 	}
 
-    const brain_box_msgs::NodeStatus::ConstPtr& rmsg = event.getMessage();
+	const brain_box_msgs::NodeStatus::ConstPtr& rmsg = event.getMessage();
+
+	processState(rmsg->node_name, LifeCycleState::ACTIVE, rmsg->status, rmsg->value, rmsg->process_id,
+			event.getReceiptTime());
+	LOG_MSG("/process/status", rmsg, LOG_LEVEL);
+}
+
+void processState(const std::string &node_name_in, const am::LifeCycleState state,
+		const std::string &status, const std::string &value, const int pid, const ros::Time &last_contact)
+{
 
     // strip leading '/' if needed
     string node_name;
-    if(rmsg->node_name.at(0) == '/')
+    if(node_name_in.at(0) == '/')
     {
-    	node_name = rmsg->node_name.substr(1);
+    	node_name = node_name_in.substr(1);
     }
     else
     {
-    	node_name = rmsg->node_name;
+    	node_name = node_name_in;
     }
 
     map<string, NodeRec>::iterator it;
@@ -201,35 +232,35 @@ void statusCB(const ros::MessageEvent<brain_box_msgs::NodeStatus const>& event)
 		ROS_INFO_STREAM(NODE_FUNC << "adding a new node: " << node_name);
 		NodeRec nr;
 		nr.name = node_name;
-		nr.pid = rmsg->process_id;
-		nr.last_contact = event.getReceiptTime();
+		nr.pid = pid;
+		nr.last_contact = last_contact;
 		nr.manifested = false;
 		nr.running = true;
 		nodes_.insert(pair<string, NodeRec>(node_name, nr));
 		run_nodes_++;
 
-		ROS_INFO_STREAM(NODE_FUNC << "status = " << rmsg->status);
-		ROS_INFO_STREAM(NODE_FUNC << "value = " << rmsg->value);
-		ROS_INFO_STREAM(NODE_FUNC << "process_id = " << rmsg->process_id);
+		ROS_INFO_STREAM(NODE_FUNC << "state = " << (int)state);
+		ROS_INFO_STREAM(NODE_FUNC << "status = " << status);
+		ROS_INFO_STREAM(NODE_FUNC << "value = " << value);
+		ROS_INFO_STREAM(NODE_FUNC << "process_id = " << pid);
 		printStatus();
 		checkState();
 	}
 
-	if(!node_name.compare("flight_controller") && !rmsg->status.compare("FLIGHT_CONTROL"))
+	if(!node_name.compare("flight_controller") && !status.compare("FLIGHT_CONTROL"))
 	{
-		ROS_INFO_STREAM_THROTTLE(1.0, NODE_FUNC << "flight status: " << rmsg->value);
-		if(!rmsg->value.compare("AUTO"))
+		ROS_INFO_STREAM_THROTTLE(1.0, NODE_FUNC << "flight status: " << value);
+		if(!value.compare("AUTO"))
 		{
 			fc_state_ = FCState::AUTO;
 		}
-		else if(!rmsg->value.compare("HOLD"))
+		else if(!value.compare("HOLD"))
 		{
 			fc_state_ = FCState::HOLD;
 		}
 		checkState();
 	}
 
-	LOG_MSG("/process/status", rmsg, LOG_LEVEL);
 }
 
 void logControlCB(const brain_box_msgs::LogControl::ConstPtr& msg)
@@ -535,7 +566,7 @@ void calcTiming(int hz, int &warn_ms, int &error_ms)
 }
 
 };
-
+};
 
 #ifdef TESTING
 #else
@@ -543,7 +574,7 @@ int main(int argc,char **argv)
 {
 	ros::init(argc, argv, NODE_NAME);
 
-  	Super node;
+  	am::Super node;
 
 	ROS_INFO_STREAM(NODE_NAME << ": running...");
 

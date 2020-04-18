@@ -1,12 +1,26 @@
-Source: ros-melodic-am-foo
+Source: ros-melodic-am-super
 Section: misc
-Priority: optional
-Maintainer: support <support@automodality.com>
-Build-Depends: debhelper (>= 9.0.0), ros-melodic-catkin, ros-melodic-roscpp, ros-melodic-rospy
-Homepage: 
-Standards-Version: 3.9.2
+Priority: extra
+Maintainer: info <info@automodality.com>
+Build-Depends: debhelper (>= 9.0.0),
+    ros-melodic-am-msgs, 
+    ros-melodic-am-utils, 
+    ros-melodic-catkin, 
+    ros-melodic-rosbag, 
+    ros-melodic-roscpp, 
+    ros-melodic-std-msgs, 
+    ros-melodic-std-srvs, 
 
-Package: ros-melodic-am-foo
+Homepage: https://github.com/AutoModality/am-super
+Standards-Version: 3.9.2
+Package: ros-melodic-am-super
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ros-melodic-roscpp, ros-melodic-rospy
-Description: Tell us why this exists
+Depends: ${shlibs:Depends}, ${misc:Depends}, 
+    ros-melodic-am-msgs, 
+    ros-melodic-am-utils,
+    ros-melodic-catkin, 
+    ros-melodic-rosbag, 
+    ros-melodic-roscpp, 
+    ros-melodic-std-msgs, 
+    ros-melodic-std-srvs, 
+Description: Common code to assist with AutoModality libraries found in separate repositories.

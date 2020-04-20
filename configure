@@ -1,5 +1,5 @@
 #!/bin/bash
-PACKAGE=ros_debian_template
+PACKAGE=am_super
 source /opt/ros/melodic/setup.bash
 echo "We are $(pwd)"
 CURDIR=$(readlink -f $(pwd))

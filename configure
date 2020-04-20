@@ -4,6 +4,7 @@ source /opt/ros/melodic/setup.bash
 echo "We are $(pwd)"
 CURDIR=$(readlink -f $(pwd))
 mkdir -p catkin_ws/src/${PACKAGE}
+mkdir -p catkin_ws/install/share/${PACKAGE}
 WORKSPACE=$(readlink -f ./catkin_ws)
 echo "AM_PLATFORM is ${AM_PLATFORM}"
 if [[ ! -f package.xml ]]; then

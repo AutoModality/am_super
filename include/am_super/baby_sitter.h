@@ -1,12 +1,12 @@
-#ifndef AM_SUPER_INCLUDE_SUPER_BABYSITTER_H_
-#define AM_SUPER_INCLUDE_SUPER_BABYSITTER_H_
+#ifndef AM_SUPER_INCLUDE_AM_SUPER_BABY_SITTER_H_
+#define AM_SUPER_INCLUDE_AM_SUPER_BABY_SITTER_H_
 
+#include <am_super/am_life_cycle.h>
 #include <functional>
 #include <ros/ros.h>
 
 #include <brain_box_msgs/BabySitterStatus.h>
 #include <brain_box_msgs/NodeStatus.h>
-#include <super/AMLifeCycle.h>
 #include <vb_util_lib/bag_logger.h>
 #include <vb_util_lib/trace.h>
 

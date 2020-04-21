@@ -2,7 +2,7 @@
 <package format="2">
   <name>am_super</name>
   <version>0.0.0</version>
-  <description>Template Package</description>
+  <description>AutoModality Supervisor</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
@@ -17,6 +17,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>am_utils</depend>  
+  <depend>brain_box_msgs</depend>  
+  <depend>diagnostic_msgs</depend>  
   <depend>rosbag</depend>
   <depend>roscpp</depend>
   <depend>rospy</depend>

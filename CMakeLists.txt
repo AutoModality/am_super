@@ -9,6 +9,8 @@ add_compile_options(-std=c++11)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
   am_utils
+  brain_box_msgs
+  diagnostic_msgs
   rosbag
   roscpp
   rospy
@@ -76,9 +78,11 @@ find_package(DJIOSDK REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES 
+  LIBRARIES super_lib
   CATKIN_DEPENDS 
   am_utils
+  brain_box_msgs
+  diagnostic_msgs
   rosbag
   roscpp
   rospy
@@ -99,10 +103,10 @@ include_directories(
 
 ## Declare a C++ library
 add_library(super_lib
-  src/super/AMLifeCycle.cpp
+  src/am_super/am_life_cycle.cpp
 )
 
-add_executable(am_super src/super/super.cpp)
+add_executable(am_super src/am_super/super.cpp)
 target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES})
 add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
 

@@ -1,7 +1,8 @@
+#include <am_super/am_life_cycle.h>
+#include <am_super/baby_sitter.h>
 #include <functional>
 
 #include <ros/ros.h>
-
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/PointCloud2.h>
 
@@ -12,8 +13,6 @@
 #include <brain_box_msgs/Super2Status.h>
 #include <brain_box_msgs/VxState.h>
 
-#include <super/AMLifeCycle.h>
-#include <super/BabySitter.h>
 #include <vb_util_lib/bag_logger.h>
 #include <vb_util_lib/topics.h>
 #include <vb_util_lib/trace.h>
@@ -175,8 +174,11 @@ void nodeStateCB(const ros::MessageEvent<brain_box_msgs::LifeCycleState const>& 
 
 	const brain_box_msgs::LifeCycleState::ConstPtr& rmsg = event.getMessage();
 
-	processState(rmsg->node_name, (LifeCycleState)(rmsg->state), rmsg->status, rmsg->value, rmsg->process_id,
-			event.getReceiptTime());
+	if(rmsg->status != brain_box_msgs::LifeCycleState::STATUS_ERROR)
+	{
+		processState(rmsg->node_name, (LifeCycleState)(rmsg->state), rmsg->subsystem, rmsg->value, rmsg->process_id,
+				event.getReceiptTime());
+	}
 	LOG_MSG("/node_state", rmsg, LOG_LEVEL);
 }
 

@@ -5,6 +5,7 @@ Maintainer: info <info@automodality.com>
 Build-Depends: debhelper (>= 9.0.0),
     ros-melodic-am-msgs, 
     ros-melodic-am-utils, 
+    ros-melodic-am-utils, 
     ros-melodic-catkin, 
     ros-melodic-rosbag, 
     ros-melodic-roscpp, 

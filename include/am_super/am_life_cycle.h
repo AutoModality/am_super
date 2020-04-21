@@ -6,32 +6,43 @@
 #include <ros/ros.h>
 
 #include <brain_box_msgs/LifeCycleState.h>
+#include <diagnostic_msgs/DiagnosticStatus.h>
 
 namespace am
 {
 
 enum class LifeCycleState : std::uint8_t
 {
-	UNCONFIGURED		= brain_box_msgs::LifeCycleState::UNCONFIGURED,
-	INACTIVE			= brain_box_msgs::LifeCycleState::INACTIVE,
-	ACTIVE				= brain_box_msgs::LifeCycleState::ACTIVE,
-	FINALIZED			= brain_box_msgs::LifeCycleState::FINALIZED,
-	CONFIGURING			= brain_box_msgs::LifeCycleState::CONFIGURING,
-	CLEANING_UP			= brain_box_msgs::LifeCycleState::CLEANING_UP,
-	SHUTTING_DOWN		= brain_box_msgs::LifeCycleState::SHUTTING_DOWN,
-	ACTIVATING			= brain_box_msgs::LifeCycleState::ACTIVATING,
-	DEACTIVATING		= brain_box_msgs::LifeCycleState::DEACTIVATING,
-	ERROR_PROCESSING	= brain_box_msgs::LifeCycleState::ERROR_PROCESSING,
-  Count = 10
+	INVALID		        = brain_box_msgs::LifeCycleState::STATE_INVALID,
+	UNCONFIGURED		= brain_box_msgs::LifeCycleState::STATE_UNCONFIGURED,
+	INACTIVE			= brain_box_msgs::LifeCycleState::STATE_INACTIVE,
+	ACTIVE				= brain_box_msgs::LifeCycleState::STATE_ACTIVE,
+	FINALIZED			= brain_box_msgs::LifeCycleState::STATE_FINALIZED,
+	CONFIGURING			= brain_box_msgs::LifeCycleState::STATE_CONFIGURING,
+	CLEANING_UP			= brain_box_msgs::LifeCycleState::STATE_CLEANING_UP,
+	SHUTTING_DOWN		= brain_box_msgs::LifeCycleState::STATE_SHUTTING_DOWN,
+	ACTIVATING			= brain_box_msgs::LifeCycleState::STATE_ACTIVATING,
+	DEACTIVATING		= brain_box_msgs::LifeCycleState::STATE_DEACTIVATING,
+	ERROR_PROCESSING	= brain_box_msgs::LifeCycleState::STATE_ERROR_PROCESSING,
+  	LAST_STATE 			= brain_box_msgs::LifeCycleState::STATE_LAST
+};
+
+enum class LifeCycleStatus : std::uint8_t
+{
+	OK		    = brain_box_msgs::LifeCycleState::STATUS_OK,
+	WARN		= brain_box_msgs::LifeCycleState::STATUS_WARN,
+	ERROR		= brain_box_msgs::LifeCycleState::STATUS_ERROR,
+  	LAST_STATUS = brain_box_msgs::LifeCycleState::STATUS_LAST
 };
 
 class AMLifeCycle
 {
-	LifeCycleState state_;
-
 protected:
+	LifeCycleState state_;
+	LifeCycleStatus status_;
+
 	ros::NodeHandle nh_;
-	ros::Timer state_update_timer_;
+	ros::Timer heartbeat_timer_;
 	ros::Publisher state_pub_;
 
 	/**
@@ -44,19 +55,12 @@ protected:
 	*/
 	virtual ~AMLifeCycle();
 
-	/**
-	* @brief Returns the current state
-	* @return State that the node is in
-	*/
-	LifeCycleState getLifeCycleState();
-
 	virtual void configure();
 	virtual void cleanup();
 	virtual void activate();
 	virtual void deactivate();
 	virtual void shutdown();
 	virtual void destroy();
-
 
 	/**
 	* @brief Function to be defined by the user.
@@ -94,7 +98,7 @@ protected:
 	*/
 	virtual void onError();
 
-	virtual void stateUpdateCB(const ros::TimerEvent& event);
+	virtual void heartbeatCB(const ros::TimerEvent& event);
 
 }; // class AMLifeCycle
 

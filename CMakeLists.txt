@@ -103,6 +103,9 @@ include_directories(
 add_library(super_lib
   src/am_super/am_life_cycle.cpp
 )
+target_link_libraries(super_lib ${catkin_LIBRARIES})
+add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
+
 
 add_executable(am_super src/am_super/super.cpp)
 target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES})

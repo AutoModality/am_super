@@ -9,7 +9,6 @@ add_compile_options(-std=c++11)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED
   am_utils
-  brain_box_msgs
   diagnostic_msgs
   rosbag
   roscpp
@@ -81,7 +80,6 @@ catkin_package(
   LIBRARIES super_lib
   CATKIN_DEPENDS 
   am_utils
-  brain_box_msgs
   diagnostic_msgs
   rosbag
   roscpp

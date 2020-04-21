@@ -3,8 +3,6 @@ Section: misc
 Priority: extra
 Maintainer: info <info@automodality.com>
 Build-Depends: debhelper (>= 9.0.0),
-    ros-melodic-am-msgs, 
-    ros-melodic-am-utils, 
     ros-melodic-am-utils, 
     ros-melodic-catkin, 
     ros-melodic-rosbag, 
@@ -17,7 +15,6 @@ Standards-Version: 3.9.2
 Package: ros-melodic-am-super
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, 
-    ros-melodic-am-msgs, 
     ros-melodic-am-utils,
     ros-melodic-catkin, 
     ros-melodic-rosbag, 

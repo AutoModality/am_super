@@ -9,7 +9,7 @@ AMLifeCycle::AMLifeCycle()  : nh_("~")
 {
 	state_ = LifeCycleState::UNCONFIGURED;
 	status_ = LifeCycleStatus::OK;
-	state_pub_ = nh_.advertise<brain_box_msgs::LifeCycleState>("/process/status",100);
+	state_pub_ = nh_.advertise<brain_box_msgs::LifeCycleState>("/node_state",100);
 	heartbeat_timer_ = nh_.createTimer(ros::Duration(1.0), &AMLifeCycle::heartbeatCB, this);
 }
 

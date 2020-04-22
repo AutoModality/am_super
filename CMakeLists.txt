@@ -140,11 +140,11 @@ add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
 
 #Mark cpp header files for installation
 if (EXISTS include/${PROJECT_NAME})
-  install(DIRECTORY include/${PROJECT_NAME}/
-    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+install(DIRECTORY include/super_lib
+  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
     FILES_MATCHING PATTERN "*.h"
     PATTERN ".svn" EXCLUDE
-    )
+)
 endif()
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)

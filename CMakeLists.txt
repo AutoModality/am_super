@@ -139,7 +139,7 @@ add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
  )
 
 #Mark cpp header files for installation
-if (EXISTS include/${PROJECT_NAME})
+if (EXISTS include/super_lib)
 install(DIRECTORY include/super_lib
   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
     FILES_MATCHING PATTERN "*.h"

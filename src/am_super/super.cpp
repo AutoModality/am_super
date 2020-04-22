@@ -1,4 +1,4 @@
-#include <am_super/am_life_cycle.h>
+#include <super_lib/am_life_cycle.h>
 #include <am_super/baby_sitter.h>
 #include <functional>
 
@@ -18,7 +18,7 @@
 #include <vb_util_lib/trace.h>
 #include <vb_util_lib/vb_main.h>
 
-#define NODE_NAME 		"Super"
+#define NODE_NAME "Super"
 
 using namespace std;
 

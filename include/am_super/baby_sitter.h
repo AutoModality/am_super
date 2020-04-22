@@ -1,7 +1,7 @@
 #ifndef AM_SUPER_INCLUDE_AM_SUPER_BABY_SITTER_H_
 #define AM_SUPER_INCLUDE_AM_SUPER_BABY_SITTER_H_
 
-#include <am_super/am_life_cycle.h>
+#include <super_lib/am_life_cycle.h>
 #include <functional>
 #include <ros/ros.h>
 

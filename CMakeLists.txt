@@ -101,11 +101,10 @@ include_directories(
 
 ## Declare a C++ library
 add_library(super_lib
-  src/am_super/am_life_cycle.cpp
+  src/super_lib/am_life_cycle.cpp
 )
 target_link_libraries(super_lib ${catkin_LIBRARIES})
 add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
-
 
 add_executable(am_super src/am_super/super.cpp)
 target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES})
@@ -139,13 +138,8 @@ add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
  )
 
 #Mark cpp header files for installation
-if (EXISTS include/${PROJECT_NAME})
-  install(DIRECTORY include/${PROJECT_NAME}/
-    DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-    FILES_MATCHING PATTERN "*.h"
-    PATTERN ".svn" EXCLUDE
-    )
-endif()
+install(DIRECTORY include/super_lib
+  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

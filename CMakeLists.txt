@@ -19,11 +19,9 @@ find_package(catkin REQUIRED
 
 find_package(CUDA)
 
-#add_definitions(-DCUDA_FOUND=${CUDA_FOUND})
-#ADD_DEFINITIONS(-DCUDA_FOUND)
-
 if(CUDA_FOUND)
-	message([STATUS] "CUDA FOUND")
+	add_definitions(-DCUDA_FLAG)
+	message([STATUS] "CUDA FOUND, am_super will be built with GPU monitoring")
 	SET(CUDA_NVCC_FLAGS "-arch=sm_62" CACHE STRING "nvcc flags" FORCE)
 	SET(CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
 	CUDA_ADD_LIBRARY(cuda_utility ${LIB_TYPE} src/cuda/cuda_utility.cu)

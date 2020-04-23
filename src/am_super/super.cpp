@@ -22,7 +22,7 @@
 #include <vb_util_lib/vb_main.h>
 
 
-#if CUDA_FOUND
+#if CUDA_FLAG
 #include <cuda/cuda_utility_class.h>
 #endif
 
@@ -83,7 +83,7 @@ private:
     am::BabySitter<brain_box_msgs::StampedAltimeter> *altimeter_bs_;
     am::BabySitter<sensor_msgs::Joy> *dji_bs_;
 
-#if CUDA_FOUND
+#if CUDA_FLAG
 	std::shared_ptr<am::CudaUtility> gpu_info_;
 #endif
 
@@ -156,7 +156,7 @@ public:
         }
         printStatus();
 
-#if CUDA_FOUND
+#if CUDA_FLAG
 	ROS_INFO("##########GPU Monitoring is ON##########");
 	gpu_info_ = std::make_shared<am::CudaUtility>(nh_);
 #endif
@@ -310,7 +310,7 @@ public:
 
     void heartbeatCB(const ros::TimerEvent &event)
     {
-#if CUDA_FOUND
+#if CUDA_FLAG
 	gpu_info_->display();
 #endif
         if (state_ == brain_box_msgs::VxState::UNKNOWN)

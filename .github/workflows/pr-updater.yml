@@ -1,0 +1,17 @@
+name: Updated Pull Requests
+
+on:
+    push:
+        branches: 
+            - master
+jobs:
+    autoupdate:
+        runs-on: ubuntu-latest
+        steps:
+        # stick to v1 checkout. see https://github.community/t5/GitHub-Actions/Push-from-action-even-with-PAT-does-not-trigger-action/m-p/46293#M6505
+        - uses: actions/checkout@v1
+        - name: update all pull requests
+          uses: maxkomarychev/pr-updater-action@v1.0.0
+          with:
+              token: ${{ secrets.PR_UPDATER_TOKEN }}
+

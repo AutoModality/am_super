@@ -17,6 +17,17 @@ find_package(catkin REQUIRED
   std_srvs
 )
 
+find_package(CUDA)
+
+if(CUDA_FOUND)
+	add_definitions(-DCUDA_FLAG)
+	message([STATUS] "CUDA FOUND, am_super will be built with GPU monitoring")
+	SET(CUDA_NVCC_FLAGS "-arch=sm_62" CACHE STRING "nvcc flags" FORCE)
+	SET(CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
+	CUDA_ADD_LIBRARY(cuda_utility ${LIB_TYPE} src/cuda/cuda_utility.cu)
+endif(CUDA_FOUND)
+
+
 ## System dependencies are found with CMake's conventions
 find_package(DJIOSDK REQUIRED)
 
@@ -106,8 +117,13 @@ add_library(super_lib
 target_link_libraries(super_lib ${catkin_LIBRARIES})
 add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
 
-add_executable(am_super src/am_super/super.cpp)
-target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES})
+if(CUDA_FOUND)
+	add_executable(am_super src/am_super/super.cpp src/cuda/cuda_utility_class.cpp)
+	target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES} cuda_utility)
+else()
+	add_executable(am_super src/am_super/super.cpp)
+	target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES})
+endif(CUDA_FOUND)
 add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
 
 #############

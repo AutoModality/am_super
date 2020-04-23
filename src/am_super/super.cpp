@@ -1,10 +1,11 @@
-#include <super_lib/am_life_cycle.h>
-#include <am_super/baby_sitter.h>
 #include <functional>
+#include <memory>
 
 #include <ros/ros.h>
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/PointCloud2.h>
+
+#include <am_super/baby_sitter.h>
 
 #include <brain_box_msgs/BlinkMCommand.h>
 #include <brain_box_msgs/LifeCycleState.h>
@@ -13,12 +14,19 @@
 #include <brain_box_msgs/Super2Status.h>
 #include <brain_box_msgs/VxState.h>
 
+#include <super_lib/am_life_cycle.h>
+
 #include <vb_util_lib/bag_logger.h>
 #include <vb_util_lib/topics.h>
 #include <vb_util_lib/trace.h>
 #include <vb_util_lib/vb_main.h>
 
-#define NODE_NAME "Super"
+
+#if CUDA_FLAG
+#include <cuda/cuda_utility_class.h>
+#endif
+
+#define NODE_NAME 		"Super"
 
 using namespace std;
 
@@ -74,6 +82,10 @@ private:
     am::BabySitter<sensor_msgs::PointCloud2> *lidar_bs_;
     am::BabySitter<brain_box_msgs::StampedAltimeter> *altimeter_bs_;
     am::BabySitter<sensor_msgs::Joy> *dji_bs_;
+
+#if CUDA_FLAG
+	std::shared_ptr<am::CudaUtility> gpu_info_;
+#endif
 
 public:
     Super() :
@@ -143,6 +155,11 @@ public:
             }
         }
         printStatus();
+
+#if CUDA_FLAG
+	ROS_INFO("##########GPU Monitoring is ON##########");
+	gpu_info_ = std::make_shared<am::CudaUtility>(nh_);
+#endif
 
         super_status_pub_ = nh_.advertise<brain_box_msgs::Super2Status>(
                 "/super/status", 1000);
@@ -293,6 +310,9 @@ public:
 
     void heartbeatCB(const ros::TimerEvent &event)
     {
+#if CUDA_FLAG
+	gpu_info_->display();
+#endif
         if (state_ == brain_box_msgs::VxState::UNKNOWN)
         {
             setState(brain_box_msgs::VxState::BOOTING);

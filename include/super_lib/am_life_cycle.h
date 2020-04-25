@@ -1,45 +1,31 @@
-#ifndef AM_SUPER_INCLUDE_SUPER_LIFECYCLE_H_
-#define AM_SUPER_INCLUDE_SUPER_LIFECYCLE_H_
-
-#include <cstdint>
+#ifndef AM_SUPER_INCLUDE_SUPER_LIB_AM_LIFECYCLE_H_
+#define AM_SUPER_INCLUDE_SUPER_LIB_AM_LIFECYCLE_H_
 
 #include <ros/ros.h>
 
-#include <brain_box_msgs/LifeCycleState.h>
 #include <diagnostic_msgs/DiagnosticStatus.h>
+
+#include <super_lib/am_stat_list.h>
+#include <super_lib/am_life_cycle_types.h>
 
 namespace am
 {
 
-enum class LifeCycleState : std::uint8_t
-{
-    INVALID = brain_box_msgs::LifeCycleState::STATE_INVALID,
-    UNCONFIGURED = brain_box_msgs::LifeCycleState::STATE_UNCONFIGURED,
-    INACTIVE = brain_box_msgs::LifeCycleState::STATE_INACTIVE,
-    ACTIVE = brain_box_msgs::LifeCycleState::STATE_ACTIVE,
-    FINALIZED = brain_box_msgs::LifeCycleState::STATE_FINALIZED,
-    CONFIGURING = brain_box_msgs::LifeCycleState::STATE_CONFIGURING,
-    CLEANING_UP = brain_box_msgs::LifeCycleState::STATE_CLEANING_UP,
-    SHUTTING_DOWN = brain_box_msgs::LifeCycleState::STATE_SHUTTING_DOWN,
-    ACTIVATING = brain_box_msgs::LifeCycleState::STATE_ACTIVATING,
-    DEACTIVATING = brain_box_msgs::LifeCycleState::STATE_DEACTIVATING,
-    ERROR_PROCESSING = brain_box_msgs::LifeCycleState::STATE_ERROR_PROCESSING,
-    LAST_STATE = brain_box_msgs::LifeCycleState::STATE_LAST
-};
-
-enum class LifeCycleStatus : std::uint8_t
-{
-    OK = brain_box_msgs::LifeCycleState::STATUS_OK,
-    WARN = brain_box_msgs::LifeCycleState::STATUS_WARN,
-    ERROR = brain_box_msgs::LifeCycleState::STATUS_ERROR,
-    LAST_STATUS = brain_box_msgs::LifeCycleState::STATUS_LAST
-};
-
 class AMLifeCycle
 {
-protected:
+private:
     LifeCycleState state_;
     LifeCycleStatus status_;
+
+public:
+    LifeCycleState getState() const;
+    void setState(const LifeCycleState state);
+    LifeCycleStatus getStatus() const;
+    void setStatus(const LifeCycleStatus status);
+
+protected:
+    diagnostic_updater::Updater updater_;
+    AMStatList stats_list_;
 
     ros::NodeHandle nh_;
     ros::Timer heartbeat_timer_;
@@ -98,13 +84,11 @@ protected:
      */
     virtual void onError();
 
+    virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw);
     virtual void heartbeatCB(const ros::TimerEvent &event);
 
-};
-// class AMLifeCycle
+}; // class AMLifeCycle
 
-}
-;
-// namespace am
+}; // namespace am
 
 #endif

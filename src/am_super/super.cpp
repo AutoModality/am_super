@@ -31,8 +31,7 @@ using namespace std;
 
 namespace am
 {
-struct NodeRec
-{
+struct NodeRec{
   std::string name;
   int pid;
   float cpu_usage;

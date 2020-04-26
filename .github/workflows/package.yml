@@ -13,6 +13,10 @@ jobs:
     steps:
       - uses: AutoModality/action-clean@v1
       - uses: actions/checkout@v2
+      - name: Clang Code Formatter
+        uses: ivanludvig/clang-format-action@v1.4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Package
         id: package
         uses: AutoModality/action-package-debian-ros@v3-perception

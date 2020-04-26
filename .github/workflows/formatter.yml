@@ -1,13 +1,12 @@
-name: Nightly Build
+name: Code Formatter
 on:
-  push:
+  pull_request:
 jobs:
   build:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - name: Format Code
-        uses: AutoModality/action-ros-clang-format@master
+      - uses: AutoModality/action-ros-clang-format@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

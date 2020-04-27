@@ -1,6 +1,8 @@
 #ifndef AM_SUPER_INCLUDE_SUPER_LIB_AM_LIFECYCLE_H_
 #define AM_SUPER_INCLUDE_SUPER_LIB_AM_LIFECYCLE_H_
 
+#include <string_view>
+
 #include <ros/ros.h>
 
 #include <diagnostic_msgs/DiagnosticStatus.h>
@@ -22,6 +24,24 @@ public:
     void setState(const LifeCycleState state);
     LifeCycleStatus getStatus() const;
     void setStatus(const LifeCycleStatus status);
+
+    static constexpr std::string_view STATE_INVALID_STRING = "INVALID";
+    static constexpr std::string_view STATE_UNCONFIGURED_STRING = "UNCONFIGURED";
+    static constexpr std::string_view STATE_INACTIVE_STRING = "INACTIVE";
+    static constexpr std::string_view STATE_ACTIVE_STRING = "ACTIVE";
+    static constexpr std::string_view STATE_FINALIZED_STRING = "FINALIZED";
+    static constexpr std::string_view STATE_CONFIGURING_STRING = "CONFIGURING";
+    static constexpr std::string_view STATE_CLEANING_UP_STRING = "CLEANING_UP";
+    static constexpr std::string_view STATE_ACTIVATING_STRING = "ACTIVATING";
+    static constexpr std::string_view STATE_DEACTIVATING_STRING = "DEACTIVATING";
+    static constexpr std::string_view STATE_ERROR_PROCESSING_STRING = "ERROR_PROCESSING";
+
+    static constexpr std::string_view STATUS_OK_STRING = "OK";
+    static constexpr std::string_view STATUS_WARN_STRING = "WARN";
+    static constexpr std::string_view STATUS_ERROR_STRING = "ERROR";
+
+    static const std::string_view &stateToString(LifeCycleState state);
+    static const std::string_view &statusToString(LifeCycleStatus status);
 
 protected:
     diagnostic_updater::Updater updater_;
@@ -86,6 +106,7 @@ protected:
 
     virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw);
     virtual void heartbeatCB(const ros::TimerEvent &event);
+
 
 }; // class AMLifeCycle
 

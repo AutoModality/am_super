@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(am_super)
 
 ## Compile as C++11, supported in ROS melodic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++17)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -118,11 +118,11 @@ target_link_libraries(super_lib ${catkin_LIBRARIES})
 add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
 
 if(CUDA_FOUND)
-	add_executable(am_super src/am_super/super.cpp src/cuda/cuda_utility_class.cpp)
-	target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES} cuda_utility)
+	add_executable(am_super src/am_super/am_super.cpp src/cuda/cuda_utility_class.cpp)
+	target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES} super_lib cuda_utility)
 else()
-	add_executable(am_super src/am_super/super.cpp)
-	target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES})
+	add_executable(am_super src/am_super/am_super.cpp)
+	target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES} super_lib)
 endif(CUDA_FOUND)
 add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
 

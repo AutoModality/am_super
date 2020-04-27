@@ -11,7 +11,7 @@ jobs:
         os: [ubuntu-18.04, [self-hosted,linux,arm64]]
       fail-fast: false
     steps:
-      - uses: AutoModality/action-clean@v1
+      - uses: AutoModality/action-clean@hidden-files
       - uses: actions/checkout@v2
       - name: Package
         id: package

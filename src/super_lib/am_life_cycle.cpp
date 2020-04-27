@@ -4,6 +4,9 @@
 namespace am
 {
 
+//static constexpr std::string AMLifeCycle::STATE_INVALID_STRING;
+//static constexpr std::string AMLifeCycle::STATE_UNCONFIGURED_STRING;
+
 AMLifeCycle::AMLifeCycle() :
         nh_("~")
 {
@@ -97,6 +100,48 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent &event)
     msg.subsystem = "";
     msg.value = "";
     state_pub_.publish(msg);
+}
+
+const std::string_view &AMLifeCycle::stateToString(LifeCycleState state)
+{
+    switch (state)
+    {
+    case LifeCycleState::UNCONFIGURED:
+        return STATE_UNCONFIGURED_STRING;
+    case LifeCycleState::INACTIVE:
+        return STATE_INACTIVE_STRING;
+    case LifeCycleState::ACTIVE:
+        return STATE_ACTIVE_STRING;
+    case LifeCycleState::FINALIZED:
+        return STATE_FINALIZED_STRING;
+    case LifeCycleState::CONFIGURING:
+        return STATE_CONFIGURING_STRING;
+    case LifeCycleState::CLEANING_UP:
+        return STATE_CLEANING_UP_STRING;
+    case LifeCycleState::ACTIVATING:
+        return STATE_ACTIVATING_STRING;
+    case LifeCycleState::DEACTIVATING:
+        return STATE_ACTIVATING_STRING;
+    case LifeCycleState::ERROR_PROCESSING:
+        return STATE_ERROR_PROCESSING_STRING;
+    case LifeCycleState::INVALID:
+    default:
+        return STATE_INVALID_STRING;
+    }
+}
+
+const std::string_view &AMLifeCycle::statusToString(LifeCycleStatus state)
+{
+    switch (state)
+    {
+    case LifeCycleStatus::OK:
+        return STATUS_OK_STRING;
+    case LifeCycleStatus::WARN:
+        return STATUS_WARN_STRING;
+    case LifeCycleStatus::ERROR:
+    default:
+        return STATUS_ERROR_STRING;
+    }
 }
 
 LifeCycleState AMLifeCycle::getState() const

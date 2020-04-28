@@ -12,104 +12,102 @@
 
 namespace am
 {
-
 class AMLifeCycle
 {
 private:
-    LifeCycleState state_;
-    LifeCycleStatus status_;
+  LifeCycleState state_;
+  LifeCycleStatus status_;
 
 public:
-    LifeCycleState getState() const;
-    void setState(const LifeCycleState state);
-    LifeCycleStatus getStatus() const;
-    void setStatus(const LifeCycleStatus status);
+  LifeCycleState getState() const;
+  void setState(const LifeCycleState state);
+  LifeCycleStatus getStatus() const;
+  void setStatus(const LifeCycleStatus status);
 
-    static constexpr std::string_view STATE_INVALID_STRING = "INVALID";
-    static constexpr std::string_view STATE_UNCONFIGURED_STRING = "UNCONFIGURED";
-    static constexpr std::string_view STATE_INACTIVE_STRING = "INACTIVE";
-    static constexpr std::string_view STATE_ACTIVE_STRING = "ACTIVE";
-    static constexpr std::string_view STATE_FINALIZED_STRING = "FINALIZED";
-    static constexpr std::string_view STATE_CONFIGURING_STRING = "CONFIGURING";
-    static constexpr std::string_view STATE_CLEANING_UP_STRING = "CLEANING_UP";
-    static constexpr std::string_view STATE_ACTIVATING_STRING = "ACTIVATING";
-    static constexpr std::string_view STATE_DEACTIVATING_STRING = "DEACTIVATING";
-    static constexpr std::string_view STATE_ERROR_PROCESSING_STRING = "ERROR_PROCESSING";
+  static constexpr std::string_view STATE_INVALID_STRING = "INVALID";
+  static constexpr std::string_view STATE_UNCONFIGURED_STRING = "UNCONFIGURED";
+  static constexpr std::string_view STATE_INACTIVE_STRING = "INACTIVE";
+  static constexpr std::string_view STATE_ACTIVE_STRING = "ACTIVE";
+  static constexpr std::string_view STATE_FINALIZED_STRING = "FINALIZED";
+  static constexpr std::string_view STATE_CONFIGURING_STRING = "CONFIGURING";
+  static constexpr std::string_view STATE_CLEANING_UP_STRING = "CLEANING_UP";
+  static constexpr std::string_view STATE_ACTIVATING_STRING = "ACTIVATING";
+  static constexpr std::string_view STATE_DEACTIVATING_STRING = "DEACTIVATING";
+  static constexpr std::string_view STATE_ERROR_PROCESSING_STRING = "ERROR_PROCESSING";
 
-    static constexpr std::string_view STATUS_OK_STRING = "OK";
-    static constexpr std::string_view STATUS_WARN_STRING = "WARN";
-    static constexpr std::string_view STATUS_ERROR_STRING = "ERROR";
+  static constexpr std::string_view STATUS_OK_STRING = "OK";
+  static constexpr std::string_view STATUS_WARN_STRING = "WARN";
+  static constexpr std::string_view STATUS_ERROR_STRING = "ERROR";
 
-    static const std::string_view &stateToString(LifeCycleState state);
-    static const std::string_view &statusToString(LifeCycleStatus status);
+  static const std::string_view& stateToString(LifeCycleState state);
+  static const std::string_view& statusToString(LifeCycleStatus status);
 
 protected:
-    diagnostic_updater::Updater updater_;
-    AMStatList stats_list_;
+  diagnostic_updater::Updater updater_;
+  AMStatList stats_list_;
 
-    ros::NodeHandle nh_;
-    ros::Timer heartbeat_timer_;
-    ros::Publisher state_pub_;
+  ros::NodeHandle nh_;
+  ros::Timer heartbeat_timer_;
+  ros::Publisher state_pub_;
 
-    /**
-     * @brief Default constructor
-     */
-    AMLifeCycle();
+  /**
+   * @brief Default constructor
+   */
+  AMLifeCycle();
 
-    /**
-     * @brief Virtual destructor
-     */
-    virtual ~AMLifeCycle();
+  /**
+   * @brief Virtual destructor
+   */
+  virtual ~AMLifeCycle();
 
-    virtual void configure();
-    virtual void cleanup();
-    virtual void activate();
-    virtual void deactivate();
-    virtual void shutdown();
-    virtual void destroy();
+  virtual void configure();
+  virtual void cleanup();
+  virtual void activate();
+  virtual void deactivate();
+  virtual void shutdown();
+  virtual void destroy();
 
-    /**
-     * @brief Function to be defined by the user.
-     *        Called at the end of transition from UNCONFIGURED to INACTIVE.
-     */
-    virtual void onConfigure();
+  /**
+   * @brief Function to be defined by the user.
+   *        Called at the end of transition from UNCONFIGURED to INACTIVE.
+   */
+  virtual void onConfigure();
 
-    /**
-     * @brief Function to be defined by the user.
-     *        Called at the end of transition from INACTIVE to UNCONFIGURED.
-     */
-    virtual void onCleanUp();
+  /**
+   * @brief Function to be defined by the user.
+   *        Called at the end of transition from INACTIVE to UNCONFIGURED.
+   */
+  virtual void onCleanUp();
 
-    /**
-     * @brief Function to be defined by the user.
-     *        Called at the end of transition from INACTIVE to ACTIVE.
-     */
-    virtual void onActivate();
+  /**
+   * @brief Function to be defined by the user.
+   *        Called at the end of transition from INACTIVE to ACTIVE.
+   */
+  virtual void onActivate();
 
-    /**
-     * @brief Function to be defined by the user.
-     *        Called at the end of transition from ACTIVE to INACTIVE.
-     */
-    virtual void onDeactivate();
+  /**
+   * @brief Function to be defined by the user.
+   *        Called at the end of transition from ACTIVE to INACTIVE.
+   */
+  virtual void onDeactivate();
 
-    /**
-     * @brief Function to be defined by the user.
-     *        Called at the end of transition from INACTIVE to FINALIZED.
-     */
-    virtual void onShutdown();
+  /**
+   * @brief Function to be defined by the user.
+   *        Called at the end of transition from INACTIVE to FINALIZED.
+   */
+  virtual void onShutdown();
 
-    /**
-     * @brief Function to be defined by the user.
-     *        Called after an error and may transition to UNCONFIGURED or FINALIZED.
-     */
-    virtual void onError();
+  /**
+   * @brief Function to be defined by the user.
+   *        Called after an error and may transition to UNCONFIGURED or FINALIZED.
+   */
+  virtual void onError();
 
-    virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw);
-    virtual void heartbeatCB(const ros::TimerEvent &event);
+  virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw);
+  virtual void heartbeatCB(const ros::TimerEvent& event);
 
+};  // class AMLifeCycle
 
-}; // class AMLifeCycle
-
-}; // namespace am
+};  // namespace am
 
 #endif

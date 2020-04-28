@@ -15,6 +15,10 @@ jobs:
         with:
           dev-repo-entitlement: ${{ secrets.CLOUDSMITH_READ_DEV_ENTITLEMENT }}
           release-repo-entitlement: ${{ secrets.CLOUDSMITH_READ_RELEASE_ENTITLEMENT }}
+  code-format:
+    runs-on: ubuntu-18.04
+    needs: build
+    steps:
       - name: Format Code
         uses: AutoModality/action-ros-clang-format@master
         env:

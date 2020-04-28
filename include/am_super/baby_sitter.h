@@ -21,8 +21,7 @@ private:
   const int MSECS_IN_SECS = 1000;
 
   enum DeviceState
-  {
-    OK,
+  {OK,
     WARN,
     ERROR
   };

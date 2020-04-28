@@ -24,5 +24,5 @@ jobs:
           # http://tiny.cc/y1bznz
           connection_string: ${{ secrets.AMROSDOC_AZURE_STORAGE_CONNECTION_STRING }}
           extra_args: --destination-path ${{github.repository}}
-
+          sync: true
 

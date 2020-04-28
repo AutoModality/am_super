@@ -7,7 +7,7 @@ jobs:
   release:
     runs-on: ubuntu-18.04
     steps:
-      - uses: AutoModality/action-clean@v1
+      - uses: AutoModality/action-clean@v1.1.0
       - name: Checkout
         uses: actions/checkout@v2
       - name: Semantic Release
@@ -44,7 +44,7 @@ jobs:
     needs: release
     name: Package if released
     steps:
-      - uses: AutoModality/action-clean@v1
+      - uses: AutoModality/action-clean@v1.1.0
       - name: Checkout
         uses: actions/checkout@v2
       - name: Download release

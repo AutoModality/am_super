@@ -8,72 +8,70 @@
 
 namespace am
 {
-
 class AMStatList
 {
 protected:
-    std::vector<AMStat *> stat_list_;
+  std::vector<AMStat*> stat_list_;
 
 public:
-    AMStatList()
+  AMStatList()
+  {
+  }
+
+  void add(AMStat* stat)
+  {
+    stat_list_.push_back(stat);
+  }
+
+  LifeCycleStatus process()
+  {
+    LifeCycleStatus status = LifeCycleStatus::OK;
+
+    for (AMStat* stat : stat_list_)
     {
+      AMStat::compoundStatus(status, stat->process());
     }
 
-    void add(AMStat *stat)
+    return status;
+  }
+
+  void reset()
+  {
+    for (AMStat* stat : stat_list_)
     {
-        stat_list_.push_back(stat);
+      stat->reset();
     }
+  }
 
-    LifeCycleStatus process()
+  void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw)
+  {
+    for (AMStat* stat : stat_list_)
     {
-        LifeCycleStatus status = LifeCycleStatus::OK;
-
-        for(AMStat *stat: stat_list_)
-        {
-            AMStat::compoundStatus(status, stat->process());
-        }
-
-        return status;
+      stat->addStatistics(dsw);
     }
+  }
 
-    void reset()
+  std::string getStatsStrShort()
+  {
+    std::stringstream ss;
+    for (AMStat* stat : stat_list_)
     {
-        for(AMStat *stat: stat_list_)
-        {
-            stat->reset();
-        }
+      ss << stat->getStrShort() << ",";
     }
+    return ss.str();
+  }
 
-    void addStatistics(diagnostic_updater::DiagnosticStatusWrapper &dsw)
+  std::string getStatsStr()
+  {
+    std::stringstream ss;
+    for (AMStat* stat : stat_list_)
     {
-        for(AMStat *stat: stat_list_)
-        {
-            stat->addStatistics(dsw);
-        }
+      ss << stat->getStr() << ", ";
     }
-
-    std::string getStatsStrShort()
-    {
-         std::stringstream ss;
-         for(AMStat *stat: stat_list_)
-         {
-             ss << stat->getStrShort() << ",";
-         }
-         return ss.str();
-    }
-
-    std::string getStatsStr()
-    {
-         std::stringstream ss;
-         for(AMStat*stat: stat_list_)
-         {
-             ss << stat->getStr() << ", ";
-         }
-         return ss.str();
-    }
-
+    return ss.str();
+  }
 };
 
-}; // namespace am
+};  // namespace am
 
-#endif // AM_SUPER_INCLUDE_SUPER_LIB_AM_STAT__LIST_H
+#endif  // AM_SUPER_INCLUDE_SUPER_LIB_AM_STAT__LIST_H

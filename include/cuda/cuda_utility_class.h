@@ -17,22 +17,19 @@ namespace am
 class CudaUtility
 {
 public:
-	CudaUtility(ros::NodeHandle &nh);
-	~CudaUtility();
+  CudaUtility(ros::NodeHandle& nh);
+  ~CudaUtility();
 
-	void stop_update();
-	void start_update();
-	CudaDevice getDeviceUpdate();
-	void display();
+  void stop_update();
+  void start_update();
+  CudaDevice getDeviceUpdate();
+  void display();
+
 private:
-	CudaDevice device_info_;
-	ros::Timer update_timer_;
-	void timerCB(const ros::TimerEvent &event);
-
-
+  CudaDevice device_info_;
+  ros::Timer update_timer_;
+  void timerCB(const ros::TimerEvent& event);
 };
 }
-
-
 
 #endif /* AM_SUPER_INCLUDE_CUDA_CUDA_UTILITY_CLASS_H_ */

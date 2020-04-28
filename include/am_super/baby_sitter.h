@@ -22,7 +22,7 @@ private:
 
   enum DeviceState
   {
-    OK,
+  OK,
     WARN,
     ERROR
   };

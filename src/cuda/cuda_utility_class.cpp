@@ -9,10 +9,10 @@
 
 namespace am
 {
-CudaUtility::CudaUtility(ros::NodeHandle &nh)
+CudaUtility::CudaUtility(ros::NodeHandle& nh)
 {
-	update_timer_ = nh.createTimer(ros::Duration(1.0), &CudaUtility::timerCB, this);
-	update_timer_.start();
+  update_timer_ = nh.createTimer(ros::Duration(1.0), &CudaUtility::timerCB, this);
+  update_timer_.start();
 }
 CudaUtility::~CudaUtility()
 {
@@ -20,27 +20,25 @@ CudaUtility::~CudaUtility()
 
 void CudaUtility::stop_update()
 {
-	update_timer_.stop();
+  update_timer_.stop();
 }
 void CudaUtility::start_update()
 {
-	update_timer_.start();
+  update_timer_.start();
 }
 CudaDevice CudaUtility::getDeviceUpdate()
 {
-	return device_info_;
+  return device_info_;
 }
 
-//Timer callback
-void CudaUtility::timerCB(const ros::TimerEvent &event)
+// Timer callback
+void CudaUtility::timerCB(const ros::TimerEvent& event)
 {
-	device_info_ = getDeviceProperties(0);
+  device_info_ = getDeviceProperties(0);
 }
 
 void CudaUtility::display()
 {
-	ROS_INFO("GPU INFO: FreeMemory: %zu, TotalMemory: %zu", device_info_.freeMemory, device_info_.totalMemory);
+  ROS_INFO("GPU INFO: FreeMemory: %zu, TotalMemory: %zu", device_info_.freeMemory, device_info_.totalMemory);
 }
 }
-
-

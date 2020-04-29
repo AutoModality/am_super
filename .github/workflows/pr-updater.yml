@@ -13,5 +13,6 @@ jobs:
         - name: update all pull requests
           uses: maxkomarychev/pr-updater-action@v1.0.0
           with:
+              # see RPass - amgitbot
               token: ${{ secrets.PR_UPDATER_TOKEN }}
 

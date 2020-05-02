@@ -18,19 +18,18 @@ public:
   {
   }
 
-  void add(AMStat *stat)
+  void add(AMStat* stat)
   {
     stat_list_.push_back(stat);
   }
-    
+
   LifeCycleStatus process(double warn_throttle_s, double error_throttle_s)
   {
     LifeCycleStatus status = LifeCycleStatus::OK;
 
-    for (AMStat *stat : stat_list_)
+    for (AMStat* stat : stat_list_)
     {
-      AMStat::compoundStatus(status,
-          stat->process(warn_throttle_s, error_throttle_s));
+      AMStat::compoundStatus(status, stat->process(warn_throttle_s, error_throttle_s));
     }
 
     return status;
@@ -38,15 +37,15 @@ public:
 
   void reset()
   {
-    for (AMStat *stat : stat_list_)
+    for (AMStat* stat : stat_list_)
     {
       stat->reset();
     }
   }
 
-  void addStatistics(diagnostic_updater::DiagnosticStatusWrapper &dsw)
+  void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw)
   {
-    for (AMStat *stat : stat_list_)
+    for (AMStat* stat : stat_list_)
     {
       stat->addStatistics(dsw);
     }
@@ -55,7 +54,7 @@ public:
   std::string getStatsStrShort()
   {
     std::stringstream ss;
-    for (AMStat *stat : stat_list_)
+    for (AMStat* stat : stat_list_)
     {
       ss << stat->getStrShort() << ",";
     }
@@ -65,7 +64,7 @@ public:
   std::string getStatsStr()
   {
     std::stringstream ss;
-    for (AMStat *stat : stat_list_)
+    for (AMStat* stat : stat_list_)
     {
       ss << stat->getStr() << ", ";
     }

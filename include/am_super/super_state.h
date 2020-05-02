@@ -21,5 +21,5 @@ enum class SuperState : std::uint8_t
 
 #endif
 
-//BOOTING_WAIT_ONLINE_OK = brain_box_msgs::VxState::BOOTING,
-//BOOTING_WAIT_CONFIGURE_OK = brain_box_msgs::VxState::BOOTING_WAIT_ACTIVE_OK,
+// BOOTING_WAIT_ONLINE_OK = brain_box_msgs::VxState::BOOTING,
+// BOOTING_WAIT_CONFIGURE_OK = brain_box_msgs::VxState::BOOTING_WAIT_ACTIVE_OK,

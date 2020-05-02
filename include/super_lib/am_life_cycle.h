@@ -27,11 +27,10 @@ private:
 
   void setState(const LifeCycleState state);
 
-  void transition(std::string transition_name, LifeCycleState initial_state,
-      LifeCycleState transition_state, LifeCycleState new_state,
-      std::function<void(void)> on_function);
-  void doTransition(std::string transition_name, bool success,
-      LifeCycleState success_state, LifeCycleState failure_state);
+  void transition(std::string transition_name, LifeCycleState initial_state, LifeCycleState transition_state,
+                  LifeCycleState new_state, std::function<void(void)> on_function);
+  void doTransition(std::string transition_name, bool success, LifeCycleState success_state,
+                    LifeCycleState failure_state);
 
 public:
   static constexpr std::string_view BROADCAST_NODE_NAME = "";
@@ -45,8 +44,7 @@ public:
   static constexpr std::string_view STATE_CLEANING_UP_STRING = "CLEANING_UP";
   static constexpr std::string_view STATE_ACTIVATING_STRING = "ACTIVATING";
   static constexpr std::string_view STATE_DEACTIVATING_STRING = "DEACTIVATING";
-  static constexpr std::string_view STATE_ERROR_PROCESSING_STRING =
-      "ERROR_PROCESSING";
+  static constexpr std::string_view STATE_ERROR_PROCESSING_STRING = "ERROR_PROCESSING";
 
   static constexpr std::string_view STATUS_OK_STRING = "OK";
   static constexpr std::string_view STATUS_WARN_STRING = "WARN";
@@ -63,12 +61,11 @@ public:
   static constexpr std::string_view EMPTY_STRING = "";
 
   static const std::string_view& stateToString(LifeCycleState state);
-  static bool stringToState(std::string &state_str, LifeCycleState &state);
+  static bool stringToState(std::string& state_str, LifeCycleState& state);
   static const std::string_view& statusToString(LifeCycleStatus status);
-  static bool stringToStatus(std::string &status_str, LifeCycleStatus &status);
+  static bool stringToStatus(std::string& status_str, LifeCycleStatus& status);
   static const std::string_view& commandToString(LifeCycleCommand command);
-  static bool stringToCommand(std::string &status_str,
-      LifeCycleCommand &command);
+  static bool stringToCommand(std::string& status_str, LifeCycleCommand& command);
 
 protected:
   std::string node_name_;
@@ -146,8 +143,8 @@ protected:
   virtual void onShutdown();
   void doShutdown(bool success);
 
-  virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper &dsw);
-  virtual void heartbeatCB(const ros::TimerEvent &event);
+  virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw);
+  virtual void heartbeatCB(const ros::TimerEvent& event);
   void sendNodeUpdate();
   void lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg);
 

@@ -1,4 +1,0 @@
-status_log_level: 1
-timeout_s: 10.0
-state_machine_duration: 0.1
-manifest: "" 

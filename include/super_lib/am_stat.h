@@ -24,15 +24,17 @@ private:
   AMStat();
 
 public:
-  AMStat(const std::string& short_name, const std::string& long_name)
+
+  AMStat(const std::string &short_name, const std::string &long_name)
   {
     short_name_ = short_name;
     long_name_ = long_name;
   }
 
-  AMStat(const std::string& short_name, const std::string& long_name, uint32_t max_warn, uint32_t max_error)
+  AMStat(const std::string &short_name, const std::string &long_name,
+      uint32_t max_warn, uint32_t max_error) :
+      AMStat(short_name, long_name)
   {
-    AMStat(short_name, long_name);
     max_warn_ = max_warn;
     max_error_ = max_error;
   }
@@ -41,18 +43,21 @@ public:
   {
   }
 
-  virtual LifeCycleStatus process()
+  virtual LifeCycleStatus process(double warn_throttle_s,
+      double error_throttle_s)
   {
     LifeCycleStatus status = LifeCycleStatus::OK;
 
     if (value_ > max_error_)
     {
-      ROS_ERROR_STREAM_THROTTLE(1.0, long_name_ << " exceeding max_error: " << value_ << " (max:" << max_error_ << ")");
+      ROS_ERROR_STREAM_THROTTLE(error_throttle_s,
+          long_name_ << " exceeding max_error: " << value_ << " (max:" << max_error_ << ")");
       compoundStatus(status, LifeCycleStatus::ERROR);
     }
     else if (value_ > max_warn_)
     {
-      ROS_WARN_STREAM_THROTTLE(1.0, long_name_ << " exceeding max_warn: " << value_ << " (max:" << max_warn_ << ")");
+      ROS_WARN_STREAM_THROTTLE(warn_throttle_s,
+          long_name_ << " exceeding max_warn: "<< value_ << " (max:" << max_warn_ << ")");
       compoundStatus(status, LifeCycleStatus::WARN);
     }
 
@@ -63,7 +68,7 @@ public:
   {
   }
 
-  virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw)
+  virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper &dsw)
   {
     dsw.add(long_name_, value_);
   }
@@ -139,13 +144,15 @@ public:
     return short_name_;
   }
 
-  static void compoundStatus(LifeCycleStatus& status, const LifeCycleStatus new_status)
+  static void compoundStatus(LifeCycleStatus &status,
+      const LifeCycleStatus new_status)
   {
     if (new_status == LifeCycleStatus::ERROR)
     {
       status = LifeCycleStatus::ERROR;
     }
-    else if (new_status == LifeCycleStatus::WARN && status == LifeCycleStatus::OK)
+    else if (new_status == LifeCycleStatus::WARN
+        && status == LifeCycleStatus::OK)
     {
       status = LifeCycleStatus::WARN;
     }

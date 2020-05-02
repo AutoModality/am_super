@@ -31,8 +31,8 @@ public:
   }
 
   AMStat(const std::string& short_name, const std::string& long_name, uint32_t max_warn, uint32_t max_error)
+    : AMStat(short_name, long_name)
   {
-    AMStat(short_name, long_name);
     max_warn_ = max_warn;
     max_error_ = max_error;
   }
@@ -41,18 +41,20 @@ public:
   {
   }
 
-  virtual LifeCycleStatus process()
+  virtual LifeCycleStatus process(double warn_throttle_s, double error_throttle_s)
   {
     LifeCycleStatus status = LifeCycleStatus::OK;
 
     if (value_ > max_error_)
     {
-      ROS_ERROR_STREAM_THROTTLE(1.0, long_name_ << " exceeding max_error: " << value_ << " (max:" << max_error_ << ")");
+      ROS_ERROR_STREAM_THROTTLE(error_throttle_s, long_name_ << " exceeding max_error: " << value_
+                                                             << " (max:" << max_error_ << ")");
       compoundStatus(status, LifeCycleStatus::ERROR);
     }
     else if (value_ > max_warn_)
     {
-      ROS_WARN_STREAM_THROTTLE(1.0, long_name_ << " exceeding max_warn: " << value_ << " (max:" << max_warn_ << ")");
+      ROS_WARN_STREAM_THROTTLE(warn_throttle_s, long_name_ << " exceeding max_warn: " << value_ << " (max:" << max_warn_
+                                                           << ")");
       compoundStatus(status, LifeCycleStatus::WARN);
     }
 

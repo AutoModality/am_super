@@ -34,18 +34,20 @@ public:
     max_error_ = max_error;
   }
 
-  LifeCycleStatus process() override
+  LifeCycleStatus process(double warn_throttle_s, double error_throttle_s) override
   {
-    LifeCycleStatus status = AMStat::process();
+    LifeCycleStatus status = AMStat::process(warn_throttle_s, error_throttle_s);
 
     if (value_ < min_error_)
     {
-      ROS_ERROR_STREAM_THROTTLE(1.0, long_name_ << " exceeding min_error: " << value_ << " (min:" << min_error_ << ")");
+      ROS_ERROR_STREAM_THROTTLE(error_throttle_s, long_name_ << " exceeding min_error: " << value_
+                                                             << " (min:" << min_error_ << ")");
       compoundStatus(status, LifeCycleStatus::ERROR);
     }
     else if (value_ < min_warn_)
     {
-      ROS_WARN_STREAM_THROTTLE(1.0, long_name_ << " exceeding min_warn: " << value_ << " (min:" << min_warn_ << ")");
+      ROS_WARN_STREAM_THROTTLE(warn_throttle_s, long_name_ << " exceeding min_warn: " << value_ << " (min:" << min_warn_
+                                                           << ")");
       compoundStatus(status, LifeCycleStatus::WARN);
     }
 

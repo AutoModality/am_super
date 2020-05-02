@@ -5,16 +5,21 @@
 
 enum class SuperState : std::uint8_t
 {
-  UNKNOWN = brain_box_msgs::VxState::UNKNOWN,
+  OFF = brain_box_msgs::VxState::OFF,
   BOOTING = brain_box_msgs::VxState::BOOTING,
   READY = brain_box_msgs::VxState::READY,
+  ARMING = brain_box_msgs::VxState::ARMING,
   ARMED = brain_box_msgs::VxState::ARMED,
-  AUTO_FEATURE = brain_box_msgs::VxState::AUTO_FEATURE,
-  AUTO_NO_FEATURE = brain_box_msgs::VxState::AUTO_NO_FEATURE,
+  AUTO = brain_box_msgs::VxState::AUTO,
+  SEMI_AUTO = brain_box_msgs::VxState::SEMI_AUTO,
   HOLD = brain_box_msgs::VxState::HOLD,
-  ERROR = brain_box_msgs::VxState::ERROR,
+  ABORT = brain_box_msgs::VxState::ABORT,
   MANUAL = brain_box_msgs::VxState::MANUAL,
+  SHUTDOWN = brain_box_msgs::VxState::SHUTDOWN,
   LAST_STATE = brain_box_msgs::VxState::LAST_STATE
 };
 
 #endif
+
+// BOOTING_WAIT_ONLINE_OK = brain_box_msgs::VxState::BOOTING,
+// BOOTING_WAIT_CONFIGURE_OK = brain_box_msgs::VxState::BOOTING_WAIT_ACTIVE_OK,

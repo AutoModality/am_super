@@ -23,13 +23,13 @@ public:
     stat_list_.push_back(stat);
   }
 
-  LifeCycleStatus process()
+  LifeCycleStatus process(double warn_throttle_s, double error_throttle_s)
   {
     LifeCycleStatus status = LifeCycleStatus::OK;
 
     for (AMStat* stat : stat_list_)
     {
-      AMStat::compoundStatus(status, stat->process());
+      AMStat::compoundStatus(status, stat->process(warn_throttle_s, error_throttle_s));
     }
 
     return status;

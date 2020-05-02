@@ -15,14 +15,25 @@ namespace am
 class AMLifeCycle
 {
 private:
+  static constexpr double DEFAULT_OK_THROTTLE_S = 10.0;
+  static constexpr double DEFAULT_WARN_THROTTLE_S = 2.0;
+  static constexpr double DEFAULT_ERROR_THROTTLE_S = 1.0;
+
   LifeCycleState state_;
   LifeCycleStatus status_;
+  double ok_throttle_s_ = DEFAULT_OK_THROTTLE_S;
+  double warn_throttle_s_ = DEFAULT_WARN_THROTTLE_S;
+  double error_throttle_s_ = DEFAULT_ERROR_THROTTLE_S;
+
+  void setState(const LifeCycleState state);
+
+  void transition(std::string transition_name, LifeCycleState initial_state, LifeCycleState transition_state,
+                  LifeCycleState new_state, std::function<void(void)> on_function);
+  void doTransition(std::string transition_name, bool success, LifeCycleState success_state,
+                    LifeCycleState failure_state);
 
 public:
-  LifeCycleState getState() const;
-  void setState(const LifeCycleState state);
-  LifeCycleStatus getStatus() const;
-  void setStatus(const LifeCycleStatus status);
+  static constexpr std::string_view BROADCAST_NODE_NAME = "";
 
   static constexpr std::string_view STATE_INVALID_STRING = "INVALID";
   static constexpr std::string_view STATE_UNCONFIGURED_STRING = "UNCONFIGURED";
@@ -39,17 +50,33 @@ public:
   static constexpr std::string_view STATUS_WARN_STRING = "WARN";
   static constexpr std::string_view STATUS_ERROR_STRING = "ERROR";
 
+  static constexpr std::string_view COMMAND_CREATE_STRING = "CREATE";
+  static constexpr std::string_view COMMAND_CONFIGURE_STRING = "CONFIGURE";
+  static constexpr std::string_view COMMAND_CLEANUP_STRING = "CLEANUP";
+  static constexpr std::string_view COMMAND_ACTIVATE_STRING = "ACTIVATE";
+  static constexpr std::string_view COMMAND_DEACTIVATE_STRING = "DEACTIVATE";
+  static constexpr std::string_view COMMAND_SHUTDOWN_STRING = "SHUTDOWN";
+  static constexpr std::string_view COMMAND_DESTROY_STRING = "DESTROY";
+
+  static constexpr std::string_view EMPTY_STRING = "";
+
   static const std::string_view& stateToString(LifeCycleState state);
+  static bool stringToState(std::string& state_str, LifeCycleState& state);
   static const std::string_view& statusToString(LifeCycleStatus status);
+  static bool stringToStatus(std::string& status_str, LifeCycleStatus& status);
+  static const std::string_view& commandToString(LifeCycleCommand command);
+  static bool stringToCommand(std::string& status_str, LifeCycleCommand& command);
 
 protected:
+  std::string node_name_;
+
   diagnostic_updater::Updater updater_;
   AMStatList stats_list_;
 
   ros::NodeHandle nh_;
   ros::Timer heartbeat_timer_;
   ros::Publisher state_pub_;
-
+  ros::Subscriber lifecycle_sub_;
   /**
    * @brief Default constructor
    */
@@ -60,51 +87,72 @@ protected:
    */
   virtual ~AMLifeCycle();
 
-  virtual void configure();
-  virtual void cleanup();
-  virtual void activate();
-  virtual void deactivate();
-  virtual void shutdown();
-  virtual void destroy();
-
   /**
    * @brief Function to be defined by the user.
-   *        Called at the end of transition from UNCONFIGURED to INACTIVE.
+   *        Called at the end of transition from INACTIVE to ACTIVE.
    */
-  virtual void onConfigure();
+  void activate();
+  virtual void onActivate();
+  void doActivate(bool success);
 
   /**
    * @brief Function to be defined by the user.
    *        Called at the end of transition from INACTIVE to UNCONFIGURED.
    */
-  virtual void onCleanUp();
+  void cleanup();
+  virtual void onCleanup();
+  void doCleanup(bool success);
 
   /**
    * @brief Function to be defined by the user.
-   *        Called at the end of transition from INACTIVE to ACTIVE.
+   *        Called at the end of transition from UNCONFIGURED to INACTIVE.
    */
-  virtual void onActivate();
+  void configure();
+  virtual void onConfigure();
+  void doConfigure(bool success);
 
   /**
    * @brief Function to be defined by the user.
    *        Called at the end of transition from ACTIVE to INACTIVE.
    */
+  void deactivate();
   virtual void onDeactivate();
+  void doDeactivate(bool success);
+
+  /**
+   * @brief Function to be defined by the user.
+   *        Called at the end of transition from FINALIZED to power off.
+   */
+  virtual void destroy();
+  virtual void onDestroy();
+  void doDestroy(bool success);
+
+  /**
+   * @brief Function to be defined by the user.
+   *        Called at any time and transitions to UNCONFIGURED or FINALIZED.
+   */
+  void error();
+  virtual void onError();
+  void doError(bool success);
 
   /**
    * @brief Function to be defined by the user.
    *        Called at the end of transition from INACTIVE to FINALIZED.
    */
+  void shutdown();
   virtual void onShutdown();
-
-  /**
-   * @brief Function to be defined by the user.
-   *        Called after an error and may transition to UNCONFIGURED or FINALIZED.
-   */
-  virtual void onError();
+  void doShutdown(bool success);
 
   virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw);
   virtual void heartbeatCB(const ros::TimerEvent& event);
+  void sendNodeUpdate();
+  void lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg);
+
+  LifeCycleState getState() const;
+  LifeCycleStatus getStatus() const;
+  void setStatus(const LifeCycleStatus status);
+  double getThrottleS() const;
+  void setThrottleS(const double throttleS);
 
 };  // class AMLifeCycle
 

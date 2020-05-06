@@ -123,8 +123,8 @@ protected:
    * @brief Function to be defined by the user.
    *        Called at the end of transition from FINALIZED to power off.
    */
-    virtual void destroy();
-      virtual void onDestroy();
+  virtual void destroy();
+  virtual void onDestroy();
   void doDestroy(bool success);
 
   /**

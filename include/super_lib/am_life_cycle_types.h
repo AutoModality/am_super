@@ -30,7 +30,8 @@ enum class LifeCycleState : std::uint8_t
  * status of the functionality of the node (i.e. is it operating to spec)
  */
 enum class LifeCycleStatus : std::uint8_t
-{OK = brain_box_msgs::LifeCycleState::STATUS_OK,
+{
+  OK = brain_box_msgs::LifeCycleState::STATUS_OK,
   WARN = brain_box_msgs::LifeCycleState::STATUS_WARN,
   ERROR = brain_box_msgs::LifeCycleState::STATUS_ERROR,
   LAST_STATUS = brain_box_msgs::LifeCycleState::STATUS_LAST

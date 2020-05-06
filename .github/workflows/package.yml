@@ -34,3 +34,8 @@ jobs:
           distro: 'ubuntu'
           release: 'bionic'
           file: '${{ steps.package.outputs.artifact-path }}'
+      - name: Draft a Pull Request
+        uses: repo-sync/pull-request@v2
+        with:
+          pr_draft: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}

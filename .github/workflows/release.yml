@@ -4,6 +4,14 @@ on:
     branches:
       - master
 jobs:
+  code-format:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Format Code
+        uses: AutoModality/action-ros-clang-format@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   release:
     runs-on: ubuntu-18.04
     steps:
@@ -39,7 +47,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, [self-hosted,linux,arm64]]
+        os: [[x64, self-hosted,linux], [arm64,self-hosted,linux]]
       fail-fast: true
     needs: release
     name: Package if released

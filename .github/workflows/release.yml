@@ -39,7 +39,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, [self-hosted,linux,arm64]]
+        os: [[x64, self-hosted,linux], [arm64,self-hosted,linux]]
       fail-fast: true
     needs: release
     name: Package if released

@@ -3,9 +3,16 @@ on:
   push:
     branches:
       - master
+env:
+  RELEASE_DIR: release
+  RELEASE_PROPERTIES_FILE: release/release.properties
+  RELEASE_PAYLOAD_FILE: release/payload.json
 jobs:
   release:
-    runs-on: ubuntu-18.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [[x64,self-hosted,linux]]
     steps:
       - uses: AutoModality/action-clean@v1.1.0
       - name: Checkout
@@ -16,58 +23,63 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Write release result to file
-        run: mkdir release
+        run: mkdir ${{ env.RELEASE_DIR }}
       - name: Write Published
         uses: christian-draeger/write-properties@1.0.1
         with:
-          path: 'release.properties'
+          path: ${{ env.RELEASE_PROPERTIES_FILE }}
           property: 'published'
           value: ${{ steps.semantic.outputs.new_release_published }}
       - name: Write Version
         uses: christian-draeger/write-properties@1.0.1
         if: steps.semantic.outputs.new_release_published == 'true'
         with:
-          path: 'release.properties'
+          path: ${{ env.RELEASE_PROPERTIES_FILE }}
           property: 'version'
           value: ${{ steps.semantic.outputs.new_release_version }}
+      - name: Write Release Payload
+        run: |
+            #retrieve package name from changelog guaranteed to be first characters ( split on space, choose first result)
+            package_name=$(head -1 debian/changelog | awk -F' ' '{print $1}')
+            echo "{\"package\":\"${package_name}\", \"new_release_version\": \"${{ steps.semantic.outputs.new_release_version }}\", \"new_release_major_version\": \"${{ steps.semantic.outputs.new_release_major_version }}\", \"new_release_minor_version\":\"${{ steps.semantic.outputs.new_release_minor_version }}\",\"new_release_patch_version\":\"${{ steps.semantic.outputs.new_release_patch_version }}\"}" > ${{ env.RELEASE_PAYLOAD_FILE }}
       - name: Share release file with other jobs
         uses: actions/upload-artifact@v1
         with:
           name: release
-          path: 'release.properties'
+          path: '${{ env.RELEASE_DIR }}'
   release-package:
+    needs: release
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [[x64, self-hosted,linux], [arm64,self-hosted,linux]]
+        os: [[x64,self-hosted,linux], [arm64,self-hosted,linux]]
       fail-fast: true
-    needs: release
     name: Package if released
     steps:
-      - uses: AutoModality/action-clean@v1.1.0
       - name: Checkout
         uses: actions/checkout@v2
       - name: Download release
         uses: actions/download-artifact@v1
         with:
           name: release
+          path: ${{ env.RELEASE_DIR }}
       - name: Read Published
         id: published
         uses: christian-draeger/read-properties@1.0.1
         with:
-          path: 'release/release.properties'
+          path: ${{ env.RELEASE_PROPERTIES_FILE }}
           property: 'published'
       - name: Read Version if published
         id: version
         if: steps.published.outputs.value == 'true'
         uses: christian-draeger/read-properties@1.0.1
         with:
-          path: 'release/release.properties'
+          path: ${{ env.RELEASE_PROPERTIES_FILE }}
           property: 'version'
       - name: Package if published
         if: steps.published.outputs.value == 'true'
         id: package
-        uses: AutoModality/action-package-debian-ros@v3-perception
+        uses: AutoModality/action-package-debian-ros@v3.0.0
         with:
           version: ${{ steps.version.outputs.value }}
           release-repo-entitlement: ${{ secrets.CLOUDSMITH_READ_RELEASE_ENTITLEMENT }}
@@ -84,3 +96,32 @@ jobs:
           distro: 'ubuntu'
           release: 'bionic'
           file: '${{ steps.package.outputs.artifact-path }}'
+  notify-amros:
+    needs: release-package
+    runs-on: ubuntu-latest
+    name: Notify AMROS
+    steps:
+      - name: Download release
+        uses: actions/download-artifact@v1
+        with:
+          name: release
+          path: ${{ env.RELEASE_DIR }}
+      - name: Read Published
+        id: published
+        uses: christian-draeger/read-properties@1.0.1
+        with:
+          path: ${{ env.RELEASE_PROPERTIES_FILE }}
+          property: 'published'
+      - name: Payload env
+        run: |
+            payload=$(cat ${{ env.RELEASE_PAYLOAD_FILE }} )
+            echo ::set-env name=RELEASE_PAYLOAD::$payload
+      - name: Notify AMROS of Release
+        if: steps.published.outputs.value == 'true'
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.AMGITBOT_PAT }}
+          repository: AutoModality/amros
+          event-type: package-released
+          client-payload: "${{ env.RELEASE_PAYLOAD }}"
+      

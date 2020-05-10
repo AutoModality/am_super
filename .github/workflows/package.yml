@@ -13,11 +13,12 @@ jobs:
     steps:
       - uses: AutoModality/action-clean@v1.1.0
       - uses: actions/checkout@v2
+      - uses: rlespinasse/github-slug-action@2.0.0 # for GITHUB_REF_SLUG
       - name: Package
         id: package
         uses: AutoModality/action-package-debian-ros@v3.2.0
         with:
-          branch: ${{ github.event.pull_request.head.ref }}
+          branch: ${{ env.GITHUB_REF_SLUG }}
           build-number: ${{ github.run_number }}
           release-repo-entitlement: ${{ secrets.CLOUDSMITH_READ_RELEASE_ENTITLEMENT }}
       - name: The generated package

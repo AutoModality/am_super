@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [[x64,self-hosted,linux]]
+        os: [[x64, self-hosted,linux,build]]
     steps:
       - uses: AutoModality/action-clean@v1.1.0
       - name: Checkout
@@ -52,7 +52,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [[x64,self-hosted,linux], [arm64,self-hosted,linux]]
+        os: [[x64, self-hosted,linux,build], [arm64,self-hosted,linux, build]]
       fail-fast: true
     name: Package if released
     steps:

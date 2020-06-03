@@ -1,4 +1,5 @@
 #include <super_lib/am_life_cycle.h>
+#include <super_lib/am_stat.h>
 #include <brain_box_msgs/LifeCycleState.h>
 
 namespace am
@@ -290,13 +291,13 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
   switch (status_)
   {
     case LifeCycleStatus::OK:
-      ROS_INFO_STREAM_THROTTLE(ok_throttle_s_, ss.str());
+      ROS_INFO_STREAM_THROTTLE_NAMED(ok_throttle_s_, am::AM_STATS_TOPIC, ss.str());
       break;
     case LifeCycleStatus::WARN:
-      ROS_WARN_STREAM_THROTTLE(warn_throttle_s_, ss.str());
+      ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s_, am::AM_STATS_TOPIC, ss.str());
       break;
     case LifeCycleStatus::ERROR:
-      ROS_ERROR_STREAM_THROTTLE(error_throttle_s_, ss.str());
+      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s_,am::AM_STATS_TOPIC, ss.str());
       break;
   }
 

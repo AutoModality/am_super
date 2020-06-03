@@ -40,14 +40,15 @@ public:
 
     if (value_ < min_error_)
     {
-      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s, am::AM_STATS_TOPIC, long_name_ << " exceeding min_error: " << value_
-                                                             << " (min:" << min_error_ << ")");
+      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s, am::AM_STATS_TOPIC, long_name_
+                                                                                << " exceeding min_error: " << value_
+                                                                                << " (min:" << min_error_ << ")");
       compoundStatus(status, LifeCycleStatus::ERROR);
     }
     else if (value_ < min_warn_)
     {
-      ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s, am::AM_STATS_TOPIC, long_name_ << " exceeding min_warn: " << value_ << " (min:" << min_warn_
-                                                           << ")");
+      ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s, am::AM_STATS_TOPIC,
+                                     long_name_ << " exceeding min_warn: " << value_ << " (min:" << min_warn_ << ")");
       compoundStatus(status, LifeCycleStatus::WARN);
     }
 

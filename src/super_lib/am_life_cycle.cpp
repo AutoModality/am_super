@@ -297,7 +297,7 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
       ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s_, am::AM_STATS_TOPIC, ss.str());
       break;
     case LifeCycleStatus::ERROR:
-      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s_,am::AM_STATS_TOPIC, ss.str());
+      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s_, am::AM_STATS_TOPIC, ss.str());
       break;
   }
 

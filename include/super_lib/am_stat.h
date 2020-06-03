@@ -9,12 +9,9 @@
 #include <super_lib/am_life_cycle_types.h>
 #include <diagnostic_updater/diagnostic_updater.h>
 
-
-
 namespace am
 {
-
-const std::string AM_STATS_TOPIC{"am_stats"};
+const std::string AM_STATS_TOPIC{ "am_stats" };
 
 class AMStat
 {
@@ -52,14 +49,15 @@ public:
 
     if (value_ > max_error_)
     {
-      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s, am::AM_STATS_TOPIC, long_name_ << " exceeding max_error: " << value_
-                                                             << " (max:" << max_error_ << ")");
+      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s, am::AM_STATS_TOPIC, long_name_
+                                                                                << " exceeding max_error: " << value_
+                                                                                << " (max:" << max_error_ << ")");
       compoundStatus(status, LifeCycleStatus::ERROR);
     }
     else if (value_ > max_warn_)
     {
-      ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s, am::AM_STATS_TOPIC, long_name_ << " exceeding max_warn: " << value_ << " (max:" << max_warn_
-                                                           << ")");
+      ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s, am::AM_STATS_TOPIC,
+                                     long_name_ << " exceeding max_warn: " << value_ << " (max:" << max_warn_ << ")");
       compoundStatus(status, LifeCycleStatus::WARN);
     }
 

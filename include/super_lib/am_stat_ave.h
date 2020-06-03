@@ -4,7 +4,6 @@
 #include <super_lib/am_stat.h>
 #include <super_lib/am_stat_reset.h>
 
-
 namespace am
 {
 class AMStatAve : public AMStatReset
@@ -56,53 +55,59 @@ public:
 
     if (ave > max_error_)
     {
-      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s, am::AM_STATS_TOPIC, long_name_ << " ave exceeding max_error: " << ave
-                                      << " (max:" << max_error_ << ")");
+      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s, am::AM_STATS_TOPIC, long_name_
+                                                                                << " ave exceeding max_error: " << ave
+                                                                                << " (max:" << max_error_ << ")");
       compoundStatus(status, LifeCycleStatus::ERROR);
     }
     else if (ave > max_warn_)
     {
-      ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s, am::AM_STATS_TOPIC, long_name_ << " ave exceeding max_warn: " << ave
-                                                           << " (max:" << max_warn_ << ")");
+      ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s, am::AM_STATS_TOPIC,
+                                     long_name_ << " ave exceeding max_warn: " << ave << " (max:" << max_warn_ << ")");
       compoundStatus(status, LifeCycleStatus::WARN);
     }
 
     if (ave < min_error_)
     {
-      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s, am::AM_STATS_TOPIC, long_name_ << " ave exceeding min_error: " << ave
-                                                             << " (min:" << min_error_ << ")");
+      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s, am::AM_STATS_TOPIC, long_name_
+                                                                                << " ave exceeding min_error: " << ave
+                                                                                << " (min:" << min_error_ << ")");
       compoundStatus(status, LifeCycleStatus::ERROR);
     }
     else if (ave < min_warn_)
     {
-      ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s, am::AM_STATS_TOPIC, long_name_ << " ave exceeding min_warn: " << ave
-                                                           << " (min:" << min_warn_ << ")");
+      ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s, am::AM_STATS_TOPIC,
+                                     long_name_ << " ave exceeding min_warn: " << ave << " (min:" << min_warn_ << ")");
       compoundStatus(status, LifeCycleStatus::WARN);
     }
 
     if (min_ < min_min_error_)
     {
-      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s, am::AM_STATS_TOPIC, long_name_ << " min exceeding min_min_error: " << min_
-                                                             << " (min:" << min_min_error_ << ")");
+      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s, am::AM_STATS_TOPIC,
+                                      long_name_ << " min exceeding min_min_error: " << min_
+                                                 << " (min:" << min_min_error_ << ")");
       compoundStatus(status, LifeCycleStatus::ERROR);
     }
     else if (min_ < min_min_warn_)
     {
-      ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s, am::AM_STATS_TOPIC, long_name_ << " min exceeding min_min_warn: " << min_
-                                                           << " (min:" << min_min_warn_ << ")");
+      ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s, am::AM_STATS_TOPIC, long_name_
+                                                                              << " min exceeding min_min_warn: " << min_
+                                                                              << " (min:" << min_min_warn_ << ")");
       compoundStatus(status, LifeCycleStatus::WARN);
     }
 
     if (max_ > max_max_error_)
     {
-      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s, am::AM_STATS_TOPIC, long_name_ << " max exceeding max_max_error: " << max_
-                                                             << " (max:" << max_max_error_ << ")");
+      ROS_ERROR_STREAM_THROTTLE_NAMED(error_throttle_s, am::AM_STATS_TOPIC,
+                                      long_name_ << " max exceeding max_max_error: " << max_
+                                                 << " (max:" << max_max_error_ << ")");
       compoundStatus(status, LifeCycleStatus::ERROR);
     }
     else if (max_ > max_max_warn_)
     {
-      ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s, am::AM_STATS_TOPIC, long_name_ << " max exceeding max_max_warn: " << max_
-                                                           << " (max:" << max_max_warn_ << ")");
+      ROS_WARN_STREAM_THROTTLE_NAMED(warn_throttle_s, am::AM_STATS_TOPIC, long_name_
+                                                                              << " max exceeding max_max_warn: " << max_
+                                                                              << " (max:" << max_max_warn_ << ")");
       compoundStatus(status, LifeCycleStatus::WARN);
     }
 

@@ -37,3 +37,4 @@ debian/*-stamp
 debian/source
 ros-melodic-am-super-*.deb
 debian/.debhelper/*
+.history

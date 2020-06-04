@@ -29,7 +29,6 @@ endif(CUDA_FOUND)
 
 
 ## System dependencies are found with CMake's conventions
-find_package(DJIOSDK REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -119,10 +118,10 @@ add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
 
 if(CUDA_FOUND)
 	add_executable(am_super src/am_super/am_super.cpp src/cuda/cuda_utility_class.cpp)
-	target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES} super_lib cuda_utility)
+	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib cuda_utility)
 else()
 	add_executable(am_super src/am_super/am_super.cpp)
-	target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES} super_lib)
+	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib)
 endif(CUDA_FOUND)
 add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
 

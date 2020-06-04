@@ -39,3 +39,4 @@ ros-melodic-am-super-*.deb
 debian/.debhelper/*
 .history
 build
+.catkin_tools

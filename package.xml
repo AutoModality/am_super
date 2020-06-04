@@ -3,11 +3,7 @@
   <name>am_super</name>
   <version>0.0.0</version>
   <description>AutoModality Supervisor</description>
-
-  <!-- One maintainer tag required, multiple allowed, one person per tag -->
-  <!-- Example:  -->
-  <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="support@automodality.com">support</maintainer>
+  <maintainer email="dev@automodality.com">AutoModality</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
@@ -24,5 +20,6 @@
   <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
- 
+  <test_depend>rosunit</test_depend>
+
 </package>

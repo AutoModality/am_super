@@ -15,6 +15,10 @@ jobs:
         os: [[x64, self-hosted,linux,build]]
     steps:
       - uses: AutoModality/action-clean@v1.1.0
+      - name: Wait if concurrent action
+        uses: softprops/turnstyle@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout
         uses: actions/checkout@v2
       - name: Semantic Release
@@ -99,16 +103,16 @@ jobs:
         with:
           name: ${{ steps.xunit-viewer.outputs.report-name }}
           path: ${{ steps.xunit-viewer.outputs.report-dir }}
-      - name: Publish Test Reports to Azure Storage
-        if: steps.published.outputs.value == 'true'
-        uses: bacongobbler/azure-blob-storage-upload@v1.0.0
-        with:
-          source_dir: ${{ steps.xunit-viewer.outputs.report-dir }}
-          container_name: docs
-          # http://tiny.cc/y1bznz
-          connection_string: ${{ secrets.AMROSDOC_AZURE_STORAGE_CONNECTION_STRING }}
-          extra_args: --destination-path ${{github.repository}}/test-reports
-          sync: true
+      # - name: Publish Test Reports to Azure Storage
+      #   if: steps.published.outputs.value == 'true'
+      #   uses: bacongobbler/azure-blob-storage-upload@v1.0.0
+      #   with:
+      #     source_dir: ${{ steps.xunit-viewer.outputs.report-dir }}
+      #     container_name: docs
+      #     # http://tiny.cc/y1bznz
+      #     connection_string: ${{ secrets.AMROSDOC_AZURE_STORAGE_CONNECTION_STRING }}
+      #     extra_args: --destination-path ${{github.repository}}/test-reports
+      #     sync: true
       - name: Deploy if published
         if: steps.published.outputs.value == 'true'
         id: deploy

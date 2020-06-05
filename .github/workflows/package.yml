@@ -35,6 +35,21 @@ jobs:
           distro: 'ubuntu'
           release: 'bionic'
           file: '${{ steps.package.outputs.artifact-path }}'
+      - name: Repo Name
+        run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")
+      - name: Test Results
+        if: always()
+        id: xunit-viewer
+        uses: AutoModality/action-xunit-viewer@v1
+        with: 
+          results: catkin_ws/build/${{env.REPOSITORY_NAME}}/test_results/${{env.REPOSITORY_NAME}}
+      - name: Attach Test Reports
+        if: always()
+        uses: actions/upload-artifact@v1
+        with:
+          name: ${{ steps.xunit-viewer.outputs.report-name }}
+          path: ${{ steps.xunit-viewer.outputs.report-dir }}
+
   draft-pr:
     runs-on: ubuntu-18.04
     needs: package

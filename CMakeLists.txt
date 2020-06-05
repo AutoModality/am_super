@@ -29,7 +29,6 @@ endif(CUDA_FOUND)
 
 
 ## System dependencies are found with CMake's conventions
-find_package(DJIOSDK REQUIRED)
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -119,10 +118,10 @@ add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
 
 if(CUDA_FOUND)
 	add_executable(am_super src/am_super/am_super.cpp src/cuda/cuda_utility_class.cpp)
-	target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES} super_lib cuda_utility)
+	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib cuda_utility)
 else()
 	add_executable(am_super src/am_super/am_super.cpp)
-	target_link_libraries(am_super ${catkin_LIBRARIES} ${DJIOSDK_LIBRARIES} super_lib)
+	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib)
 endif(CUDA_FOUND)
 add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
 
@@ -169,10 +168,7 @@ install(DIRECTORY include/super_lib
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_machine_learning.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
-
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
+catkin_add_gtest(${PROJECT_NAME}_test test/sample_tests.cpp)
+if(TARGET ${PROJECT_NAME}_test)
+  target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES})
+endif()

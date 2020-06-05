@@ -94,13 +94,13 @@ jobs:
         with: 
           results: catkin_ws/build/${{env.REPOSITORY_NAME}}/test_results/${{env.REPOSITORY_NAME}}
       - name: Attach Test Reports
-        if: always()
+        if: steps.published.outputs.value == 'true'
         uses: actions/upload-artifact@v1
         with:
           name: ${{ steps.xunit-viewer.outputs.report-name }}
           path: ${{ steps.xunit-viewer.outputs.report-dir }}
       - name: Publish Test Reports to Azure Storage
-        if: always()
+        if: steps.published.outputs.value == 'true'
         uses: bacongobbler/azure-blob-storage-upload@v1.0.0
         with:
           source_dir: ${{ steps.xunit-viewer.outputs.report-dir }}

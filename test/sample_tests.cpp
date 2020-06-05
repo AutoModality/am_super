@@ -11,7 +11,19 @@ TEST(StrCompare, CStrEqual) {
     EXPECT_STREQ(expectVal, actualValTrue);
 }
 
+TEST(StrCompare, CStrEqual2) {
+    EXPECT_STREQ(expectVal, actualValTrue);
+}
+
+TEST(StrCompare, CStrEqual3) {
+    EXPECT_STREQ(expectVal, actualValTrue);
+}
+
 TEST(StrCompare, CStrNotEqual) {
+    EXPECT_STREQ(expectVal, actualValFalse);
+}
+
+TEST(StrCompare, CStrNotEqual4) {
     EXPECT_STREQ(expectVal, actualValFalse);
 }
 

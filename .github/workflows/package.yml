@@ -35,6 +35,18 @@ jobs:
           distro: 'ubuntu'
           release: 'bionic'
           file: '${{ steps.package.outputs.artifact-path }}'
+      - name: Generate Test Reports
+        if: always()
+        id: xunit-viewer
+        uses: AutoModality/action-xunit-viewer@v1.0.1
+        with: 
+          results: catkin_ws/build/am_super/test_results/am_super
+      - name: Attach Test Reports
+        if: always()
+        uses: actions/upload-artifact@v1
+        with:
+          name: ${{ env.GITHUB_REPOSITORY_SLUG_URL }}-${{ github.run_number }}-test-reports
+          path: ${{ steps.xunit-viewer.outputs.report-dir }}
   draft-pr:
     runs-on: ubuntu-18.04
     needs: package

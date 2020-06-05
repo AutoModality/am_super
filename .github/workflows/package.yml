@@ -42,7 +42,7 @@ jobs:
         id: xunit-viewer
         uses: AutoModality/action-xunit-viewer@v1.0.1
         with: 
-          results: catkin_ws/build/${env.REPOSITORY_NAME}/test_results/${env.REPOSITORY_NAME}
+          results: catkin_ws/build/${{env.REPOSITORY_NAME}}/test_results/${{env.REPOSITORY_NAME}}
       - name: Attach Test Reports
         if: always()
         uses: actions/upload-artifact@v1

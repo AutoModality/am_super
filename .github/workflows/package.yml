@@ -49,7 +49,8 @@ jobs:
         with:
           name: ${{ steps.xunit-viewer.outputs.report-name }}
           path: ${{ steps.xunit-viewer.outputs.report-dir }}
-      - name: Publish Tests to Azure Storage
+      - name: Publish Test Reports to Azure Storage
+        if: always()
         uses: bacongobbler/azure-blob-storage-upload@v1.0.0
         with:
           source_dir: ${{ steps.xunit-viewer.outputs.report-dir }}

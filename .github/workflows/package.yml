@@ -40,14 +40,14 @@ jobs:
       - name: Generate Test Reports
         if: always()
         id: xunit-viewer
-        uses: AutoModality/action-xunit-viewer@v1.0.1
+        uses: AutoModality/action-xunit-viewer@AM-337/gtest
         with: 
           results: catkin_ws/build/${{env.REPOSITORY_NAME}}/test_results/${{env.REPOSITORY_NAME}}
       - name: Attach Test Reports
         if: always()
         uses: actions/upload-artifact@v1
         with:
-          name: ${{ env.GITHUB_REPOSITORY_SLUG_URL }}-${{ github.run_number }}-test-reports
+          name: ${{ steps.xunit-viewer.outputs.report-name }}
           path: ${{ steps.xunit-viewer.outputs.report-dir }}
   draft-pr:
     runs-on: ubuntu-18.04

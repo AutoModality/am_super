@@ -167,8 +167,12 @@ install(DIRECTORY include/super_lib
 ## Testing ##
 #############
 
+file(GLOB TEST_FILES
+    test/*_tests.cpp
+)
+
 ## Add gtest based cpp test target and link libraries
-catkin_add_gtest(${PROJECT_NAME}_test test/sample_tests.cpp)
+catkin_add_gtest(${PROJECT_NAME}_test ${TEST_FILES})
 if(TARGET ${PROJECT_NAME}_test)
   target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES})
 endif()

@@ -1,16 +1,15 @@
 #include <gtest/gtest.h>  // googletest header file
 #include <am_super/state_mediator.h>
-
+#include <am_super/super_state.h>
 
 #include <string>
 using std::string;
 
-const char* actualVal2True = "hello gtest";
-const char* actualVal2False = "hello world";
-const char* expectVal2 = "hello gtest";
 
-TEST(StrCompare, CStrEqual2)
+TEST(StateMediator, allowsTransition_OffToBootingIsAllowed)
 {
 
-  EXPECT_STREQ(expectVal2, actualVal2True);
+  am::StateMediator mediator;
+  bool allowed = mediator.allowsTransition(SuperState::OFF,SuperState::BOOTING);
+  EXPECT_TRUE(allowed);
 }

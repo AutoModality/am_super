@@ -8,13 +8,13 @@
 namespace am
 {
 
-/** Stateless class providing logic to determine 
- * state transition.
+/** Stateless class providing logic relating to SuperState rules.
  */
 class StateMediator
 {
 public:
     StateMediator();
+
     /** 
      * @return true if the new state is acceptable to follow the current.
      */

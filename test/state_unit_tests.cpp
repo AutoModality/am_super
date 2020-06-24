@@ -4,12 +4,11 @@
 
 #include <string>
 using std::string;
-
+using namespace am;
 
 TEST(StateMediator, allowsTransition_OffToBootingIsAllowed)
 {
-
-  am::StateMediator mediator;
+  StateMediator mediator;
   bool allowed = mediator.allowsTransition(SuperState::OFF,SuperState::BOOTING);
   EXPECT_TRUE(allowed);
 }

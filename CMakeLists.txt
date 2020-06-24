@@ -117,10 +117,10 @@ target_link_libraries(super_lib ${catkin_LIBRARIES})
 add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
 
 if(CUDA_FOUND)
-	add_executable(am_super src/am_super/am_super.cpp src/cuda/cuda_utility_class.cpp)
+	add_executable(am_super src/am_super/am_super.cpp src/cuda/cuda_utility_class.cpp src/am_super/state_mediator.cpp)
 	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib cuda_utility)
 else()
-	add_executable(am_super src/am_super/am_super.cpp)
+	add_executable(am_super src/am_super/am_super.cpp src/am_super/state_mediator.cpp)
 	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib)
 endif(CUDA_FOUND)
 add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
@@ -172,7 +172,7 @@ file(GLOB TEST_FILES
 )
 
 ## Add gtest based cpp test target and link libraries
-catkin_add_gtest(${PROJECT_NAME}_test ${TEST_FILES})
+catkin_add_gtest(${PROJECT_NAME}_test ${TEST_FILES} src/am_super/state_mediator.cpp)
 if(TARGET ${PROJECT_NAME}_test)
   target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES})
 endif()

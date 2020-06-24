@@ -95,7 +95,7 @@ namespace am
             break;
         default:
             {
-                throw std::invalid_argument("Unhandled state "s + from);
+                throw std::invalid_argument("Unhandled state ");
             }
         }
         return legal;

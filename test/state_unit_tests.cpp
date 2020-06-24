@@ -1,4 +1,6 @@
 #include <gtest/gtest.h>  // googletest header file
+#include <am_super/state_mediator.h>
+
 
 #include <string>
 using std::string;
@@ -9,5 +11,6 @@ const char* expectVal2 = "hello gtest";
 
 TEST(StrCompare, CStrEqual2)
 {
+
   EXPECT_STREQ(expectVal2, actualVal2True);
 }

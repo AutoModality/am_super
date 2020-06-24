@@ -7,21 +7,19 @@
 
 namespace am
 {
-
 /** Stateless class providing logic relating to SuperState rules.
  */
 class StateMediator
 {
 public:
-    StateMediator();
+  StateMediator();
 
-    /** 
-     * @return true if the new state is acceptable to follow the current.
-     */
-    bool allowsTransition(SuperState from, SuperState to);
-    
+  /**
+   * @return true if the new state is acceptable to follow the current.
+   */
+  bool allowsTransition(SuperState from, SuperState to);
+
 private:
-
 };
 }
 

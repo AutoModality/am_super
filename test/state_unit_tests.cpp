@@ -9,6 +9,6 @@ using namespace am;
 TEST(StateMediator, allowsTransition_OffToBootingIsAllowed)
 {
   StateMediator mediator;
-  bool allowed = mediator.allowsTransition(SuperState::OFF,SuperState::BOOTING);
+  bool allowed = mediator.allowsTransition(SuperState::OFF, SuperState::BOOTING);
   EXPECT_TRUE(allowed);
 }

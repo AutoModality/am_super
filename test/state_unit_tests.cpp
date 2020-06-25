@@ -26,18 +26,21 @@ ASSERT_TRANSITIONS_ALLOWED(SuperState from, std::vector<SuperState> states, bool
 }
 
 
-TEST(StateMediator, allowsTransition_OffToBootingIsAllowed)
+TEST(StateMediator, allowsTransition_OnlyOffToBootingIAllowed)
 {
   ASSERT_TRANSITION_ALLOWED(SuperState::OFF,SuperState::BOOTING,true);
-}
-
-
-TEST(StateMediator, allowsTransition_OffToOthersIsNotAllowed)
-{
-  ASSERT_TRANSITION_ALLOWED(SuperState::OFF,SuperState::ABORT,false);
   std::vector<SuperState> notAllowed = mediator.allSuperStates();
   notAllowed.erase(notAllowed.begin() + (int) SuperState::BOOTING)  ;
   ASSERT_TRANSITIONS_ALLOWED(SuperState::OFF,notAllowed,false);
+}
+
+
+TEST(StateMediator, allowsTransition_OnlyBootingToReadyIsAllowed)
+{
+  ASSERT_TRANSITION_ALLOWED(SuperState::BOOTING,SuperState::READY,true);
+  std::vector<SuperState> notAllowed = mediator.allSuperStates();
+  notAllowed.erase(notAllowed.begin() + (int) SuperState::READY);
+  ASSERT_TRANSITIONS_ALLOWED(SuperState::BOOTING,notAllowed,false);
 }
 
 

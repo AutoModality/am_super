@@ -9,7 +9,7 @@ Build-Depends: debhelper (>= 9.0.0),
     ros-melodic-rosbag, 
     ros-melodic-roscpp, 
     ros-melodic-std-msgs, 
-    ros-melodic-std-srvs, 
+    ros-melodic-std-srvs,
 
 Homepage: https://github.com/AutoModality/am-super
 Standards-Version: 3.9.2

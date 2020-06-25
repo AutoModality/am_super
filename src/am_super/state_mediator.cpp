@@ -2,15 +2,7 @@
 
 namespace am
 {
-    /**
-     * Provides all logic about system State allowing the State objects 
-     * to be simply data objects.  Allows the ROS node to hold the state of the 
-     * system, but delegates all logic to here improving readability, encapsulation 
-     * and ability to test.
-     * 
-     * This class is stateless, but non-static allowing extension to change behavior
-     * if different deployments warrant different behavior. 
-     */
+
     StateMediator::StateMediator(){
     }
 

@@ -90,4 +90,15 @@ bool StateMediator::allowsTransition(SuperState from, SuperState to)
   }
   return legal;
 }
+
+std::vector<SuperState> StateMediator::allSuperStates()
+{
+  std::vector<SuperState> all;
+  for ( int enumIndex = (int) SuperState::OFF; enumIndex <= (int) SuperState::LAST_STATE; enumIndex++ )
+  {
+    SuperState state = static_cast<SuperState>(enumIndex);
+    all.push_back(state);
+  }
+  return all;
+}
 };

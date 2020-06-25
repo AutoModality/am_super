@@ -26,6 +26,11 @@ public:
    * @return true if the new state is acceptable to follow the current.
    */
   bool allowsTransition(SuperState from, SuperState to);
+  
+  /**
+   * @return a vector of all states in order of declaration, excluding LastState which is used for enum iteration
+   */
+  std::vector<SuperState> allSuperStates();
 
 private:
 };

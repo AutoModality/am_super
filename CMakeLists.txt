@@ -114,6 +114,11 @@ file(GLOB super_lib_cpp_files
     src/super_lib/*.cpp
 )
 
+file(GLOB cuda_cpp_files
+    src/cuda/*.cpp
+)
+
+
 ## Declare a C++ library
 add_library(super_lib
   ${super_lib_cpp_files}
@@ -122,7 +127,7 @@ target_link_libraries(super_lib ${catkin_LIBRARIES})
 add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
 
 if(CUDA_FOUND)
-	add_executable(am_super src/am_super/am_super.cpp src/cuda/cuda_utility_class.cpp src/am_super/state_mediator.cpp)
+	add_executable(am_super src/am_super/am_super.cpp ${cuda_cpp_files} src/am_super/state_mediator.cpp)
 	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib cuda_utility)
 else()
 	add_executable(am_super src/am_super/am_super.cpp src/am_super/state_mediator.cpp)

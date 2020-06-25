@@ -109,9 +109,14 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+
+file(GLOB super_lib_cpp_files
+    src/super_lib/*.cpp
+)
+
 ## Declare a C++ library
 add_library(super_lib
-  src/super_lib/am_life_cycle.cpp
+  ${super_lib_cpp_files}
 )
 target_link_libraries(super_lib ${catkin_LIBRARIES})
 add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})

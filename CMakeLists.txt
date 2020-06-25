@@ -118,6 +118,10 @@ file(GLOB cuda_cpp_files
     src/cuda/*.cpp
 )
 
+file(GLOB am_super_cpp_files
+    src/am_super/*.cpp
+)
+
 
 ## Declare a C++ library
 add_library(super_lib
@@ -127,10 +131,10 @@ target_link_libraries(super_lib ${catkin_LIBRARIES})
 add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
 
 if(CUDA_FOUND)
-	add_executable(am_super src/am_super/am_super.cpp ${cuda_cpp_files} src/am_super/state_mediator.cpp)
+	add_executable(am_super ${am_super_cpp_files} ${cuda_cpp_files} )
 	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib cuda_utility)
 else()
-	add_executable(am_super src/am_super/am_super.cpp src/am_super/state_mediator.cpp)
+	add_executable(am_super ${am_super_cpp_files})
 	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib)
 endif(CUDA_FOUND)
 add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
@@ -182,6 +186,7 @@ file(GLOB TEST_FILES
 )
 
 ## Add gtest based cpp test target and link libraries
+list(REMOVE_ITEM am_super_cpp_files src/am_super/am_super.cpp )
 catkin_add_gtest(${PROJECT_NAME}_test ${TEST_FILES} src/am_super/state_mediator.cpp)
 if(TARGET ${PROJECT_NAME}_test)
   target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES})

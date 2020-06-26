@@ -22,7 +22,7 @@ class StateMediator
 public:
   StateMediator();
 
-  /**
+  /** See https://automodality.atlassian.net/wiki/spaces/AMROS/pages/929234949/AMROS+System+States
    * @return true if the new state is acceptable to follow the current.
    */
   bool allowsTransition(SuperState from, SuperState to);

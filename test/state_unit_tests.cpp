@@ -74,11 +74,6 @@ TEST(StateMediator, allowsTransition_ArmedToAutoAndAbortIsAllowed)
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::ARMED,allowed);
 }
 
-TEST(StateMediator, allowsTransition_ArmedToAutoAndAbortIsAllowed)
-{
-  std::vector<SuperState> allowed{SuperState::ABORT, SuperState::AUTO};
-  ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::ARMED,allowed);
-}
 
 
 

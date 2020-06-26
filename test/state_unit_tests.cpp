@@ -109,16 +109,14 @@ TEST(StateMediator, allowsTransition_UnhandledThrowsException)
 
 TEST(StateMediator, allowsTransition_AutoToManyAllowed)
 {
-  std::vector<SuperState> allowed{SuperState::READY, SuperState::SEMI_AUTO, 
-                                  SuperState::HOLD, SuperState::ABORT, 
-                                  SuperState::MANUAL};
+  std::vector<SuperState> allowed{SuperState::READY, SuperState::SEMI_AUTO};
+  allowed.push_back(SuperState::HOLD); 
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::AUTO,allowed);
 }
 TEST(StateMediator, allowsTransition_SemiAutoToManyAllowed)
 {
-  std::vector<SuperState> allowed{SuperState::AUTO, SuperState::HOLD, SuperState::ABORT, 
-                                  SuperState::MANUAL};
+  std::vector<SuperState> allowed{SuperState::AUTO, SuperState::HOLD, SuperState::ABORT};
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::SEMI_AUTO,allowed);
 }

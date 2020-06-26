@@ -77,6 +77,55 @@ TEST(StateMediator, allowsTransition_ArmedToAutoAndAbortIsAllowed)
 
 
 
+TEST(StateMediator, allowsTransition_HoldToExceptionStates)
+{
+  std::vector<SuperState> allowed{SuperState::ABORT, SuperState::MANUAL};
+
+  ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::HOLD,allowed);
+}
+
+TEST(StateMediator, allowsTransition_AbortToReadyAndManualAllowed)
+{
+  std::vector<SuperState> allowed{SuperState::READY,SuperState::MANUAL};
+
+  ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::ABORT,allowed);
+}
+
+TEST(StateMediator, allowsTransition_OnlyManualToReadyIsAllowed)
+{
+  ASSERT_SINGLE_STATE_ALLOWED(SuperState::MANUAL,SuperState::READY);
+}
+
+TEST(StateMediator, allowsTransition_ShutdownToOffAllowed)
+{
+  ASSERT_SINGLE_STATE_ALLOWED(SuperState::SHUTDOWN,SuperState::OFF);
+}
+
+TEST(StateMediator, allowsTransition_UnhandledThrowsException)
+{
+  FAIL() << "JUst testing";
+}
+
+
+TEST(StateMediator, allowsTransition_AutoToManyAllowed)
+{
+  std::vector<SuperState> allowed{SuperState::READY, SuperState::SEMI_AUTO, 
+                                  SuperState::HOLD, SuperState::ABORT, 
+                                  SuperState::MANUAL};
+
+  ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::AUTO,allowed);
+}
+TEST(StateMediator, allowsTransition_SemiAutoToManyAllowed)
+{
+  std::vector<SuperState> allowed{SuperState::AUTO, SuperState::HOLD, SuperState::ABORT, 
+                                  SuperState::MANUAL};
+
+  ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::SEMI_AUTO,allowed);
+}
+
+
+
+
 
 TEST(StateMediator, allSuperStates_IncludesAll)
 {
@@ -92,4 +141,6 @@ TEST(StateMediator, allSuperStates_IncludesAll)
   ASSERT_EQ(all.at((int) SuperState::SHUTDOWN),SuperState::SHUTDOWN); 
   ASSERT_EQ(all.front(),SuperState::OFF); 
   ASSERT_EQ(all.back(),SuperState::SHUTDOWN);
+  ASSERT_EQ(all.back(),SuperState::LAST_STATE);
+
 }

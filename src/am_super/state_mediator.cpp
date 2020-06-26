@@ -85,7 +85,7 @@ bool StateMediator::allowsTransition(SuperState from, SuperState to)
       break;
     default:
     {
-      throw std::invalid_argument("Unhandled state ");
+      throw std::invalid_argument("Unhandled state");
     }
   }
   return legal;

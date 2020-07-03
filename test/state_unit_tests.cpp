@@ -8,6 +8,7 @@ using namespace am;
 
 StateMediator mediator;
 
+/**Re-usable test method for validating single states*/
 void
 ASSERT_TRANSITION_ALLOWED(SuperState from, SuperState to, bool expected)
 {
@@ -15,6 +16,7 @@ ASSERT_TRANSITION_ALLOWED(SuperState from, SuperState to, bool expected)
   EXPECT_EQ(expected,allowed)  << "For state: " + std::to_string((int)to);
 }
 
+/**Re-usable test method for validating multiple states behave as expected*/
 void
 ASSERT_TRANSITIONS_ALLOWED(SuperState from, std::vector<SuperState> states, bool expected)
 {
@@ -26,7 +28,9 @@ ASSERT_TRANSITIONS_ALLOWED(SuperState from, std::vector<SuperState> states, bool
 }
 
 
-
+/**Re-usable method for validating the states given are allowed and all other states
+ * are not allowed
+ */
 void
 ASSERT_MULTIPLE_STATES_ALLOWED(SuperState from, std::vector<SuperState> allowedStates)
 {
@@ -75,8 +79,6 @@ TEST(StateMediator, allowsTransition_ArmedToAutoAndAbortIsAllowed)
 }
 
 
-
-
 TEST(StateMediator, allowsTransition_HoldToExceptionStates)
 {
   std::vector<SuperState> allowed{SuperState::ABORT, SuperState::MANUAL};
@@ -101,6 +103,8 @@ TEST(StateMediator, allowsTransition_ShutdownToOffAllowed)
   ASSERT_SINGLE_STATE_ALLOWED(SuperState::SHUTDOWN,SuperState::OFF);
 }
 
+/** LAST_STATE exists to accomodate C++ limitations.  If used, an 
+ * expection is thrown since it is a coding error.*/
 TEST(StateMediator, allowsTransition_UnhandledThrowsException)
 {
   try
@@ -131,6 +135,7 @@ TEST(StateMediator, allowsTransition_SemiAutoToManyAllowed)
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::SEMI_AUTO,allowed);
 }
 
+/**Basic validation of super state enumeration */
 TEST(StateMediator, allSuperStates_IncludesAll)
 {
   std::vector<SuperState> all = mediator.allSuperStates();

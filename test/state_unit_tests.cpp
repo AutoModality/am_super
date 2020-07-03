@@ -103,7 +103,17 @@ TEST(StateMediator, allowsTransition_ShutdownToOffAllowed)
 
 TEST(StateMediator, allowsTransition_UnhandledThrowsException)
 {
-  FAIL() << "JUst testing";
+  try
+  {
+      mediator.allowsTransition(SuperState::LAST_STATE,SuperState::OFF);
+      FAIL() << "Expected expection since last state not handled";
+
+  }
+  catch(const std::exception& e)
+  {
+    //expected.
+  }
+  
 }
 
 
@@ -120,10 +130,6 @@ TEST(StateMediator, allowsTransition_SemiAutoToManyAllowed)
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::SEMI_AUTO,allowed);
 }
-
-
-
-
 
 TEST(StateMediator, allSuperStates_IncludesAll)
 {

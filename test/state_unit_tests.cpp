@@ -39,7 +39,7 @@ ASSERT_MULTIPLE_STATES_ALLOWED(SuperState from, std::vector<SuperState> allowedS
   {
     SuperState to = allowedStates.at(i);
     ASSERT_TRANSITION_ALLOWED(from,to,true);
-    notAllowed.erase(notAllowed.begin() + (int) to);
+    //notAllowed.erase(notAllowed.begin() + (int) to);
   }
   ASSERT_TRANSITIONS_ALLOWED(from,notAllowed,false);
 }
@@ -123,8 +123,7 @@ TEST(StateMediator, allowsTransition_UnhandledThrowsException)
 
 TEST(StateMediator, allowsTransition_AutoToManyAllowed)
 {
-  std::array<SuperState,5> allowedArray{SuperState::HOLD,SuperState::ABORT,SuperState::READY,SuperState::SEMI_AUTO};
-  std::vector<SuperState> allowed(allowedArray.begin(),allowedArray.end());
+  std::vector<SuperState> allowed{SuperState::HOLD,SuperState::ABORT,SuperState::READY,SuperState::SEMI_AUTO, SuperState::MANUAL};
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::AUTO,allowed);
 }

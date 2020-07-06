@@ -34,13 +34,24 @@ ASSERT_TRANSITIONS_ALLOWED(SuperState from, std::vector<SuperState> states, bool
 void
 ASSERT_MULTIPLE_STATES_ALLOWED(SuperState from, std::vector<SuperState> allowedStates)
 {
-  std::vector<SuperState> notAllowed = mediator.allSuperStates();
+  //verify allowed as expected
   for(int i = 0; i < allowedStates.size(); i++)
   {
     SuperState to = allowedStates.at(i);
     ASSERT_TRANSITION_ALLOWED(from,to,true);
-    notAllowed.erase(notAllowed.begin() + (int) to);
   }
+
+  
+  //not allowed is all states minus those allowed
+  std::vector<SuperState> notAllowed;
+  for(SuperState state: mediator.allSuperStates())
+  {
+   if (std::find(allowedStates.begin(), allowedStates.end(), state) == allowedStates.end())
+   {
+     notAllowed.push_back(state);
+   }
+  }
+
   ASSERT_TRANSITIONS_ALLOWED(from,notAllowed,false);
 }
 
@@ -109,7 +120,8 @@ TEST(StateMediator, allowsTransition_UnhandledThrowsException)
 {
   try
   {
-      mediator.allowsTransition(SuperState::LAST_STATE,SuperState::OFF);
+      int someBadNumber=999999;
+      mediator.allowsTransition((SuperState)someBadNumber,SuperState::OFF);
       FAIL() << "Expected expection since last state not handled";
 
   }
@@ -129,7 +141,7 @@ TEST(StateMediator, allowsTransition_AutoToManyAllowed)
 }
 TEST(StateMediator, allowsTransition_SemiAutoToManyAllowed)
 {
-  std::vector<SuperState> allowed{SuperState::AUTO, SuperState::HOLD, SuperState::ABORT};
+  std::vector<SuperState> allowed{SuperState::AUTO, SuperState::HOLD, SuperState::ABORT, SuperState::MANUAL};
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::SEMI_AUTO,allowed);
 }

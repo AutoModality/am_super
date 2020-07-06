@@ -8,6 +8,14 @@ env:
   RELEASE_PROPERTIES_FILE: release/release.properties
   RELEASE_PAYLOAD_FILE: release/payload.json
 jobs:
+  code-format:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Format Code
+        uses: AutoModality/action-ros-clang-format@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   release:
     runs-on: ${{ matrix.os }}
     strategy:

@@ -125,17 +125,7 @@ jobs:
           repo: 'release'
           distro: 'ubuntu'
           release: 'bionic'
-          file: '${{ steps.package.outputs.artifact-path }}'
-  code-format:
-    runs-on: ubuntu-18.04
-    # placing after release to avoid commit to master that will cause semantic-release to skip
-    needs: release-package
-    steps:
-      - uses: actions/checkout@v2
-      - name: Format Code
-        uses: AutoModality/action-ros-clang-format@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.AMGITBOT_PAT }}         
+          file: '${{ steps.package.outputs.artifact-path }}'       
   notify-amros:
     needs: release-package
     runs-on: ubuntu-latest

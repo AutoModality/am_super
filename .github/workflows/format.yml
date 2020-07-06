@@ -1,7 +1,8 @@
 name: Code Format
 on:
+  # see ready.yml
   repository_dispatch:
-    types: [ready-for-review]
+    types: [ready-for-release]
 jobs:
   code-format:
     runs-on: ubuntu-18.04

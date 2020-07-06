@@ -773,21 +773,15 @@ private:
     }
     else
     {
-      //send lifecycle updates for limited state transition
-      switch(system_state_){
-        case SuperState::BOOTING:
-          if (state == SuperState::READY)
-          {
-            ROS_INFO_STREAM("System Ready: sending CONFIGURE to all nodes");
-            sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::CONFIGURE);
-          }
-          break;
+      //send lifecycle updates for selected state transitions
+      switch(state){
         case SuperState::READY:
-          if (state == SuperState::ARMING)
-          {
+            ROS_INFO_STREAM("sending CONFIGURE to all nodes");
+            sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::CONFIGURE);
+          break;
+        case SuperState::ARMING:
             ROS_INFO_STREAM("sending ACTIVATE to all nodes");
             sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::ACTIVATE);
-          }
           break;
       }
        

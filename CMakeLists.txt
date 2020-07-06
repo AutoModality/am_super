@@ -181,13 +181,33 @@ install(DIRECTORY include/super_lib
 ## Testing ##
 #############
 
+if(CATKIN_ENABLE_TESTING AND ENABLE_COVERAGE_TESTING)
+  find_package(code_coverage REQUIRED)
+  # Add compiler flags for coverage instrumentation before defining any targets
+  APPEND_COVERAGE_COMPILER_FLAGS()
+endif()
+
 file(GLOB TEST_FILES
     test/*_tests.cpp
 )
 
-## Add gtest based cpp test target and link libraries
-list(REMOVE_ITEM am_super_cpp_files src/am_super/am_super.cpp )
-catkin_add_gtest(${PROJECT_NAME}_test ${TEST_FILES} src/am_super/state_mediator.cpp)
-if(TARGET ${PROJECT_NAME}_test)
-  target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES})
+
+# code coverage setup: https://github.com/mikeferguson/code_coverage
+if (CATKIN_ENABLE_TESTING)
+
+  ## Add gtest based cpp test target and link libraries
+  list(REMOVE_ITEM am_super_cpp_files src/am_super/am_super.cpp )
+  catkin_add_gtest(${PROJECT_NAME}_test ${TEST_FILES} src/am_super/state_mediator.cpp)
+  if(TARGET ${PROJECT_NAME}_test)
+    target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES})
+  endif()
+
+  # Create a target ${PROJECT_NAME}_coverage_report
+  if(ENABLE_COVERAGE_TESTING)
+    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" )
+    add_code_coverage(
+      NAME ${PROJECT_NAME}_coverage_report
+      DEPENDENCIES tests
+    )
+  endif()
 endif()

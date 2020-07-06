@@ -135,7 +135,7 @@ jobs:
       - name: Format Code
         uses: AutoModality/action-ros-clang-format@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}          
+          GITHUB_TOKEN: ${{ secrets.AMGITBOT_PAT }}         
   notify-amros:
     needs: release-package
     runs-on: ubuntu-latest

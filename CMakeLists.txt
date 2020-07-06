@@ -109,18 +109,32 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
+
+file(GLOB super_lib_cpp_files
+    src/super_lib/*.cpp
+)
+
+file(GLOB cuda_cpp_files
+    src/cuda/*.cpp
+)
+
+file(GLOB am_super_cpp_files
+    src/am_super/*.cpp
+)
+
+
 ## Declare a C++ library
 add_library(super_lib
-  src/super_lib/am_life_cycle.cpp
+  ${super_lib_cpp_files}
 )
 target_link_libraries(super_lib ${catkin_LIBRARIES})
 add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
 
 if(CUDA_FOUND)
-	add_executable(am_super src/am_super/am_super.cpp src/cuda/cuda_utility_class.cpp)
+	add_executable(am_super ${am_super_cpp_files} ${cuda_cpp_files} )
 	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib cuda_utility)
 else()
-	add_executable(am_super src/am_super/am_super.cpp)
+	add_executable(am_super ${am_super_cpp_files})
 	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib)
 endif(CUDA_FOUND)
 add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
@@ -167,8 +181,33 @@ install(DIRECTORY include/super_lib
 ## Testing ##
 #############
 
-## Add gtest based cpp test target and link libraries
-catkin_add_gtest(${PROJECT_NAME}_test test/sample_tests.cpp)
-if(TARGET ${PROJECT_NAME}_test)
-  target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES})
+if(CATKIN_ENABLE_TESTING AND ENABLE_COVERAGE_TESTING)
+  find_package(code_coverage REQUIRED)
+  # Add compiler flags for coverage instrumentation before defining any targets
+  APPEND_COVERAGE_COMPILER_FLAGS()
+endif()
+
+file(GLOB TEST_FILES
+    test/*_tests.cpp
+)
+
+
+# code coverage setup: https://github.com/mikeferguson/code_coverage
+if (CATKIN_ENABLE_TESTING)
+
+  ## Add gtest based cpp test target and link libraries
+  list(REMOVE_ITEM am_super_cpp_files src/am_super/am_super.cpp )
+  catkin_add_gtest(${PROJECT_NAME}_test ${TEST_FILES} src/am_super/state_mediator.cpp)
+  if(TARGET ${PROJECT_NAME}_test)
+    target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES})
+  endif()
+
+  # Create a target ${PROJECT_NAME}_coverage_report
+  if(ENABLE_COVERAGE_TESTING)
+    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" )
+    add_code_coverage(
+      NAME ${PROJECT_NAME}_coverage_report
+      DEPENDENCIES tests
+    )
+  endif()
 endif()

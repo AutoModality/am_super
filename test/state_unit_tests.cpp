@@ -39,7 +39,7 @@ ASSERT_MULTIPLE_STATES_ALLOWED(SuperState from, std::vector<SuperState> allowedS
   {
     SuperState to = allowedStates.at(i);
     ASSERT_TRANSITION_ALLOWED(from,to,true);
-    //notAllowed.erase(notAllowed.begin() + (int) to);
+    notAllowed.erase(notAllowed.begin() + (int) to);
   }
   ASSERT_TRANSITIONS_ALLOWED(from,notAllowed,false);
 }
@@ -48,7 +48,7 @@ ASSERT_MULTIPLE_STATES_ALLOWED(SuperState from, std::vector<SuperState> allowedS
 void
 ASSERT_SINGLE_STATE_ALLOWED(SuperState from, SuperState to)
 {
-  std::vector allowed{to};
+  std::vector<SuperState> allowed{to};
   ASSERT_MULTIPLE_STATES_ALLOWED(from,allowed);
 }
 

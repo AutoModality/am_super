@@ -63,3 +63,12 @@ jobs:
         with:
           pr_draft: true
           github_token: ${{ secrets.GITHUB_TOKEN }}
+  code-format:
+    runs-on: ubuntu-18.04
+    needs: package
+    steps:
+      - uses: actions/checkout@v2
+      - name: Format Code
+        uses: AutoModality/action-ros-clang-format@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.AMGITBOT_PAT }} 

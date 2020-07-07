@@ -135,6 +135,17 @@ TEST(StateMediator, allowsTransition_SemiAutoToManyAllowed)
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::SEMI_AUTO,allowed);
 }
 
+
+TEST(StateMediator, stateToString_AllStatesHaveString)
+{
+   for(SuperState state: mediator.allSuperStates())
+  {
+    std::string_view str = mediator.stateToString(state);
+    ASSERT_NE(str,StateMediator::INVALID_STRING);
+  }
+}
+
+
 /**Basic validation of super state enumeration */
 TEST(StateMediator, allSuperStates_IncludesAll)
 {

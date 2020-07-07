@@ -18,6 +18,21 @@ const std::map<SuperState, std::vector<SuperState>> transitions_ =
     { SuperState::SHUTDOWN, {SuperState::OFF} },
 };
 
+const std::map<SuperState, std::string_view> state_strings_ =
+{
+    { SuperState::OFF, "OFF" },
+    { SuperState::BOOTING, "BOOTING" },
+    { SuperState::READY, "READY" },
+    { SuperState::ARMING, "ARMING" },
+    { SuperState::ARMED,  "ARMED" },
+    { SuperState::AUTO, "AUTO" },
+    { SuperState::SEMI_AUTO, "SEMI_AUTO" },
+    { SuperState::HOLD, "HOLD" },
+    { SuperState::ABORT, "ABORT" },
+    { SuperState::MANUAL,  "MANUAL" },
+    { SuperState::SHUTDOWN,  "SHUTDOWN" },
+};
+
 StateMediator::StateMediator(){
 }
 
@@ -45,4 +60,12 @@ std::vector<SuperState> StateMediator::allSuperStates()
 }
 
 
+std::string_view stateToString(SuperState state)
+{
+  if(state_strings_.count(state) > 0){
+    return state_strings_.at(state);
+  }else{
+    return StateMediator::INVALID_STRING;
+  }
+}
 };

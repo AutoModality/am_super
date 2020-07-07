@@ -6,6 +6,7 @@
 #include <sensor_msgs/PointCloud2.h>
 
 #include <am_super/baby_sitter.h>
+#include <am_super/state_mediator.h>
 #include <am_super/super_state.h>
 
 #include <brain_box_msgs/BlinkMCommand.h>
@@ -22,7 +23,6 @@
 #include <vb_util_lib/topics.h>
 #include <vb_util_lib/trace.h>
 #include <vb_util_lib/vb_main.h>
-
 #if CUDA_FLAG
 #include <cuda/cuda_utility_class.h>
 #endif
@@ -103,6 +103,9 @@ private:
    * system state
    */
   SuperState system_state_;
+
+  /** manage logic for SuperState transitions */
+  StateMediator state_mediator_;
 
   /**
    * flight controller state
@@ -761,107 +764,30 @@ private:
   {
     ROS_INFO_STREAM("request change system state from: " << stateToString(system_state_)
                                                          << " to: " << stateToString(state));
-    bool legal = false;
-    switch (system_state_)
-    {
-      case SuperState::OFF:
-        if (state == SuperState::BOOTING)
-        {
-          legal = true;
-          system_state_ = state;
-        }
-        break;
-      case SuperState::BOOTING:
-        if (state == SuperState::READY)
-        {
-          ROS_INFO_STREAM("sending CONFIGURE to all nodes");
-          legal = true;
-          sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::CONFIGURE);
-          system_state_ = state;
-        }
-        break;
-      case SuperState::READY:
-        if (state == SuperState::ARMING)
-        {
-          ROS_INFO_STREAM("sending ACTIVATE to all nodes");
-          legal = true;
-          sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::ACTIVATE);
-          system_state_ = state;
-        }
-        else if (state == SuperState::ARMING)
-        {
-          legal = true;
-          system_state_ = state;
-        }
-        break;
-      case SuperState::ARMING:
-        if (state == SuperState::ARMED)
-        {
-          legal = true;
-          system_state_ = state;
-        }
-        break;
-      case SuperState::ARMED:
-        // TODO: remove ABORT state here once we know how to deal with arming errors (should go back to READY).
-        if (state == SuperState::AUTO || state == SuperState::ABORT)
-        {
-          legal = true;
-          system_state_ = state;
-        }
-        break;
-      case SuperState::AUTO:
-        if (state == SuperState::READY || state == SuperState::SEMI_AUTO || state == SuperState::HOLD ||
-            state == SuperState::ABORT || state == SuperState::MANUAL)
-        {
-          legal = true;
-          system_state_ = state;
-        }
-        break;
-      case SuperState::SEMI_AUTO:
-        if (state == SuperState::AUTO || state == SuperState::HOLD || state == SuperState::ABORT ||
-            state == SuperState::MANUAL)
-        {
-          legal = true;
-          system_state_ = state;
-        }
-        break;
-      case SuperState::HOLD:
-        if (state == SuperState::ABORT || state == SuperState::MANUAL)
-        {
-          legal = true;
-          system_state_ = state;
-        }
-        break;
-      case SuperState::ABORT:
-        if (state == SuperState::READY || state == SuperState::MANUAL)
-        {
-          legal = true;
-          system_state_ = state;
-        }
-        break;
-      case SuperState::MANUAL:
-        if (state == SuperState::READY)
-        {
-          legal = true;
-          system_state_ = state;
-        }
-        system_state_ = state;
-        break;
-      case SuperState::SHUTDOWN:
-        if (state == SuperState::OFF)
-        {
-          legal = true;
-          system_state_ = state;
-        }
-        break;
-    }
+    bool legal = state_mediator_.allowsTransition(system_state_,state);
 
     if (!legal)
     {
-      ROS_ERROR_STREAM("illegal state transition");
+      ROS_ERROR_STREAM("illegal state transition from " 
+        << stateToString(system_state_) << " to " << stateToString(state));
     }
     else
     {
+      //send lifecycle updates for selected state transitions
+      switch(state){
+        case SuperState::READY:
+            ROS_INFO_STREAM("sending CONFIGURE to all nodes");
+            sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::CONFIGURE);
+          break;
+        case SuperState::ARMING:
+            ROS_INFO_STREAM("sending ACTIVATE to all nodes");
+            sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::ACTIVATE);
+          break;
+      }
+       
+      //persist given state as the new current state
+      system_state_ = state;
+
       reportSystemState();
 
       sendLEDMessage();

@@ -21,12 +21,6 @@ class StateMediator
 public:
   StateMediator();
 
-  /** An indicator that the string is not valid.
-   * Instead of throwing an exception which causes difficult to debug seg faults
-   * or returning an empty string creating a mystery of what why something is missing.
-   **/
-  static constexpr std::string_view INVALID_STRING = "INVALID";
-
   /** See https://automodality.atlassian.net/wiki/spaces/AMROS/pages/929234949/AMROS+System+States
    * @return true if the new state is acceptable to follow the current.
    */

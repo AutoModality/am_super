@@ -6,9 +6,8 @@ namespace am
  * This approach encapsulates features available for SuperState avoiding
  * issues with switch statements that can miss required functionality.
  */
-class SuperStateInfo
+struct SuperStateInfo
 {
-public:
   std::string_view name_;
   std::vector<SuperState> allowed_transitions_;
   SuperStateInfo(std::string_view name, std::vector<SuperState> allowed_transitions)

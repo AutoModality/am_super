@@ -66,18 +66,6 @@ enum SuperFltCtrlState
 class AMSuper
 {
 private:
-  static constexpr std::string_view STATE_OFF_STRING = "OFF";
-  static constexpr std::string_view STATE_BOOTING_STRING = "BOOTING";
-  static constexpr std::string_view STATE_READY_STRING = "READY";
-  static constexpr std::string_view STATE_ARMING_STRING = "ARMING";
-  static constexpr std::string_view STATE_ARMED_STRING = "ARMED";
-  static constexpr std::string_view STATE_AUTO_STRING = "AUTO";
-  static constexpr std::string_view STATE_SEMI_AUTO_STRING = "SEMI_AUTO";
-  static constexpr std::string_view STATE_HOLD_STRING = "HOLD";
-  static constexpr std::string_view STATE_ABORT_STRING = "ABORT";
-  static constexpr std::string_view STATE_MANUAL_STRING = "MANUAL";
-  static constexpr std::string_view STATE_SHUTDOWN_STRING = "SHUTDOWN";
-
   /**
    * heartbeat log output period
    */
@@ -273,37 +261,6 @@ public:
     // certainly power off doesn't. the best design is to have a power-off sensor
     // that sends a signal of some sort (i.e. publishes a message).
     BagLogger::instance()->stopLogging();
-  }
-
-  static const std::string_view& stateToString(SuperState state)
-  {
-    switch (state)
-    {
-      case SuperState::OFF:
-        return STATE_OFF_STRING;
-      case SuperState::BOOTING:
-        return STATE_BOOTING_STRING;
-      case SuperState::READY:
-        return STATE_READY_STRING;
-      case SuperState::ARMING:
-        return STATE_ARMING_STRING;
-      case SuperState::ARMED:
-        return STATE_ARMED_STRING;
-      case SuperState::AUTO:
-        return STATE_AUTO_STRING;
-      case SuperState::SEMI_AUTO:
-        return STATE_SEMI_AUTO_STRING;
-      case SuperState::HOLD:
-        return STATE_HOLD_STRING;
-      case SuperState::ABORT:
-        return STATE_ABORT_STRING;
-      case SuperState::MANUAL:
-        return STATE_MANUAL_STRING;
-      case SuperState::SHUTDOWN:
-        return STATE_SHUTDOWN_STRING;
-      default:
-        return AMLifeCycle::EMPTY_STRING;
-    }
   }
 
 private:
@@ -570,7 +527,7 @@ private:
    */
   void genSystemState(std::stringstream& ss)
   {
-    ss << "state: " << stateToString(system_state_) << ", manifest: " << manifest_.size()
+    ss << "state: " << state_mediator_.stateToString(system_state_) << ", manifest: " << manifest_.size()
        << ", manifest online:" << num_manifest_nodes_online_ << ", total online:" << num_nodes_online_;
   }
 
@@ -671,7 +628,7 @@ private:
       case SuperState::BOOTING:
         if (allManifestedNodesCheck(checkReadyForConfigureState))
         {
-          ROS_INFO_STREAM(stateToString(system_state_) << ": changing to READY");
+          ROS_INFO_STREAM(state_mediator_.stateToString(system_state_) << ": changing to READY");
           setSystemState(SuperState::READY);
         }
         //      else
@@ -684,12 +641,12 @@ private:
         if (allManifestedNodesCheck(checkReadyForActivateState))
         {
           // TODO: this should wait for operator to arm
-          ROS_INFO_STREAM(stateToString(SuperState::READY) << ": changing to ARMING");
+          ROS_INFO_STREAM(state_mediator_.stateToString(SuperState::READY) << ": changing to ARMING");
           setSystemState(SuperState::ARMING);
         }
         else
         {
-          ROS_INFO_STREAM(stateToString(system_state_) << ": sending CONFIGURE again");
+          ROS_INFO_STREAM(state_mediator_.stateToString(system_state_) << ": sending CONFIGURE again");
           sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::CONFIGURE);
         }
         break;
@@ -700,7 +657,7 @@ private:
         }
         else
         {
-          ROS_INFO_STREAM(stateToString(system_state_) << ": sending ACTIVATE again");
+          ROS_INFO_STREAM(state_mediator_.stateToString(system_state_) << ": sending ACTIVATE again");
           sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::ACTIVATE);
         }
         break;
@@ -762,30 +719,31 @@ private:
    */
   void setSystemState(SuperState state)
   {
-    ROS_INFO_STREAM("request change system state from: " << stateToString(system_state_)
-                                                         << " to: " << stateToString(state));
-    bool legal = state_mediator_.allowsTransition(system_state_,state);
+    ROS_INFO_STREAM("request change system state from: " << state_mediator_.stateToString(system_state_)
+                                                         << " to: " << state_mediator_.stateToString(state));
+    bool legal = state_mediator_.allowsTransition(system_state_, state);
 
     if (!legal)
     {
-      ROS_ERROR_STREAM("illegal state transition from " 
-        << stateToString(system_state_) << " to " << stateToString(state));
+      ROS_ERROR_STREAM("illegal state transition from " << state_mediator_.stateToString(system_state_) << " to "
+                                                        << state_mediator_.stateToString(state));
     }
     else
     {
-      //send lifecycle updates for selected state transitions
-      switch(state){
+      // send lifecycle updates for selected state transitions
+      switch (state)
+      {
         case SuperState::READY:
-            ROS_INFO_STREAM("sending CONFIGURE to all nodes");
-            sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::CONFIGURE);
+          ROS_INFO_STREAM("sending CONFIGURE to all nodes");
+          sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::CONFIGURE);
           break;
         case SuperState::ARMING:
-            ROS_INFO_STREAM("sending ACTIVATE to all nodes");
-            sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::ACTIVATE);
+          ROS_INFO_STREAM("sending ACTIVATE to all nodes");
+          sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::ACTIVATE);
           break;
       }
-       
-      //persist given state as the new current state
+
+      // persist given state as the new current state
       system_state_ = state;
 
       reportSystemState();

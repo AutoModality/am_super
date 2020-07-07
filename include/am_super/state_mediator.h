@@ -41,7 +41,7 @@ public:
 
   /**String representation of the enumeration.
    */
-  std::string_view& stateToString(SuperState state);
+  std::string_view stateToString(SuperState state);
 
 private:
 };

@@ -60,12 +60,12 @@ std::vector<SuperState> StateMediator::allSuperStates()
 }
 
 
-std::string_view stateToString(SuperState state)
+std::string_view StateMediator::stateToString(SuperState state)
 {
   if(state_strings_.count(state) > 0){
     return state_strings_.at(state);
   }else{
-    return StateMediator::INVALID_STRING;
+    return INVALID_STRING;
   }
 }
 };

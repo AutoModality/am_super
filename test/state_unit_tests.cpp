@@ -109,10 +109,9 @@ TEST(StateMediator, allowsTransition_ShutdownToOffAllowed)
 
 TEST(StateMediator, allowsTransition_InvalidStateHandled)
 {
-  
   int someBadNumber = 999999;
   ASSERT_ANY_THROW(mediator.allowsTransition((SuperState)someBadNumber, SuperState::OFF))
-  << "Not registering a state NotAllowedNoThrowis a coding error OR passing an invalid state is too.";
+      << "Not registering a state NotAllowedNoThrowis a coding error OR passing an invalid state is too.";
   ASSERT_TRANSITION_ALLOWED(SuperState::OFF, (SuperState)someBadNumber, false);
 }
 

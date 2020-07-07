@@ -6,7 +6,7 @@
 #include <sensor_msgs/PointCloud2.h>
 
 #include <am_super/baby_sitter.h>
-#include <am_super/state_mediator.h>
+#include <am_super/super_state_mediator.h>
 #include <am_super/super_state.h>
 
 #include <brain_box_msgs/BlinkMCommand.h>

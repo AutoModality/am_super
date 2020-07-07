@@ -145,6 +145,12 @@ TEST(StateMediator, stateToString_AllStatesHaveString)
   }
 }
 
+TEST(StateMediator, stateToString_InvalidStateReturnsInvalidString)
+{
+  std::string_view str = mediator.stateToString((SuperState)999999);
+  ASSERT_EQ(str,StateMediator::INVALID_STRING);
+}
+
 
 /**Basic validation of super state enumeration */
 TEST(StateMediator, allSuperStates_IncludesAll)

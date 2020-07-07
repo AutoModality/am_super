@@ -764,28 +764,29 @@ private:
   {
     ROS_INFO_STREAM("request change system state from: " << stateToString(system_state_)
                                                          << " to: " << stateToString(state));
-    bool legal = state_mediator_.allowsTransition(system_state_,state);
+    bool legal = state_mediator_.allowsTransition(system_state_, state);
 
     if (!legal)
     {
-      ROS_ERROR_STREAM("illegal state transition from " 
-        << stateToString(system_state_) << " to " << stateToString(state));
+      ROS_ERROR_STREAM("illegal state transition from " << stateToString(system_state_) << " to "
+                                                        << stateToString(state));
     }
     else
     {
-      //send lifecycle updates for selected state transitions
-      switch(state){
+      // send lifecycle updates for selected state transitions
+      switch (state)
+      {
         case SuperState::READY:
-            ROS_INFO_STREAM("sending CONFIGURE to all nodes");
-            sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::CONFIGURE);
+          ROS_INFO_STREAM("sending CONFIGURE to all nodes");
+          sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::CONFIGURE);
           break;
         case SuperState::ARMING:
-            ROS_INFO_STREAM("sending ACTIVATE to all nodes");
-            sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::ACTIVATE);
+          ROS_INFO_STREAM("sending ACTIVATE to all nodes");
+          sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::ACTIVATE);
           break;
       }
-       
-      //persist given state as the new current state
+
+      // persist given state as the new current state
       system_state_ = state;
 
       reportSystemState();

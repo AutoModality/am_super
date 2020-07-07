@@ -107,10 +107,11 @@ TEST(StateMediator, allowsTransition_ShutdownToOffAllowed)
   ASSERT_SINGLE_STATE_ALLOWED(SuperState::SHUTDOWN, SuperState::OFF);
 }
 
-TEST(StateMediator, allowsTransition_InvalidStateNotAllowedNoThrow)
+TEST(StateMediator, allowsTransition_InvalidStateHandled)
 {
   int someBadNumber = 999999;
-  ASSERT_TRANSITION_ALLOWED((SuperState)someBadNumber, SuperState::OFF, false);
+  ASSERT_ANY_THROW(mediator.allowsTransition((SuperState)someBadNumber, SuperState::OFF))
+      << "Not registering a state NotAllowedNoThrowis a coding error OR passing an invalid state is too.";
   ASSERT_TRANSITION_ALLOWED(SuperState::OFF, (SuperState)someBadNumber, false);
 }
 
@@ -133,14 +134,13 @@ TEST(StateMediator, stateToString_AllStatesHaveString)
   for (SuperState state : mediator.allSuperStates())
   {
     std::string_view str = mediator.stateToString(state);
-    ASSERT_NE(str, StateMediator::INVALID_STRING);
+    ASSERT_NE(str, "");
   }
 }
 
 TEST(StateMediator, stateToString_InvalidStateReturnsInvalidString)
 {
-  std::string_view str = mediator.stateToString((SuperState)999999);
-  ASSERT_EQ(str, StateMediator::INVALID_STRING);
+  ASSERT_ANY_THROW(mediator.stateToString((SuperState)999999));
 }
 
 /**Basic validation of super state enumeration */

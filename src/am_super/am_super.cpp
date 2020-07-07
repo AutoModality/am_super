@@ -93,7 +93,7 @@ private:
   SuperState system_state_;
 
   /** manage logic for SuperState transitions */
-  StateMediator state_mediator_;
+  SuperStateMediator state_mediator_;
 
   /**
    * flight controller state

@@ -42,7 +42,7 @@ const std::map<SuperState, SuperStateInfo> state_info_ = {
   { SuperState::SHUTDOWN, { "SHUTDOWN", { SuperState::OFF } } },
 };
 
-StateMediator::StateMediator()
+SuperStateMediator::SuperStateMediator()
 {
 }
 
@@ -57,7 +57,7 @@ SuperStateInfo info(SuperState state)
     throw std::runtime_error("State information not registered");
   }
 }
-bool StateMediator::allowsTransition(SuperState from, SuperState to)
+bool SuperStateMediator::allowsTransition(SuperState from, SuperState to)
 {
   bool legal = false;
 
@@ -69,7 +69,7 @@ bool StateMediator::allowsTransition(SuperState from, SuperState to)
   return legal;
 }
 
-std::vector<SuperState> StateMediator::allSuperStates()
+std::vector<SuperState> SuperStateMediator::allSuperStates()
 {
   std::vector<SuperState> all;
   for (int enumIndex = (int)SuperState::OFF; enumIndex <= (int)SuperState::LAST_STATE; enumIndex++)
@@ -80,7 +80,7 @@ std::vector<SuperState> StateMediator::allSuperStates()
   return all;
 }
 
-std::string_view StateMediator::stateToString(SuperState state)
+std::string_view SuperStateMediator::stateToString(SuperState state)
 {
   return info(state).name_;
 };

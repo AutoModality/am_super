@@ -16,10 +16,10 @@ namespace am
  * This class is stateless, but non-static allowing extension to change behavior
  * if different deployments warrant different behavior.
  */
-class StateMediator
+class SuperStateMediator
 {
 public:
-  StateMediator();
+  SuperStateMediator();
 
   /** See https://automodality.atlassian.net/wiki/spaces/AMROS/pages/929234949/AMROS+System+States
    * @return true if the new state is acceptable to follow the current.

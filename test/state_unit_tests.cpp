@@ -114,22 +114,11 @@ TEST(StateMediator, allowsTransition_ShutdownToOffAllowed)
   ASSERT_SINGLE_STATE_ALLOWED(SuperState::SHUTDOWN,SuperState::OFF);
 }
 
-/** LAST_STATE exists to accomodate C++ limitations.  If used, an 
- * expection is thrown since it is a coding error.*/
-TEST(StateMediator, allowsTransition_UnhandledThrowsException)
-{
-  try
-  {
-      int someBadNumber=999999;
-      mediator.allowsTransition((SuperState)someBadNumber,SuperState::OFF);
-      FAIL() << "Expected expection since last state not handled";
-
-  }
-  catch(const std::exception& e)
-  {
-    //expected.
-  }
-  
+TEST(StateMediator, allowsTransition_InvalidStateNotAllowedNoThrow)
+{ 
+  int someBadNumber=999999;
+  ASSERT_TRANSITION_ALLOWED((SuperState)someBadNumber,SuperState::OFF,false);
+  ASSERT_TRANSITION_ALLOWED(SuperState::OFF,(SuperState)someBadNumber,false);
 }
 
 

@@ -530,22 +530,6 @@ private:
     lifecycle_pub_.publish(msg);
   }
 
-  static bool checkReadyForConfigureState(SuperNodeMediator::SuperNodeInfo& nr)
-  {
-    return nr.state == LifeCycleState::UNCONFIGURED || nr.state == LifeCycleState::INACTIVE ||
-           nr.state == LifeCycleState::ACTIVE;
-  }
-
-  static bool checkReadyForActivateState(SuperNodeMediator::SuperNodeInfo& nr)
-  {
-    return nr.state == LifeCycleState::INACTIVE || nr.state == LifeCycleState::ACTIVE;
-  }
-
-  static bool checkActivateState(SuperNodeMediator::SuperNodeInfo& nr)
-  {
-    return nr.state == LifeCycleState::ACTIVE;
-  }
-
   /**
    * check if all manifested nodes are ready for configuration
    * @param state
@@ -599,7 +583,7 @@ private:
         // no exit from this state
         break;
       case SuperState::BOOTING:
-        if (allManifestedNodesCheck(checkReadyForConfigureState))
+        if (allManifestedNodesCheck(SuperNodeMediator::checkReadyForConfigureState))
         {
           ROS_INFO_STREAM(state_mediator_.stateToString(system_state_) << ": changing to READY");
           setSystemState(SuperState::READY);
@@ -611,7 +595,7 @@ private:
         //      }
         break;
       case SuperState::READY:
-        if (allManifestedNodesCheck(checkReadyForActivateState))
+        if (allManifestedNodesCheck(SuperNodeMediator::checkReadyForActivateState))
         {
           // TODO: this should wait for operator to arm
           ROS_INFO_STREAM(state_mediator_.stateToString(SuperState::READY) << ": changing to ARMING");
@@ -624,7 +608,7 @@ private:
         }
         break;
       case SuperState::ARMING:
-        if (allManifestedNodesCheck(checkActivateState))
+        if (allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
         {
           setSystemState(SuperState::ARMED);
         }
@@ -635,7 +619,7 @@ private:
         }
         break;
       case SuperState::ARMED:
-        if (!allManifestedNodesCheck(checkActivateState))
+        if (!allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
         {
           setSystemState(SuperState::ABORT);
         }
@@ -649,7 +633,7 @@ private:
         }
         break;
       case SuperState::AUTO:
-        if (!allManifestedNodesCheck(checkActivateState))
+        if (!allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
         {
           setSystemState(SuperState::ABORT);
         }
@@ -659,7 +643,7 @@ private:
         }
         break;
       case SuperState::SEMI_AUTO:
-        if (!allManifestedNodesCheck(checkActivateState))
+        if (!allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
         {
           setSystemState(SuperState::ABORT);
         }

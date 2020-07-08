@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>  // googletest header file
 #include <am_super/super_node_mediator.h>
 
+using namespace std;
 using namespace am;
 
 SuperNodeMediator superNodeMediator;
@@ -38,3 +39,29 @@ TEST(SuperNodeMediator, initializeManifestedNode_FieldsAreSetProperly)
   ASSERT_EQ(nodeInfo.state, LifeCycleState::UNCONFIGURED) << "Beginning of state lifecycle";
   ASSERT_EQ(nodeInfo.status, LifeCycleStatus::OK) << "All is good until reported otherwise";
 }
+
+void ASSERT_CHECK(std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check,
+      LifeCycleState state, bool expected)
+{
+  SuperNodeMediator::SuperNodeInfo info;   
+  info.state = state;  
+  ASSERT_EQ(check(info),expected) << "For state: " + std::to_string((int)state);
+}
+
+TEST(SuperNodeMediator,checkReadyForConfigureState_All)
+{
+  ASSERT_CHECK(SuperNodeMediator::checkReadyForConfigureState,LifeCycleState::INVALID,false);
+  ASSERT_CHECK(SuperNodeMediator::checkReadyForConfigureState,LifeCycleState::UNCONFIGURED,true);
+  ASSERT_CHECK(SuperNodeMediator::checkReadyForConfigureState,LifeCycleState::INACTIVE,true);
+  ASSERT_CHECK(SuperNodeMediator::checkReadyForConfigureState,LifeCycleState::ACTIVE,true);
+  ASSERT_CHECK(SuperNodeMediator::checkReadyForConfigureState,LifeCycleState::FINALIZED,false);
+  ASSERT_CHECK(SuperNodeMediator::checkReadyForConfigureState,LifeCycleState::CONFIGURING,false);
+  ASSERT_CHECK(SuperNodeMediator::checkReadyForConfigureState,LifeCycleState::CLEANING_UP,false);
+  ASSERT_CHECK(SuperNodeMediator::checkReadyForConfigureState,LifeCycleState::SHUTTING_DOWN,false);
+  ASSERT_CHECK(SuperNodeMediator::checkReadyForConfigureState,LifeCycleState::ACTIVATING,false);
+  ASSERT_CHECK(SuperNodeMediator::checkReadyForConfigureState,LifeCycleState::DEACTIVATING,false);
+}
+
+
+
+

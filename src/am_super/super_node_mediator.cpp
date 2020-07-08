@@ -44,4 +44,21 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   nr.status = LifeCycleStatus::OK;
   return nr;
 }
+
+
+ bool SuperNodeMediator::checkReadyForConfigureState(SuperNodeMediator::SuperNodeInfo& nr)
+{
+  return nr.state == LifeCycleState::UNCONFIGURED || nr.state == LifeCycleState::INACTIVE ||
+          nr.state == LifeCycleState::ACTIVE;
+}
+
+ bool SuperNodeMediator::checkReadyForActivateState(SuperNodeMediator::SuperNodeInfo& nr)
+{
+  return nr.state == LifeCycleState::INACTIVE || nr.state == LifeCycleState::ACTIVE;
+}
+
+ bool SuperNodeMediator::checkActivateState(SuperNodeMediator::SuperNodeInfo& nr)
+{
+  return nr.state == LifeCycleState::ACTIVE;
+}
 }

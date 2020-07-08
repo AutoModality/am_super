@@ -5,8 +5,24 @@ using namespace am;
 
 SuperNodeMediator superNodeMediator;
 
-/**Basic validation of super state enumeration */
-TEST(SuperNodeMediator, proof)
+TEST(SuperNodeMediator, nodeNameStripped_RemovesLeadingSlash)
 {
-  ASSERT_EQ(false,true) << "To Be Implemented";
+  std::string name = "/something";
+  std::string stripped = superNodeMediator.nodeNameStripped(name);
+  ASSERT_EQ(stripped,"something") << "Leading slash should be removed";
+  ASSERT_EQ(name,"/something") << "Original is not modified";
+}
+
+TEST(SuperNodeMediator, nodeNameStripped_RegularNameNotModified)
+{
+  std::string name = "something";
+  std::string stripped = superNodeMediator.nodeNameStripped(name);
+  ASSERT_EQ(stripped,"something") << "Nothing should be removed";  
+}
+
+TEST(SuperNodeMediator, nodeNameStripped_EmptyStringDoesNotExplode)
+{
+  std::string name = "";
+  std::string stripped = superNodeMediator.nodeNameStripped(name);
+  ASSERT_EQ(stripped,"") << "Safety check for index of a string";  
 }

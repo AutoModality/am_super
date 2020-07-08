@@ -6,8 +6,9 @@
 #include <sensor_msgs/PointCloud2.h>
 
 #include <am_super/baby_sitter.h>
-#include <am_super/super_state_mediator.h>
 #include <am_super/super_state.h>
+#include <am_super/super_state_mediator.h>
+#include <am_super/super_node_mediator.h>
 
 #include <brain_box_msgs/BlinkMCommand.h>
 #include <brain_box_msgs/LifeCycleState.h>
@@ -31,22 +32,6 @@ using namespace std;
 
 namespace am
 {
-/**
- * node info struct
- */
-struct SuperNodeInfo
-{
-  std::string name;        // node name in ROS
-  int pid;                 // process id of node
-  float cpu_usage;         // amount of cpu node is consuming
-  float gpu_usage;         // amount of gpu node is consuming
-  float mem_usage;         // amount of memory node is consuming
-  LifeCycleState state;    // node lifecycle state
-  LifeCycleStatus status;  // node lifecycle status
-  bool manifested;         // nodes was in manfiest
-  bool online;             // node is online
-  ros::Time last_contact;  // last time a message was received from the node
-};
 
 /**
  * flight control state
@@ -95,6 +80,9 @@ private:
   /** manage logic for SuperState transitions */
   SuperStateMediator state_mediator_;
 
+  /** Node behavior management.*/
+  SuperNodeMediator node_mediator_;
+
   /**
    * flight controller state
    */
@@ -108,7 +96,7 @@ private:
   /**
    * map of all nodes in the system
    */
-  map<string, SuperNodeInfo> nodes_;
+  map<string, SuperNodeMediator::SuperNodeInfo> nodes_;
 
   /**
    * number of nodes online
@@ -185,15 +173,8 @@ public:
       for (string& name : manifest_)
       {
         // create a new node in the list for each name in manifest
-        SuperNodeInfo nr;
-        nr.name = name;
-        nr.pid = -1;
-        nr.online = false;
-        nr.last_contact = ros::Time(0);
-        nr.manifested = true;
-        nr.state = LifeCycleState::UNCONFIGURED;
-        nr.status = LifeCycleStatus::OK;
-        nodes_.insert(pair<string, SuperNodeInfo>(name, nr));
+        SuperNodeMediator::SuperNodeInfo nr = node_mediator_.initializeManifestedNode(name);
+        nodes_.insert(pair<string, SuperNodeMediator::SuperNodeInfo>(name, nr));
         ROS_INFO_STREAM("  " << name);
 
         // create babysitters based on hard coded node names
@@ -343,12 +324,12 @@ private:
 
     // search for the node in the list
     bool nodes_changed = false;
-    map<string, SuperNodeInfo>::iterator it;
+    map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
     it = nodes_.find(node_name);
     if (it != nodes_.end())
     {
       // if we get here, the node is already in our list
-      SuperNodeInfo& nr = it->second;
+      SuperNodeMediator::SuperNodeInfo& nr = it->second;
       if (!nr.online)
       {
         ROS_INFO_STREAM("manifested node " << node_name << " came online");
@@ -385,7 +366,7 @@ private:
       // if we get here, the node is not in the manifest and we've never heard from it before
       ROS_WARN_STREAM("unknown node " << node_name << " came online. state: " << AMLifeCycle::stateToString(state)
                                       << ", status: " << AMLifeCycle::statusToString(status));
-      SuperNodeInfo nr;
+      SuperNodeMediator::SuperNodeInfo nr;
       nr.name = node_name;
       nr.pid = pid;
       nr.online = true;
@@ -393,7 +374,7 @@ private:
       nr.manifested = false;
       nr.state = state;
       nr.status = status;
-      nodes_.insert(pair<string, SuperNodeInfo>(node_name, nr));
+      nodes_.insert(pair<string, SuperNodeMediator::SuperNodeInfo>(node_name, nr));
       num_nodes_online_++;
       nodes_changed = true;
     }
@@ -450,10 +431,10 @@ private:
     {
       // cycle thru all the nodes in the list to look for a timeout
       ros::Time now = ros::Time().now();
-      map<string, SuperNodeInfo>::iterator it;
+      map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
       for (it = nodes_.begin(); it != nodes_.end(); it++)
       {
-        SuperNodeInfo& nr = (*it).second;
+        SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
         if (nr.online)
         {
           ros::Duration time_since_contact = now - nr.last_contact;
@@ -481,10 +462,10 @@ private:
     status_msg.man = manifest_.size();
     status_msg.man_run = num_manifest_nodes_online_;
     status_msg.run = num_nodes_online_;
-    map<string, SuperNodeInfo>::iterator it;
+    map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
     for (it = nodes_.begin(); it != nodes_.end(); it++)
     {
-      SuperNodeInfo& nr = (*it).second;
+      SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
       status_msg.nodes.push_back(nr.name);
     }
     LOG_MSG("/status/super", status_msg, 1);
@@ -557,18 +538,18 @@ private:
     lifecycle_pub_.publish(msg);
   }
 
-  static bool checkReadyForConfigureState(SuperNodeInfo& nr)
+  static bool checkReadyForConfigureState(SuperNodeMediator::SuperNodeInfo& nr)
   {
     return nr.state == LifeCycleState::UNCONFIGURED || nr.state == LifeCycleState::INACTIVE ||
            nr.state == LifeCycleState::ACTIVE;
   }
 
-  static bool checkReadyForActivateState(SuperNodeInfo& nr)
+  static bool checkReadyForActivateState(SuperNodeMediator::SuperNodeInfo& nr)
   {
     return nr.state == LifeCycleState::INACTIVE || nr.state == LifeCycleState::ACTIVE;
   }
 
-  static bool checkActivateState(SuperNodeInfo& nr)
+  static bool checkActivateState(SuperNodeMediator::SuperNodeInfo& nr)
   {
     return nr.state == LifeCycleState::ACTIVE;
   }
@@ -584,13 +565,13 @@ private:
    * - all states are UNCONFIGURED or INACTIVE or ACTIVE
    * - all statuses are not error
    */
-  bool allManifestedNodesCheck(std::function<bool(SuperNodeInfo&)> check)
+  bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check)
   {
     bool success = true;
-    map<string, SuperNodeInfo>::iterator it;
+    map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
     for (it = nodes_.begin(); it != nodes_.end(); it++)
     {
-      SuperNodeInfo& nr = (*it).second;
+      SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
       if (!nr.manifested)
       {
         continue;

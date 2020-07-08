@@ -40,7 +40,6 @@ public:
    */
   SuperNodeInfo initializeManifestedNode(std::string node_name);
 
-
   static bool checkReadyForConfigureState(SuperNodeMediator::SuperNodeInfo& nr);
 
   static bool checkReadyForActivateState(SuperNodeMediator::SuperNodeInfo& nr);

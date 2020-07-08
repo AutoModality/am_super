@@ -32,7 +32,6 @@ using namespace std;
 
 namespace am
 {
-
 /**
  * flight control state
  */

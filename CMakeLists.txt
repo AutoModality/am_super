@@ -122,6 +122,9 @@ file(GLOB am_super_cpp_files
     src/am_super/*.cpp
 )
 
+file(GLOB SUPER_MEDIATOR_FILES
+    src/am_super/*_mediator.cpp
+)
 
 ## Declare a C++ library
 add_library(super_lib
@@ -191,9 +194,7 @@ file(GLOB TEST_FILES
     test/*_tests.cpp
 )
 
-file(GLOB SUPER_MEDIATOR_FILES
-    src/am_super/*_mediator.cpp
-)
+
 
 
 # code coverage setup: https://github.com/mikeferguson/code_coverage

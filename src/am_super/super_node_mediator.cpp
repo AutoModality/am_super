@@ -1,5 +1,5 @@
 #include <am_super/super_node_mediator.h>
-#include <ros/ros.h>
+
 
 
 namespace am
@@ -7,19 +7,7 @@ namespace am
 
 
 
-struct SuperNodeInfo
-{
-  std::string name;        // node name in ROS
-  int pid;                 // process id of node
-  float cpu_usage;         // amount of cpu node is consuming
-  float gpu_usage;         // amount of gpu node is consuming
-  float mem_usage;         // amount of memory node is consuming
-  LifeCycleState state;    // https://index.ros.org/p/lifecycle/
-  LifeCycleStatus status;  // node lifecycle status
-  bool manifested;         // nodes was in manfiest
-  bool online;             // node is online
-  ros::Time last_contact;  // last time a message was received from the node
-};
+
 
 SuperNodeMediator::SuperNodeMediator(){
 
@@ -35,4 +23,18 @@ std::string SuperNodeMediator::nodeNameStripped(std::string node_name){
       return node_name;
     }
 }
+
+SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std::string node_name)
+{
+  SuperNodeInfo nr;
+  nr.name = node_name;
+  nr.pid = -1;
+  nr.online = false;
+  nr.last_contact = ros::Time(0);
+  nr.manifested = true;
+  nr.state = LifeCycleState::UNCONFIGURED;
+  nr.status = LifeCycleStatus::OK;
+  return nr;
+}
+
 }

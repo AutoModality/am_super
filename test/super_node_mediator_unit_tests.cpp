@@ -26,3 +26,16 @@ TEST(SuperNodeMediator, nodeNameStripped_EmptyStringDoesNotExplode)
   std::string stripped = superNodeMediator.nodeNameStripped(name);
   ASSERT_EQ(stripped,"") << "Safety check for index of a string";  
 }
+
+
+TEST(SuperNodeMediator, initializeManifestedNode_FieldsAreSetProperly)
+{
+  std::string name="node1";
+  SuperNodeMediator::SuperNodeInfo nodeInfo = superNodeMediator.initializeManifestedNode(name);
+  ASSERT_EQ(nodeInfo.name,name) << "Safety check for index of a string";  
+  ASSERT_EQ(nodeInfo.pid,-1) << "Doesn't really matter...references purposes only";
+  ASSERT_EQ(nodeInfo.online,false) << "Initialized, but not yet reported anything";
+  ASSERT_EQ(nodeInfo.manifested,true) << "Declared in the manifest";
+  ASSERT_EQ(nodeInfo.state,LifeCycleState::UNCONFIGURED) << "Beginning of state lifecycle";
+  ASSERT_EQ(nodeInfo.state,LifeCycleStatus::OK) << "All is good until reported otherwise";
+}

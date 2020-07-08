@@ -312,15 +312,7 @@ private:
                     const ros::Time& last_contact)
   {
     // strip leading '/' from the node name if needed
-    string node_name;
-    if (node_name_in.at(0) == '/')
-    {
-      node_name = node_name_in.substr(1);
-    }
-    else
-    {
-      node_name = node_name_in;
-    }
+    string node_name = node_mediator_.nodeNameStripped(node_name);
 
     // search for the node in the list
     bool nodes_changed = false;

@@ -37,5 +37,5 @@ TEST(SuperNodeMediator, initializeManifestedNode_FieldsAreSetProperly)
   ASSERT_EQ(nodeInfo.online,false) << "Initialized, but not yet reported anything";
   ASSERT_EQ(nodeInfo.manifested,true) << "Declared in the manifest";
   ASSERT_EQ(nodeInfo.state,LifeCycleState::UNCONFIGURED) << "Beginning of state lifecycle";
-  ASSERT_EQ(nodeInfo.state,LifeCycleStatus::OK) << "All is good until reported otherwise";
+  ASSERT_EQ(nodeInfo.status,LifeCycleStatus::OK) << "All is good until reported otherwise";
 }

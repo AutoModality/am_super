@@ -9,7 +9,6 @@
 using namespace std;
 namespace am
 {
-
 class SuperNodeMediator
 {
 public:

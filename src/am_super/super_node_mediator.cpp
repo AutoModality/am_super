@@ -1,12 +1,7 @@
 #include <am_super/super_node_mediator.h>
 
-
 namespace am
 {
-
-
-
-
 struct SuperNodeInfo
 {
   std::string name;        // node name in ROS
@@ -49,5 +44,4 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   nr.status = LifeCycleStatus::OK;
   return nr;
 }
-
 }

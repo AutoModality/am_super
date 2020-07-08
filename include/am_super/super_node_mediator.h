@@ -33,10 +33,9 @@ public:
    */
   std::string nodeNameStripped(std::string node_name);
 
-
-  /**Nodes declared in manifest are created with default 
+  /**Nodes declared in manifest are created with default
    * state so the system can seek them out.
-   * 
+   *
    * @return node info with given name and default information
    */
   SuperNodeInfo initializeManifestedNode(std::string node_name);

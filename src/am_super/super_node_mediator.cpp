@@ -1,12 +1,8 @@
 #include <am_super/super_node_mediator.h>
 #include <ros/ros.h>
 
-
 namespace am
 {
-
-
-
 struct SuperNodeInfo
 {
   std::string name;        // node name in ROS
@@ -21,18 +17,19 @@ struct SuperNodeInfo
   ros::Time last_contact;  // last time a message was received from the node
 };
 
-SuperNodeMediator::SuperNodeMediator(){
-
+SuperNodeMediator::SuperNodeMediator()
+{
 }
 
-std::string SuperNodeMediator::nodeNameStripped(std::string node_name){
-    if (node_name.size() > 0 && node_name.at(0) == '/')
-    {
-      return node_name.substr(1);
-    }
-    else
-    {
-      return node_name;
-    }
+std::string SuperNodeMediator::nodeNameStripped(std::string node_name)
+{
+  if (node_name.size() > 0 && node_name.at(0) == '/')
+  {
+    return node_name.substr(1);
+  }
+  else
+  {
+    return node_name;
+  }
 }
 }

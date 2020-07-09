@@ -92,17 +92,33 @@ TEST(SuperNodeMediator,checkActivateState_All)
   ASSERT_CHECK(function,LifeCycleState::DEACTIVATING,false);
 }
 
+void ASSERT_allManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result)
+{
+
+  std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check
+    = [check_result](SuperNodeMediator::SuperNodeInfo&) { return check_result; };
+  SuperNodeMediator::Supervisor supervisor;
+  supervisor.nodes.insert({node.name,node});
+  pair<bool,map<string,string>> result = superNodeMediator.allManifestedNodesCheck(supervisor,check);
+  bool success= get<0>(result);
+  ASSERT_EQ(success,expected_success);
+}
+
 TEST(SuperNodeMediator,allManifestedNodesCheck_NonManifestIsSuccess)
 {
-  bool expected_success=true;
-  string name = "not-manifested";
-  SuperNodeMediator::Supervisor supervisor;
   SuperNodeMediator::SuperNodeInfo node;
-  node.name="not manifested";
   node.manifested=false;
-  supervisor.nodes.insert({node.name,node});
-  pair<bool,map<string,string>> result = superNodeMediator.allManifestedNodesCheck(supervisor,NULL);
-  ASSERT_EQ(get<0>(result),expected_success);
+  bool check_result = false;
+  ASSERT_allManifestedNodesCheck(true,node,false);
+}
+
+TEST(SuperNodeMediator,allManifestedNodesCheck_CheckReturnsFalseIsFailure)
+{
+  SuperNodeMediator::SuperNodeInfo node;
+  node.name="node-name";
+  node.state=LifeCycleState::CLEANING_UP;
+  node.manifested=true;
+  ASSERT_allManifestedNodesCheck(false,node,true);
 }
 
 

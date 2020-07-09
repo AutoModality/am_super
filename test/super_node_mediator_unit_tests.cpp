@@ -91,3 +91,5 @@ TEST(SuperNodeMediator,checkActivateState_All)
   ASSERT_CHECK(function,LifeCycleState::ACTIVATING,false);
   ASSERT_CHECK(function,LifeCycleState::DEACTIVATING,false);
 }
+
+

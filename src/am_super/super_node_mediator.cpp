@@ -2,19 +2,10 @@
 
 namespace am
 {
-struct SuperNodeInfo
-{
-  std::string name;        // node name in ROS
-  int pid;                 // process id of node
-  float cpu_usage;         // amount of cpu node is consuming
-  float gpu_usage;         // amount of gpu node is consuming
-  float mem_usage;         // amount of memory node is consuming
-  LifeCycleState state;    // https://index.ros.org/p/lifecycle/
-  LifeCycleStatus status;  // node lifecycle status
-  bool manifested;         // nodes was in manfiest
-  bool online;             // node is online
-  ros::Time last_contact;  // last time a message was received from the node
-};
+
+/**
+ * The state of the system as the supervisor sees it.*/
+
 
 SuperNodeMediator::SuperNodeMediator()
 {
@@ -60,4 +51,42 @@ bool SuperNodeMediator::checkActivateState(SuperNodeMediator::SuperNodeInfo& nr)
 {
   return nr.state == LifeCycleState::ACTIVE;
 }
+
+
+pair<bool,map<string,string>> SuperNodeMediator::allManifestedNodesCheck(
+  Supervisor supervisor, std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check)
+{
+  map<string,string> failedNodes;
+
+  bool success = true;
+  std::string errorMessage;
+  for (pair<string,SuperNodeInfo> nodePair: supervisor.nodes)
+  {
+    SuperNodeInfo node = get<1>(nodePair);
+    //only check manifested nodes, ignore others
+    if(node.manifested)
+    {
+      if(!node.online)
+      {
+        errorMessage = "check failed: node not online: " + node.name;
+      }
+      else if(!check(node))
+      {
+          string node_state =to_string((int)node.state);//string(AMLifeCycle::stateToString(node.state));
+          errorMessage= "check failed: node in wrong state (" + node_state + "): " + node.name;
+      }
+      else if(node.status == LifeCycleStatus::ERROR)
+      {
+        errorMessage = "check failed: node status is ERROR: " + node.name;
+      }
+      if(!errorMessage.empty())
+      {
+        success = false;
+        failedNodes.insert(pair<string,string>(node.name,errorMessage));
+      }
+    }//else not manifested so ignore
+  }//for each node
+  return pair(success,failedNodes);
+}
+
 }

@@ -92,4 +92,17 @@ TEST(SuperNodeMediator,checkActivateState_All)
   ASSERT_CHECK(function,LifeCycleState::DEACTIVATING,false);
 }
 
+TEST(SuperNodeMediator,allManifestedNodesCheck_NonManifestIsSuccess)
+{
+  bool expected_success=true;
+  string name = "not-manifested";
+  SuperNodeMediator::Supervisor supervisor;
+  SuperNodeMediator::SuperNodeInfo node;
+  node.name="not manifested";
+  node.manifested=false;
+  supervisor.nodes.insert({node.name,node});
+  pair<bool,map<string,string>> result = superNodeMediator.allManifestedNodesCheck(supervisor,NULL);
+  ASSERT_EQ(get<0>(result),expected_success);
+}
+
 

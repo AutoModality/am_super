@@ -155,14 +155,13 @@ public:
     num_nodes_online_ = 0;
     num_manifest_nodes_online_ = 0;
     // strip spaces from manifest param
-    string tmp_manifest;
-    ros::param::param<string>("~manifest", tmp_manifest, "");
-    boost::erase_all(tmp_manifest, " ");
+    string manifest_param;
+    ros::param::param<string>("~manifest", manifest_param, "");
+    node_mediator_.parseManifest(supervisor_,manifest_param);
     // if a manifest has been specified
-    if (tmp_manifest.size())
+    if (!supervisor_.manifest.empty())
     {
-      // split it based upon commas
-      boost::split(supervisor_.manifest, tmp_manifest, boost::is_any_of(","));
+
       ROS_INFO_STREAM("configuring nodes from manifest:");
       for (string& name : supervisor_.manifest)
       {

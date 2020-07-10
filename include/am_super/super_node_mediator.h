@@ -33,6 +33,9 @@ public:
   {
     /** map of all nodes in the system*/
     map<string, SuperNodeInfo> nodes;
+
+    /** manifest node (generated from manifest param) */
+    std::vector<string> manifest;
   };
 
   /**Standardizes the node name which sometimes starts with `/`.

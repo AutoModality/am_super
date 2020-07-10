@@ -87,10 +87,7 @@ private:
    */
   SuperFltCtrlState flt_ctrl_state_;
 
-  /**
-   * manifest node (generated from manifest param)
-   */
-  std::vector<string> manifest_;
+ 
 
   /** The current state of the system. */
   SuperNodeMediator::Supervisor supervisor_;
@@ -165,9 +162,9 @@ public:
     if (tmp_manifest.size())
     {
       // split it based upon commas
-      boost::split(manifest_, tmp_manifest, boost::is_any_of(","));
+      boost::split(supervisor_.manifest, tmp_manifest, boost::is_any_of(","));
       ROS_INFO_STREAM("configuring nodes from manifest:");
-      for (string& name : manifest_)
+      for (string& name : supervisor_.manifest)
       {
         // create a new node in the list for each name in manifest
         SuperNodeMediator::SuperNodeInfo nr = node_mediator_.initializeManifestedNode(name);
@@ -448,7 +445,7 @@ private:
 
     // publish and bag log super status message
     brain_box_msgs::Super2Status status_msg;
-    status_msg.man = manifest_.size();
+    status_msg.man = supervisor_.manifest.size();
     status_msg.man_run = num_manifest_nodes_online_;
     status_msg.run = num_nodes_online_;
     map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
@@ -467,7 +464,7 @@ private:
     std::stringstream ss;
     genSystemState(ss);
 
-    if (manifest_.size() != num_manifest_nodes_online_ || system_state_ == SuperState::ABORT ||
+    if (supervisor_.manifest.size() != num_manifest_nodes_online_ || system_state_ == SuperState::ABORT ||
         system_state_ == SuperState::HOLD || system_state_ == SuperState::MANUAL)
     {
       // if all manifested nodes aren't running, report as error
@@ -497,7 +494,7 @@ private:
    */
   void genSystemState(std::stringstream& ss)
   {
-    ss << "state: " << state_mediator_.stateToString(system_state_) << ", manifest: " << manifest_.size()
+    ss << "state: " << state_mediator_.stateToString(system_state_) << ", manifest: " << supervisor_.manifest.size()
        << ", manifest online:" << num_manifest_nodes_online_ << ", total online:" << num_nodes_online_;
   }
 

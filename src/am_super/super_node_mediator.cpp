@@ -68,16 +68,16 @@ pair<bool,map<string,string>> SuperNodeMediator::allManifestedNodesCheck(
     {
       if(!node.online)
       {
-        error_message = "check failed: node not online: " + node.name;
+        error_message = "[U5JB] check failed: node not online: " + node.name;
       }
       else if(!check(node))
       {
           string node_state =to_string((int)node.state);//string(AMLifeCycle::stateToString(node.state));
-          error_message= "check failed: node in wrong state (" + node_state + "): " + node.name;
+          error_message= "[2OQ0] check failed: node in wrong state (" + node_state + "): " + node.name;
       }
       else if(node.status == LifeCycleStatus::ERROR)
       {
-        error_message = "check failed: node status is ERROR: " + node.name;
+        error_message = "[AA0A] check failed: node status is ERROR: " + node.name;
       }
       if(!error_message.empty())
       {

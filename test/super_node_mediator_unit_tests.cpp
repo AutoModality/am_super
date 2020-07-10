@@ -92,16 +92,26 @@ TEST(SuperNodeMediator,checkActivateState_All)
   ASSERT_CHECK(function,LifeCycleState::DEACTIVATING,false);
 }
 
-void ASSERT_allManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result)
+void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, 
+  bool check_result, string expected_error_code="")
 {
-
   std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check
     = [check_result](SuperNodeMediator::SuperNodeInfo&) { return check_result; };
   SuperNodeMediator::Supervisor supervisor;
+  string expected_node_name = "test-node";
+  node.name=expected_node_name;
   supervisor.nodes.insert({node.name,node});
   pair<bool,map<string,string>> result = superNodeMediator.allManifestedNodesCheck(supervisor,check);
   bool success= get<0>(result);
   ASSERT_EQ(success,expected_success);
+  if(!expected_error_code.empty())
+  {
+    map<string,string> error_messages = get<1>(result);
+    string node_name=error_messages.begin()->first;
+    string error_message=error_messages.begin()->second;
+    ASSERT_EQ(node_name,expected_node_name);
+    ASSERT_TRUE(error_message.rfind(expected_error_code, 0) == 0) << error_message;
+  }
 }
 
 TEST(SuperNodeMediator,allManifestedNodesCheck_NonManifestIsSuccess)
@@ -109,7 +119,26 @@ TEST(SuperNodeMediator,allManifestedNodesCheck_NonManifestIsSuccess)
   SuperNodeMediator::SuperNodeInfo node;
   node.manifested=false;
   bool check_result = false;
-  ASSERT_allManifestedNodesCheck(true,node,false);
+  assertAllManifestedNodesCheck(true,node,false);
+}
+
+TEST(SuperNodeMediator,allManifestedNodesCheck_SuccessfulMnaifestedNode)
+{
+  SuperNodeMediator::SuperNodeInfo node;
+  node.manifested=true;
+  node.online = true;
+  node.status = LifeCycleStatus::OK;
+  bool check_result = true;
+
+  assertAllManifestedNodesCheck(true,node,true);
+}
+
+TEST(SuperNodeMediator,allManifestedNodesCheck_NotOnlineReturnsFalse)
+{
+  SuperNodeMediator::SuperNodeInfo node;
+  node.manifested=true;
+  node.online=false;
+  assertAllManifestedNodesCheck(false,node,true,"[U5JB]");
 }
 
 TEST(SuperNodeMediator,allManifestedNodesCheck_CheckReturnsFalseIsFailure)
@@ -118,7 +147,8 @@ TEST(SuperNodeMediator,allManifestedNodesCheck_CheckReturnsFalseIsFailure)
   node.name="node-name";
   node.state=LifeCycleState::CLEANING_UP;
   node.manifested=true;
-  ASSERT_allManifestedNodesCheck(false,node,true);
+  assertAllManifestedNodesCheck(false,node,true);
 }
+
 
 

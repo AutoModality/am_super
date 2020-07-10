@@ -144,11 +144,18 @@ TEST(SuperNodeMediator,allManifestedNodesCheck_NotOnlineReturnsFalse)
 TEST(SuperNodeMediator,allManifestedNodesCheck_CheckReturnsFalseIsFailure)
 {
   SuperNodeMediator::SuperNodeInfo node;
-  node.name="node-name";
   node.state=LifeCycleState::CLEANING_UP;
   node.manifested=true;
-  assertAllManifestedNodesCheck(false,node,true);
+  node.online=true;
+  assertAllManifestedNodesCheck(false,node,false,"[2OQ0]");
 }
 
-
+TEST(SuperNodeMediator,allManifestedNodesCheck_ErrorStatusReturnsFalse)
+{
+  SuperNodeMediator::SuperNodeInfo node;
+  node.manifested=true;
+  node.online=true;
+  node.status=LifeCycleStatus::ERROR;
+  assertAllManifestedNodesCheck(false,node,true,"[AA0A]");
+}
 

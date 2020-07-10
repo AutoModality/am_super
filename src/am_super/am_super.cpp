@@ -92,10 +92,8 @@ private:
    */
   std::vector<string> manifest_;
 
-  /**
-   * map of all nodes in the system
-   */
-  map<string, SuperNodeMediator::SuperNodeInfo> nodes_;
+  /** The current state of the system. */
+  SuperNodeMediator::Supervisor supervisor_;
 
   /**
    * number of nodes online
@@ -173,7 +171,7 @@ public:
       {
         // create a new node in the list for each name in manifest
         SuperNodeMediator::SuperNodeInfo nr = node_mediator_.initializeManifestedNode(name);
-        nodes_.insert(pair<string, SuperNodeMediator::SuperNodeInfo>(name, nr));
+        supervisor_.nodes.insert(pair<string, SuperNodeMediator::SuperNodeInfo>(name, nr));
         ROS_INFO_STREAM("  " << name);
 
         // create babysitters based on hard coded node names
@@ -316,8 +314,8 @@ private:
     // search for the node in the list
     bool nodes_changed = false;
     map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
-    it = nodes_.find(node_name);
-    if (it != nodes_.end())
+    it = supervisor_.nodes.find(node_name);
+    if (it != supervisor_.nodes.end())
     {
       // if we get here, the node is already in our list
       SuperNodeMediator::SuperNodeInfo& nr = it->second;
@@ -365,7 +363,7 @@ private:
       nr.manifested = false;
       nr.state = state;
       nr.status = status;
-      nodes_.insert(pair<string, SuperNodeMediator::SuperNodeInfo>(node_name, nr));
+      supervisor_.nodes.insert(pair<string, SuperNodeMediator::SuperNodeInfo>(node_name, nr));
       num_nodes_online_++;
       nodes_changed = true;
     }
@@ -423,7 +421,7 @@ private:
       // cycle thru all the nodes in the list to look for a timeout
       ros::Time now = ros::Time().now();
       map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
-      for (it = nodes_.begin(); it != nodes_.end(); it++)
+      for (it = supervisor_.nodes.begin(); it != supervisor_.nodes.end(); it++)
       {
         SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
         if (nr.online)
@@ -454,7 +452,7 @@ private:
     status_msg.man_run = num_manifest_nodes_online_;
     status_msg.run = num_nodes_online_;
     map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
-    for (it = nodes_.begin(); it != nodes_.end(); it++)
+    for (it = supervisor_.nodes.begin(); it != supervisor_.nodes.end(); it++)
     {
       SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
       status_msg.nodes.push_back(nr.name);
@@ -483,7 +481,7 @@ private:
 
     //    // report nodes that aren't in correct state to trace log as error
     //    map<string, SuperNodeInfo>::iterator it;
-    //    for (it = nodes_.begin(); it != nodes_.end(); it++)
+    //    for (it = supervisor_.nodes.begin(); it != supervisor_.nodes.end(); it++)
     //    {
     //      SuperNodeInfo &nr = (*it).second;
     //      if (!nr.online)
@@ -542,30 +540,13 @@ private:
    */
   bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check)
   {
-    bool success = true;
-    map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
-    for (it = nodes_.begin(); it != nodes_.end(); it++)
+    pair<bool,map<string,string>> result= node_mediator_.allManifestedNodesCheck(supervisor_,check);
+    bool success = result.first;
+    if(!success)
     {
-      SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
-      if (!nr.manifested)
+      for(const auto& [node_name, error_message] : result.second)
       {
-        continue;
-      }
-      if (!nr.online)
-      {
-        ROS_WARN_STREAM("check failed: node not online: " << nr.name);
-        success = false;
-      }
-      else if (!check(nr))
-      {
-        ROS_WARN_STREAM("check failed: node in wrong state (" << AMLifeCycle::stateToString(nr.state)
-                                                              << "): " << nr.name);
-        success = false;
-      }
-      else if (nr.status == LifeCycleStatus::ERROR)
-      {
-        ROS_WARN_STREAM("check failed: node status is ERROR: " << nr.name);
-        success = false;
+        ROS_WARN_STREAM(error_message);
       }
     }
     return success;

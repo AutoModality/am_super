@@ -2,10 +2,8 @@
 
 namespace am
 {
-
 /**
  * The state of the system as the supervisor sees it.*/
-
 
 SuperNodeMediator::SuperNodeMediator()
 {
@@ -52,41 +50,39 @@ bool SuperNodeMediator::checkActivateState(SuperNodeMediator::SuperNodeInfo& nr)
   return nr.state == LifeCycleState::ACTIVE;
 }
 
-
-pair<bool,map<string,string>> SuperNodeMediator::allManifestedNodesCheck(
-  Supervisor supervisor, std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check)
+pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
+    Supervisor supervisor, std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check)
 {
-  map<string,string> failed_nodes;
+  map<string, string> failed_nodes;
 
   bool success = true;
   std::string error_message;
-  for (pair<string,SuperNodeInfo> nodePair: supervisor.nodes)
+  for (pair<string, SuperNodeInfo> nodePair : supervisor.nodes)
   {
     SuperNodeInfo node = get<1>(nodePair);
-    //only check manifested nodes, ignore others
-    if(node.manifested)
+    // only check manifested nodes, ignore others
+    if (node.manifested)
     {
-      if(!node.online)
+      if (!node.online)
       {
         error_message = "[U5JB] check failed: node not online: " + node.name;
       }
-      else if(!check(node))
+      else if (!check(node))
       {
-          string node_state =to_string((int)node.state);//string(AMLifeCycle::stateToString(node.state));
-          error_message= "[2OQ0] check failed: node in wrong state (" + node_state + "): " + node.name;
+        string node_state = to_string((int)node.state);  // string(AMLifeCycle::stateToString(node.state));
+        error_message = "[2OQ0] check failed: node in wrong state (" + node_state + "): " + node.name;
       }
-      else if(node.status == LifeCycleStatus::ERROR)
+      else if (node.status == LifeCycleStatus::ERROR)
       {
         error_message = "[AA0A] check failed: node status is ERROR: " + node.name;
       }
-      if(!error_message.empty())
+      if (!error_message.empty())
       {
         success = false;
-        failed_nodes.insert(pair<string,string>(node.name,error_message));
+        failed_nodes.insert(pair<string, string>(node.name, error_message));
       }
-    }//else not manifested so ignore
-  }//for each node
-  return pair(success,failed_nodes);
+    }  // else not manifested so ignore
+  }    // for each node
+  return pair(success, failed_nodes);
 }
-
 }

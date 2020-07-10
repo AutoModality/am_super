@@ -540,11 +540,11 @@ private:
    */
   bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check)
   {
-    pair<bool,map<string,string>> result= node_mediator_.allManifestedNodesCheck(supervisor_,check);
+    pair<bool, map<string, string>> result = node_mediator_.allManifestedNodesCheck(supervisor_, check);
     bool success = result.first;
-    if(!success)
+    if (!success)
     {
-      for(const auto& [node_name, error_message] : result.second)
+      for (const auto & [ node_name, error_message ] : result.second)
       {
         ROS_WARN_STREAM(error_message);
       }

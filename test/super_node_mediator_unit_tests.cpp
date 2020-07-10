@@ -47,115 +47,114 @@ void ASSERT_CHECK(std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check, 
   ASSERT_EQ(check(info), expected) << "For state: " + std::to_string((int)state);
 }
 
-
-TEST(SuperNodeMediator,checkReadyForConfigureState_All)
+TEST(SuperNodeMediator, checkReadyForConfigureState_All)
 {
   std::function<bool(SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkReadyForConfigureState;
-  ASSERT_CHECK(function,LifeCycleState::INVALID,false);
-  ASSERT_CHECK(function,LifeCycleState::UNCONFIGURED,true);
-  ASSERT_CHECK(function,LifeCycleState::INACTIVE,true);
-  ASSERT_CHECK(function,LifeCycleState::ACTIVE,true);
-  ASSERT_CHECK(function,LifeCycleState::FINALIZED,false);
-  ASSERT_CHECK(function,LifeCycleState::CONFIGURING,false);
-  ASSERT_CHECK(function,LifeCycleState::CLEANING_UP,false);
-  ASSERT_CHECK(function,LifeCycleState::SHUTTING_DOWN,false);
-  ASSERT_CHECK(function,LifeCycleState::ACTIVATING,false);
-  ASSERT_CHECK(function,LifeCycleState::DEACTIVATING,false);
+  ASSERT_CHECK(function, LifeCycleState::INVALID, false);
+  ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, true);
+  ASSERT_CHECK(function, LifeCycleState::INACTIVE, true);
+  ASSERT_CHECK(function, LifeCycleState::ACTIVE, true);
+  ASSERT_CHECK(function, LifeCycleState::FINALIZED, false);
+  ASSERT_CHECK(function, LifeCycleState::CONFIGURING, false);
+  ASSERT_CHECK(function, LifeCycleState::CLEANING_UP, false);
+  ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);
+  ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
+  ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
 }
 
-TEST(SuperNodeMediator,checkReadyForActivateState_All)
+TEST(SuperNodeMediator, checkReadyForActivateState_All)
 {
   std::function<bool(SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkReadyForActivateState;
-  ASSERT_CHECK(function,LifeCycleState::INVALID,false);
-  ASSERT_CHECK(function,LifeCycleState::UNCONFIGURED,false);
-  ASSERT_CHECK(function,LifeCycleState::INACTIVE,true);
-  ASSERT_CHECK(function,LifeCycleState::ACTIVE,true);
-  ASSERT_CHECK(function,LifeCycleState::FINALIZED,false);
-  ASSERT_CHECK(function,LifeCycleState::CONFIGURING,false);
-  ASSERT_CHECK(function,LifeCycleState::CLEANING_UP,false);
-  ASSERT_CHECK(function,LifeCycleState::SHUTTING_DOWN,false);
-  ASSERT_CHECK(function,LifeCycleState::ACTIVATING,false);
-  ASSERT_CHECK(function,LifeCycleState::DEACTIVATING,false);
+  ASSERT_CHECK(function, LifeCycleState::INVALID, false);
+  ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, false);
+  ASSERT_CHECK(function, LifeCycleState::INACTIVE, true);
+  ASSERT_CHECK(function, LifeCycleState::ACTIVE, true);
+  ASSERT_CHECK(function, LifeCycleState::FINALIZED, false);
+  ASSERT_CHECK(function, LifeCycleState::CONFIGURING, false);
+  ASSERT_CHECK(function, LifeCycleState::CLEANING_UP, false);
+  ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);
+  ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
+  ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
 }
-TEST(SuperNodeMediator,checkActivateState_All)
+TEST(SuperNodeMediator, checkActivateState_All)
 {
   std::function<bool(SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkActivateState;
-  ASSERT_CHECK(function,LifeCycleState::INVALID,false);
-  ASSERT_CHECK(function,LifeCycleState::UNCONFIGURED,false);
-  ASSERT_CHECK(function,LifeCycleState::INACTIVE,false);
-  ASSERT_CHECK(function,LifeCycleState::ACTIVE,true);
-  ASSERT_CHECK(function,LifeCycleState::FINALIZED,false);
-  ASSERT_CHECK(function,LifeCycleState::CONFIGURING,false);
-  ASSERT_CHECK(function,LifeCycleState::CLEANING_UP,false);
-  ASSERT_CHECK(function,LifeCycleState::SHUTTING_DOWN,false);
-  ASSERT_CHECK(function,LifeCycleState::ACTIVATING,false);
-  ASSERT_CHECK(function,LifeCycleState::DEACTIVATING,false);
+  ASSERT_CHECK(function, LifeCycleState::INVALID, false);
+  ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, false);
+  ASSERT_CHECK(function, LifeCycleState::INACTIVE, false);
+  ASSERT_CHECK(function, LifeCycleState::ACTIVE, true);
+  ASSERT_CHECK(function, LifeCycleState::FINALIZED, false);
+  ASSERT_CHECK(function, LifeCycleState::CONFIGURING, false);
+  ASSERT_CHECK(function, LifeCycleState::CLEANING_UP, false);
+  ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);
+  ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
+  ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
 }
 
-void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, 
-  bool check_result, string expected_error_code="")
+void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result,
+                                   string expected_error_code = "")
 {
-  std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check
-    = [check_result](SuperNodeMediator::SuperNodeInfo&) { return check_result; };
+  std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check = [check_result](SuperNodeMediator::SuperNodeInfo&) {
+    return check_result;
+  };
   SuperNodeMediator::Supervisor supervisor;
   string expected_node_name = "test-node";
-  node.name=expected_node_name;
-  supervisor.nodes.insert({node.name,node});
-  pair<bool,map<string,string>> result = superNodeMediator.allManifestedNodesCheck(supervisor,check);
-  bool success= get<0>(result);
-  ASSERT_EQ(success,expected_success);
-  if(!expected_error_code.empty())
+  node.name = expected_node_name;
+  supervisor.nodes.insert({ node.name, node });
+  pair<bool, map<string, string>> result = superNodeMediator.allManifestedNodesCheck(supervisor, check);
+  bool success = get<0>(result);
+  ASSERT_EQ(success, expected_success);
+  if (!expected_error_code.empty())
   {
-    map<string,string> error_messages = get<1>(result);
-    string node_name=error_messages.begin()->first;
-    string error_message=error_messages.begin()->second;
-    ASSERT_EQ(node_name,expected_node_name);
+    map<string, string> error_messages = get<1>(result);
+    string node_name = error_messages.begin()->first;
+    string error_message = error_messages.begin()->second;
+    ASSERT_EQ(node_name, expected_node_name);
     ASSERT_TRUE(error_message.rfind(expected_error_code, 0) == 0) << error_message;
   }
 }
 
-TEST(SuperNodeMediator,allManifestedNodesCheck_NonManifestIsSuccess)
+TEST(SuperNodeMediator, allManifestedNodesCheck_NonManifestIsSuccess)
 {
   SuperNodeMediator::SuperNodeInfo node;
-  node.manifested=false;
+  node.manifested = false;
   bool check_result = false;
-  assertAllManifestedNodesCheck(true,node,false);
+  assertAllManifestedNodesCheck(true, node, false);
 }
 
-TEST(SuperNodeMediator,allManifestedNodesCheck_SuccessfulMnaifestedNode)
+TEST(SuperNodeMediator, allManifestedNodesCheck_SuccessfulMnaifestedNode)
 {
   SuperNodeMediator::SuperNodeInfo node;
-  node.manifested=true;
+  node.manifested = true;
   node.online = true;
   node.status = LifeCycleStatus::OK;
   bool check_result = true;
 
-  assertAllManifestedNodesCheck(true,node,true);
+  assertAllManifestedNodesCheck(true, node, true);
 }
 
-TEST(SuperNodeMediator,allManifestedNodesCheck_NotOnlineReturnsFalse)
+TEST(SuperNodeMediator, allManifestedNodesCheck_NotOnlineReturnsFalse)
 {
   SuperNodeMediator::SuperNodeInfo node;
-  node.manifested=true;
-  node.online=false;
-  assertAllManifestedNodesCheck(false,node,true,"[U5JB]");
+  node.manifested = true;
+  node.online = false;
+  assertAllManifestedNodesCheck(false, node, true, "[U5JB]");
 }
 
-TEST(SuperNodeMediator,allManifestedNodesCheck_CheckReturnsFalseIsFailure)
+TEST(SuperNodeMediator, allManifestedNodesCheck_CheckReturnsFalseIsFailure)
 {
   SuperNodeMediator::SuperNodeInfo node;
-  node.state=LifeCycleState::CLEANING_UP;
-  node.manifested=true;
-  node.online=true;
-  assertAllManifestedNodesCheck(false,node,false,"[2OQ0]");
+  node.state = LifeCycleState::CLEANING_UP;
+  node.manifested = true;
+  node.online = true;
+  assertAllManifestedNodesCheck(false, node, false, "[2OQ0]");
 }
 
-TEST(SuperNodeMediator,allManifestedNodesCheck_ErrorStatusReturnsFalse)
+TEST(SuperNodeMediator, allManifestedNodesCheck_ErrorStatusReturnsFalse)
 {
   SuperNodeMediator::SuperNodeInfo node;
-  node.manifested=true;
-  node.online=true;
-  node.status=LifeCycleStatus::ERROR;
-  assertAllManifestedNodesCheck(false,node,true,"[AA0A]");
+  node.manifested = true;
+  node.online = true;
+  node.status = LifeCycleStatus::ERROR;
+  assertAllManifestedNodesCheck(false, node, true, "[AA0A]");
 }
-

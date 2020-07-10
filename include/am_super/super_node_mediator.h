@@ -67,20 +67,21 @@ public:
    * @param supervisor maintaing state receiving node names in the manifest
    * @param manifest comma separate list of node names
    */
-  void parseManifest(Supervisor supervisor, string manifest);
+  void parseManifest(Supervisor &supervisor, string manifest);
 
   /**
      * check if all manifested nodes are ready for configuration.
      * The manifest indicates the node is necessary for operation.
-     *
-     * @param supervisor with the state of the system to be checked
-     * @param check function that will be called with each node registered with Supervisor
-     * @return a pair with overall success and a map containing any erroneous node names with message explaining why
-     *
+     * 
      * This means:
      * - all are online
      * - all states are UNCONFIGURED or INACTIVE or ACTIVE
      * - all statuses are not error
+     * 
+     * @param supervisor with the state of the system to be checked
+     * @param check function that will be called with each node registered with Supervisor
+     * @return a pair with overall success and a map containing any erroneous node names with message explaining why
+     *
      */
   pair<bool, map<string, string>> allManifestedNodesCheck(Supervisor supervisor,
                                                           function<bool(SuperNodeMediator::SuperNodeInfo&)> check);

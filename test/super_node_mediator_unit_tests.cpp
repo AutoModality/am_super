@@ -161,9 +161,45 @@ TEST(SuperNodeMediator, allManifestedNodesCheck_ErrorStatusReturnsFalse)
 
 TEST(SuperNodeMediator, parseManifest_EmptyManifest)
 {
-  SuperNodeMediator::SuperNodeInfo node;
-  node.manifested = true;
-  node.online = true;
-  node.status = LifeCycleStatus::ERROR;
-  assertAllManifestedNodesCheck(false, node, true, "[AA0A]");
+  SuperNodeMediator::Supervisor supervisor;
+  superNodeMediator.parseManifest(supervisor,"");
+  ASSERT_EQ(supervisor.manifest.size(),0);
+}
+
+TEST(SuperNodeMediator, parseManifest_SpacesStripped)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  superNodeMediator.parseManifest(supervisor,"first, second, third");
+  vector<string> expected{"first","second","third"};
+  ASSERT_EQ(supervisor.manifest.size(),3);
+  ASSERT_EQ(supervisor.manifest,expected);
+}
+
+/**Demonstrates trailing commas are not handled. Not by design, just
+ * by discovery so change this test happily if trailing commas become ignored
+ */
+TEST(SuperNodeMediator, parseManifest_TrailingCommasIsNotIgnored)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  superNodeMediator.parseManifest(supervisor,"first,");
+  vector<string> expected{"first",""};
+  ASSERT_EQ(supervisor.manifest.size(),2);
+  ASSERT_EQ(supervisor.manifest,expected);
+}
+
+TEST(SuperNodeMediator, parseManifest_Single)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  superNodeMediator.parseManifest(supervisor,"first");
+  vector<string> expected{"first"};
+  ASSERT_EQ(supervisor.manifest.size(),1);
+  ASSERT_EQ(supervisor.manifest,expected);
+}
+TEST(SuperNodeMediator, parseManifest_Double)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  superNodeMediator.parseManifest(supervisor,"first,second");
+  vector<string> expected{"first","second"};
+  ASSERT_EQ(supervisor.manifest.size(),2);
+  ASSERT_EQ(supervisor.manifest,expected);
 }

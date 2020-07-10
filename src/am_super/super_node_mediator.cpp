@@ -1,4 +1,6 @@
 #include <am_super/super_node_mediator.h>
+#include <boost/algorithm/string.hpp>
+
 
 namespace am
 {
@@ -86,7 +88,7 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
   return pair(success, failed_nodes);
 }
 
-void SuperNodeMediator::parseManifest(Supervisor supervisor, string manifest)
+void SuperNodeMediator::parseManifest(Supervisor &supervisor, string manifest)
 {
     boost::erase_all(manifest, " ");
     // if a manifest has been specified

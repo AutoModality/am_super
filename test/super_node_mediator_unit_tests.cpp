@@ -6,7 +6,7 @@ using namespace am;
 
 SuperNodeMediator superNodeMediator;
 
-TEST(SuperNodeMediator, nodeNameStripped_RemovesLeadingSlash)
+TEST(Node, nodeNameStripped_RemovesLeadingSlash)
 {
   std::string name = "/something";
   std::string stripped = superNodeMediator.nodeNameStripped(name);
@@ -14,21 +14,21 @@ TEST(SuperNodeMediator, nodeNameStripped_RemovesLeadingSlash)
   ASSERT_EQ(name, "/something") << "Original is not modified";
 }
 
-TEST(SuperNodeMediator, nodeNameStripped_RegularNameNotModified)
+TEST(Node, nodeNameStripped_RegularNameNotModified)
 {
   std::string name = "something";
   std::string stripped = superNodeMediator.nodeNameStripped(name);
   ASSERT_EQ(stripped, "something") << "Nothing should be removed";
 }
 
-TEST(SuperNodeMediator, nodeNameStripped_EmptyStringDoesNotExplode)
+TEST(Node, nodeNameStripped_EmptyStringDoesNotExplode)
 {
   std::string name = "";
   std::string stripped = superNodeMediator.nodeNameStripped(name);
   ASSERT_EQ(stripped, "") << "Safety check for index of a string";
 }
 
-TEST(SuperNodeMediator, initializeManifestedNode_FieldsAreSetProperly)
+TEST(Node, initializeManifestedNode_FieldsAreSetProperly)
 {
   std::string name = "node1";
   SuperNodeMediator::SuperNodeInfo nodeInfo = superNodeMediator.initializeManifestedNode(name);
@@ -47,7 +47,7 @@ void ASSERT_CHECK(std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check, 
   ASSERT_EQ(check(info), expected) << "For state: " + std::to_string((int)state);
 }
 
-TEST(SuperNodeMediator, checkReadyForConfigureState_All)
+TEST(Node, checkReadyForConfigureState_All)
 {
   std::function<bool(SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkReadyForConfigureState;
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
@@ -62,7 +62,7 @@ TEST(SuperNodeMediator, checkReadyForConfigureState_All)
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
 }
 
-TEST(SuperNodeMediator, checkReadyForActivateState_All)
+TEST(Node, checkReadyForActivateState_All)
 {
   std::function<bool(SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkReadyForActivateState;
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
@@ -76,7 +76,7 @@ TEST(SuperNodeMediator, checkReadyForActivateState_All)
   ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
 }
-TEST(SuperNodeMediator, checkActivateState_All)
+TEST(Node, checkActivateState_All)
 {
   std::function<bool(SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkActivateState;
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
@@ -114,7 +114,7 @@ void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::Sup
   }
 }
 
-TEST(SuperNodeMediator, allManifestedNodesCheck_NonManifestIsSuccess)
+TEST(Node, allManifestedNodesCheck_NonManifestIsSuccess)
 {
   SuperNodeMediator::SuperNodeInfo node;
   node.manifested = false;
@@ -122,7 +122,7 @@ TEST(SuperNodeMediator, allManifestedNodesCheck_NonManifestIsSuccess)
   assertAllManifestedNodesCheck(true, node, false);
 }
 
-TEST(SuperNodeMediator, allManifestedNodesCheck_SuccessfulMnaifestedNode)
+TEST(Node, allManifestedNodesCheck_SuccessfulMnaifestedNode)
 {
   SuperNodeMediator::SuperNodeInfo node;
   node.manifested = true;
@@ -133,7 +133,7 @@ TEST(SuperNodeMediator, allManifestedNodesCheck_SuccessfulMnaifestedNode)
   assertAllManifestedNodesCheck(true, node, true);
 }
 
-TEST(SuperNodeMediator, allManifestedNodesCheck_NotOnlineReturnsFalse)
+TEST(Node, allManifestedNodesCheck_NotOnlineReturnsFalse)
 {
   SuperNodeMediator::SuperNodeInfo node;
   node.manifested = true;
@@ -141,7 +141,7 @@ TEST(SuperNodeMediator, allManifestedNodesCheck_NotOnlineReturnsFalse)
   assertAllManifestedNodesCheck(false, node, true, "[U5JB]");
 }
 
-TEST(SuperNodeMediator, allManifestedNodesCheck_CheckReturnsFalseIsFailure)
+TEST(Node, allManifestedNodesCheck_CheckReturnsFalseIsFailure)
 {
   SuperNodeMediator::SuperNodeInfo node;
   node.state = LifeCycleState::CLEANING_UP;
@@ -150,7 +150,7 @@ TEST(SuperNodeMediator, allManifestedNodesCheck_CheckReturnsFalseIsFailure)
   assertAllManifestedNodesCheck(false, node, false, "[2OQ0]");
 }
 
-TEST(SuperNodeMediator, allManifestedNodesCheck_ErrorStatusReturnsFalse)
+TEST(Node, allManifestedNodesCheck_ErrorStatusReturnsFalse)
 {
   SuperNodeMediator::SuperNodeInfo node;
   node.manifested = true;
@@ -159,14 +159,14 @@ TEST(SuperNodeMediator, allManifestedNodesCheck_ErrorStatusReturnsFalse)
   assertAllManifestedNodesCheck(false, node, true, "[AA0A]");
 }
 
-TEST(SuperNodeMediator, parseManifest_EmptyManifest)
+TEST(Node, parseManifest_EmptyManifest)
 {
   SuperNodeMediator::Supervisor supervisor;
   superNodeMediator.parseManifest(supervisor,"");
   ASSERT_EQ(supervisor.manifest.size(),0);
 }
 
-TEST(SuperNodeMediator, parseManifest_SpacesStripped)
+TEST(Node, parseManifest_SpacesStripped)
 {
   SuperNodeMediator::Supervisor supervisor;
   superNodeMediator.parseManifest(supervisor,"first, second, third");
@@ -178,7 +178,7 @@ TEST(SuperNodeMediator, parseManifest_SpacesStripped)
 /**Demonstrates trailing commas are not handled. Not by design, just
  * by discovery so change this test happily if trailing commas become ignored
  */
-TEST(SuperNodeMediator, parseManifest_TrailingCommasIsNotIgnored)
+TEST(Node, parseManifest_TrailingCommasIsNotIgnored)
 {
   SuperNodeMediator::Supervisor supervisor;
   superNodeMediator.parseManifest(supervisor,"first,");
@@ -187,7 +187,7 @@ TEST(SuperNodeMediator, parseManifest_TrailingCommasIsNotIgnored)
   ASSERT_EQ(supervisor.manifest,expected);
 }
 
-TEST(SuperNodeMediator, parseManifest_Single)
+TEST(Node, parseManifest_Single)
 {
   SuperNodeMediator::Supervisor supervisor;
   superNodeMediator.parseManifest(supervisor,"first");
@@ -195,7 +195,7 @@ TEST(SuperNodeMediator, parseManifest_Single)
   ASSERT_EQ(supervisor.manifest.size(),1);
   ASSERT_EQ(supervisor.manifest,expected);
 }
-TEST(SuperNodeMediator, parseManifest_Double)
+TEST(Node, parseManifest_Double)
 {
   SuperNodeMediator::Supervisor supervisor;
   superNodeMediator.parseManifest(supervisor,"first,second");

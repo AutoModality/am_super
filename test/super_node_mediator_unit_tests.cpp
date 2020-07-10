@@ -158,3 +158,12 @@ TEST(SuperNodeMediator, allManifestedNodesCheck_ErrorStatusReturnsFalse)
   node.status = LifeCycleStatus::ERROR;
   assertAllManifestedNodesCheck(false, node, true, "[AA0A]");
 }
+
+TEST(SuperNodeMediator, parseManifest_EmptyManifest)
+{
+  SuperNodeMediator::SuperNodeInfo node;
+  node.manifested = true;
+  node.online = true;
+  node.status = LifeCycleStatus::ERROR;
+  assertAllManifestedNodesCheck(false, node, true, "[AA0A]");
+}

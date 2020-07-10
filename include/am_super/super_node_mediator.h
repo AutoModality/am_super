@@ -60,6 +60,15 @@ public:
   /**@return true if Lifecyle state equals Activate */
   static bool checkActivateState(SuperNodeMediator::SuperNodeInfo& nr);
 
+  /** Reads the given manifest string, typically provided by a ROS param, 
+   * converts it to a vector or node names which will be assigned to the given 
+   * Supervisor.
+   * 
+   * @param supervisor maintaing state receiving node names in the manifest
+   * @param manifest comma separate list of node names
+   */
+  void parseManifest(Supervisor supervisor, string manifest);
+
   /**
      * check if all manifested nodes are ready for configuration.
      * The manifest indicates the node is necessary for operation.

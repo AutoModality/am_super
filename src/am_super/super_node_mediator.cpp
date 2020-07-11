@@ -98,4 +98,17 @@ void SuperNodeMediator::parseManifest(Supervisor &supervisor, string manifest)
       boost::split(supervisor.manifest, manifest, boost::is_any_of(","));
     }
 }
+
+
+int SuperNodeMediator::nodesOnlineCount(Supervisor supervisor){
+  return std::count_if(supervisor.nodes.begin(), supervisor.nodes.end(), 
+    [](pair<string,SuperNodeInfo> node_entry){return node_entry.second.online;});
+}
+
+int SuperNodeMediator::manifestedNodesOnlineCount(Supervisor supervisor){
+  return std::count_if(supervisor.nodes.begin(), supervisor.nodes.end(), 
+    [](pair<string,SuperNodeInfo> node_entry){return node_entry.second.online && node_entry.second.manifested;});
+}
+
+
 }

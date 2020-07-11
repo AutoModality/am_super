@@ -86,6 +86,12 @@ public:
   pair<bool, map<string, string>> allManifestedNodesCheck(Supervisor supervisor,
                                                           function<bool(SuperNodeMediator::SuperNodeInfo&)> check);
 
+  /**@return the number of nodes where online=true*/
+  int nodesOnlineCount(Supervisor supervisor);
+  
+  /**@return the number of nodes where online=true and manifested=true*/
+  int manifestedNodesOnlineCount(Supervisor supervisor);
+
 private:
 };
 }

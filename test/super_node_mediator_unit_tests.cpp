@@ -203,3 +203,67 @@ TEST(Node, parseManifest_Double)
   ASSERT_EQ(supervisor.manifest.size(),2);
   ASSERT_EQ(supervisor.manifest,expected);
 }
+
+TEST(Node, nodesOnlineCount_EmptyNodesIsZero)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  int count = superNodeMediator.nodesOnlineCount(supervisor);
+  ASSERT_EQ(count,0);
+}
+
+TEST(Node, nodesOnlineCount_OneNotOnlineIsZero)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  SuperNodeMediator::SuperNodeInfo node;
+  node.online=false;
+  supervisor.nodes.insert({"whatever",node});
+  int count = superNodeMediator.nodesOnlineCount(supervisor);
+  ASSERT_EQ(count,0);
+}
+
+TEST(Node, nodesOnlineCount_OneOnlineIsOne)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  SuperNodeMediator::SuperNodeInfo node;
+  node.online=true;
+  supervisor.nodes.insert({"whatever",node});
+  int count = superNodeMediator.nodesOnlineCount(supervisor);
+  ASSERT_EQ(count,1);
+}
+
+/**Combination of each of manifested and online testing both methods*/
+TEST(Node, nodesOnlineCount_ManifestedOnlinedMixed)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  {
+    SuperNodeMediator::SuperNodeInfo node;
+    node.online=true;
+    node.manifested=true;
+    supervisor.nodes.insert({"manifested-online",node});
+  }
+  {
+    SuperNodeMediator::SuperNodeInfo node;
+    node.online=false;
+    node.manifested=true;
+    supervisor.nodes.insert({"manifested-not-online",node});
+  }
+  {
+    SuperNodeMediator::SuperNodeInfo node;
+    node.online=true;
+    node.manifested=false;
+    supervisor.nodes.insert({"not-manifested-online",node});
+  }
+  {
+    SuperNodeMediator::SuperNodeInfo node;
+    node.online=false;
+    node.manifested=false;
+    supervisor.nodes.insert({"not-manifested-not-online",node});
+  }
+
+  int online_count = superNodeMediator.nodesOnlineCount(supervisor);
+  ASSERT_EQ(online_count,2);
+  int manifested_online_count = superNodeMediator.manifestedNodesOnlineCount(supervisor);
+  ASSERT_EQ(manifested_online_count,1) << "Only 1 is manifested and online";
+
+}
+

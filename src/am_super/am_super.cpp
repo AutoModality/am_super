@@ -142,7 +142,9 @@ public:
     /*
      * create initial node list from manifest and create babysitters as needed
      */
-
+    num_nodes_online_ = 0;
+    num_manifest_nodes_online_ = 0;
+    system_state_ = SuperState::OFF;
     // strip spaces from manifest param
     string manifest_param;
     ros::param::param<string>("~manifest", manifest_param, "");
@@ -294,7 +296,7 @@ private:
                     const ros::Time& last_contact)
   {
     // strip leading '/' from the node name if needed
-    string node_name = node_mediator_.nodeNameStripped(node_name);
+    string node_name = node_mediator_.nodeNameStripped(node_name_in);
 
     // search for the node in the list
     bool nodes_changed = false;

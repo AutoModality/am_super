@@ -6,6 +6,7 @@
 #include <brain_box_msgs/LifeCycleState.h>
 #include <super_lib/am_life_cycle_types.h>
 #include <super_lib/am_life_cycle.h>
+#include <am_super/super_state.h>
 
 using namespace std;
 namespace am
@@ -36,6 +37,12 @@ public:
 
     /** manifest node (generated from manifest param) */
     std::vector<string> manifest;
+
+    /**
+     * system state
+     */
+    SuperState system_state_;
+
   };
 
   /**Standardizes the node name which sometimes starts with `/`.

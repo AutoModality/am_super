@@ -142,8 +142,6 @@ public:
     /*
      * create initial node list from manifest and create babysitters as needed
      */
-    num_nodes_online_ = 0;
-    num_manifest_nodes_online_ = 0;
     system_state_ = SuperState::OFF;
     // strip spaces from manifest param
     string manifest_param;

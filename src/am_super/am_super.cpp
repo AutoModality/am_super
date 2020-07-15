@@ -71,10 +71,6 @@ private:
   ros::Subscriber node_status_sub_;
   ros::Timer heartbeat_timer_;
 
-  /**
-   * system state
-   */
-  SuperState system_state_;
 
   /** manage logic for SuperState transitions */
   SuperStateMediator state_mediator_;
@@ -101,13 +97,6 @@ private:
    * baglogger level
    */
   const int SU_LOG_LEVEL = 1;
-
-  /**
-   * ground station testing flag
-   *
-   * if true causes the system state to cycle thru all values
-   */
-  bool gcs_test_mode_;
 
   //
   // babysitters
@@ -136,13 +125,10 @@ public:
     ros::param::param<double>("~node_timeout_s", node_timeout_s_, 2.0);
     ROS_INFO_STREAM("node_timeout_s = " << node_timeout_s_);
 
-    ros::param::param<bool>("~test_mode", gcs_test_mode_, false);
-    ROS_INFO_STREAM("test_mode = " << gcs_test_mode_);
-
     /*
      * create initial node list from manifest and create babysitters as needed
      */
-    system_state_ = SuperState::OFF;
+    supervisor_.system_state = SuperState::OFF;
     // strip spaces from manifest param
     string manifest_param;
     ros::param::param<string>("~manifest", manifest_param, "");
@@ -200,7 +186,7 @@ public:
      */
     super_status_pub_ = nh_.advertise<brain_box_msgs::Super2Status>("/super/status", 1000);
 
-    system_state_ = SuperState::BOOTING;
+    supervisor_.system_state = SuperState::BOOTING;
     flt_ctrl_state_ = SuperFltCtrlState::INIT;
 
     BagLogger::instance()->startLogging("SU", SU_LOG_LEVEL);
@@ -235,10 +221,6 @@ private:
    */
   void nodeStateCB(const ros::MessageEvent<brain_box_msgs::LifeCycleState const>& event)
   {
-    if (gcs_test_mode_)
-    {
-      return;
-    }
 
     const brain_box_msgs::LifeCycleState::ConstPtr& rmsg = event.getMessage();
 
@@ -262,10 +244,6 @@ private:
    */
   void statusCB(const ros::MessageEvent<brain_box_msgs::NodeStatus const>& event)
   {
-    if (gcs_test_mode_)
-    {
-      return;
-    }
 
     const brain_box_msgs::NodeStatus::ConstPtr& rmsg = event.getMessage();
 
@@ -386,35 +364,27 @@ private:
     gpu_info_->display();
 #endif
     brain_box_msgs::VxState state_msg;
-    state_msg.state = (uint8_t)system_state_;
+    state_msg.state = (uint8_t)supervisor_.system_state;
     vstate_summary_pub_.publish(state_msg);
 
-    if (gcs_test_mode_)
+    // cycle thru all the nodes in the list to look for a timeout
+    ros::Time now = ros::Time().now();
+    map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
+    for (it = supervisor_.nodes.begin(); it != supervisor_.nodes.end(); it++)
     {
-      // cycle thru states one per heartbeat
-      system_state_ = static_cast<SuperState>(((uint8_t)system_state_ + 1) % (uint8_t)SuperState::LAST_STATE);
-      reportSystemState();
-    }
-    else
-    {
-      // cycle thru all the nodes in the list to look for a timeout
-      ros::Time now = ros::Time().now();
-      map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
-      for (it = supervisor_.nodes.begin(); it != supervisor_.nodes.end(); it++)
+      SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
+      if (nr.online)
       {
-        SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
-        if (nr.online)
+        ros::Duration time_since_contact = now - nr.last_contact;
+        ros::Duration timeout_dur(node_timeout_s_);
+        if (time_since_contact > timeout_dur)
         {
-          ros::Duration time_since_contact = now - nr.last_contact;
-          ros::Duration timeout_dur(node_timeout_s_);
-          if (time_since_contact > timeout_dur)
-          {
-            nr.online = false;
-            ROS_ERROR_STREAM("node timed out:" << nr.name);
-            reportSystemState();
-          }
+          nr.online = false;
+          ROS_ERROR_STREAM("node timed out:" << nr.name);
+          reportSystemState();
         }
       }
+      
     }
 
     // check for state transition due to timeouts or anything else that changed since last heartbeat
@@ -427,7 +397,6 @@ private:
     status_msg.man_run = num_manifest_nodes_online;
     status_msg.run = node_mediator_.nodesOnlineCount(supervisor_);
 
-    map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
     for (it = supervisor_.nodes.begin(); it != supervisor_.nodes.end(); it++)
     {
       SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
@@ -443,11 +412,11 @@ private:
     std::stringstream ss;
     genSystemState(ss);
 
-    if (supervisor_.manifest.size() != num_manifest_nodes_online || system_state_ == SuperState::ABORT ||
-        system_state_ == SuperState::HOLD || system_state_ == SuperState::MANUAL)
+    if (supervisor_.manifest.size() != num_manifest_nodes_online || supervisor_.system_state == SuperState::ABORT ||
+        supervisor_.system_state == SuperState::HOLD || supervisor_.system_state == SuperState::MANUAL)
     {
       // if all manifested nodes aren't running, report as error
-      ROS_ERROR_STREAM(ss.str());
+      ROS_ERROR_STREAM(ss.str());   
     }
     else
     {
@@ -475,7 +444,7 @@ private:
   {
     int num_manifest_nodes_online = node_mediator_.manifestedNodesOnlineCount(supervisor_);
     int num_nodes_online = node_mediator_.nodesOnlineCount(supervisor_);
-    ss << "state: " << state_mediator_.stateToString(system_state_) << ", manifest: " << supervisor_.manifest.size()
+    ss << "state: " << state_mediator_.stateToString(supervisor_.system_state) << ", manifest: " << supervisor_.manifest.size()
        << ", manifest online:" << num_manifest_nodes_online << ", total online:" << num_nodes_online;
   }
 
@@ -535,7 +504,7 @@ private:
    */
   void checkForSystemStateTransition()
   {
-    switch (system_state_)
+    switch (supervisor_.system_state)
     {
       case SuperState::OFF:
         // no exit from this state
@@ -543,7 +512,7 @@ private:
       case SuperState::BOOTING:
         if (allManifestedNodesCheck(SuperNodeMediator::checkReadyForConfigureState))
         {
-          ROS_INFO_STREAM(state_mediator_.stateToString(system_state_) << ": changing to READY");
+          ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << ": changing to READY");
           setSystemState(SuperState::READY);
         }
         //      else
@@ -561,7 +530,7 @@ private:
         }
         else
         {
-          ROS_INFO_STREAM(state_mediator_.stateToString(system_state_) << ": sending CONFIGURE again");
+          ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << ": sending CONFIGURE again");
           sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::CONFIGURE);
         }
         break;
@@ -572,7 +541,7 @@ private:
         }
         else
         {
-          ROS_INFO_STREAM(state_mediator_.stateToString(system_state_) << ": sending ACTIVATE again");
+          ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << ": sending ACTIVATE again");
           sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::ACTIVATE);
         }
         break;
@@ -634,13 +603,13 @@ private:
    */
   void setSystemState(SuperState state)
   {
-    ROS_INFO_STREAM("request change system state from: " << state_mediator_.stateToString(system_state_)
+    ROS_INFO_STREAM("request change system state from: " << state_mediator_.stateToString(supervisor_.system_state)
                                                          << " to: " << state_mediator_.stateToString(state));
-    bool legal = state_mediator_.allowsTransition(system_state_, state);
+    bool legal = state_mediator_.allowsTransition(supervisor_.system_state, state);
 
     if (!legal)
     {
-      ROS_ERROR_STREAM("illegal state transition from " << state_mediator_.stateToString(system_state_) << " to "
+      ROS_ERROR_STREAM("illegal state transition from " << state_mediator_.stateToString(supervisor_.system_state) << " to "
                                                         << state_mediator_.stateToString(state));
     }
     else
@@ -659,14 +628,14 @@ private:
       }
 
       // persist given state as the new current state
-      system_state_ = state;
+      supervisor_.system_state = state;
 
       reportSystemState();
 
       sendLEDMessage();
 
       brain_box_msgs::VxState state_msg;
-      state_msg.state = (uint8_t)system_state_;
+      state_msg.state = (uint8_t)supervisor_.system_state;
       vstate_summary_pub_.publish(state_msg);
     }
   }
@@ -695,7 +664,7 @@ private:
     int r = 0, b = 0, g = 0;
     float rate = 0.0;
 
-    switch (system_state_)
+    switch (supervisor_.system_state)
     {
       case SuperState::OFF:
         r = 0;

@@ -397,7 +397,6 @@ private:
     status_msg.man_run = num_manifest_nodes_online;
     status_msg.run = node_mediator_.nodesOnlineCount(supervisor_);
 
-    map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
     for (it = supervisor_.nodes.begin(); it != supervisor_.nodes.end(); it++)
     {
       SuperNodeMediator::SuperNodeInfo& nr = (*it).second;

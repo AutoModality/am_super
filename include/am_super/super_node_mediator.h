@@ -39,9 +39,10 @@ public:
     std::vector<string> manifest;
 
     /**
-     * system state
+     * Overall state of the system, cumulative of the nodes
+     * and super together.
      */
-    SuperState system_state_;
+    SuperState system_state;
 
   };
 

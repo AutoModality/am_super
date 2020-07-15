@@ -9,10 +9,7 @@ env:
   RELEASE_PAYLOAD_FILE: release/payload.json
 jobs:
   release:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [[x64, self-hosted,linux,build]]
+    runs-on: ubuntu-18.04
     steps:
       - uses: AutoModality/action-clean@v1.1.0
       - name: Wait if concurrent action

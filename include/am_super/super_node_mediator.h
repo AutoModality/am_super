@@ -8,6 +8,7 @@
 #include <super_lib/am_life_cycle.h>
 #include <am_super/super_state.h>
 
+
 using namespace std;
 namespace am
 {
@@ -15,6 +16,16 @@ class SuperNodeMediator
 {
 public:
   SuperNodeMediator();
+
+  /**
+   * Instructions Super gives to flight controller.
+   */
+  enum SuperFltCtrlState
+  {
+    INIT,
+    AUTO,
+    HOLD
+  };
 
   struct SuperNodeInfo
   {
@@ -43,6 +54,11 @@ public:
      * and super together.
      */
     SuperState system_state;
+
+    /**
+     * Allows super to manage flight control. 
+     */
+    SuperFltCtrlState flt_ctrl_state;
 
   };
 

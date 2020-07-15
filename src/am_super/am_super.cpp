@@ -32,15 +32,7 @@ using namespace std;
 
 namespace am
 {
-/**
- * flight control state
- */
-enum SuperFltCtrlState
-{
-  INIT,
-  AUTO,
-  HOLD
-};
+
 
 /**
  *  AM supervisor class. aggregates system state and system health and manages node lifecycle.
@@ -77,11 +69,6 @@ private:
 
   /** Node behavior management.*/
   SuperNodeMediator node_mediator_;
-
-  /**
-   * flight controller state
-   */
-  SuperFltCtrlState flt_ctrl_state_;
 
  
 
@@ -187,7 +174,7 @@ public:
     super_status_pub_ = nh_.advertise<brain_box_msgs::Super2Status>("/super/status", 1000);
 
     supervisor_.system_state = SuperState::BOOTING;
-    flt_ctrl_state_ = SuperFltCtrlState::INIT;
+    supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::INIT;
 
     BagLogger::instance()->startLogging("SU", SU_LOG_LEVEL);
 
@@ -335,14 +322,14 @@ private:
     if (!node_name.compare("flight_controller") && !subsystem.compare("FLIGHT_CONTROL"))
     {
       bool flt_ctrl_state_changed = false;
-      if (!value.compare("AUTO") && flt_ctrl_state_ != SuperFltCtrlState::AUTO)
+      if (!value.compare("AUTO") && supervisor_.flt_ctrl_state != SuperNodeMediator::SuperFltCtrlState::AUTO)
       {
-        flt_ctrl_state_ = SuperFltCtrlState::AUTO;
+        supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::AUTO;
         flt_ctrl_state_changed = true;
       }
-      else if (!value.compare("HOLD") && flt_ctrl_state_ != SuperFltCtrlState::HOLD)
+      else if (!value.compare("HOLD") && supervisor_.flt_ctrl_state != SuperNodeMediator::SuperFltCtrlState::HOLD)
       {
-        flt_ctrl_state_ = SuperFltCtrlState::HOLD;
+        supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::HOLD;
         flt_ctrl_state_changed = true;
       }
       if (flt_ctrl_state_changed)
@@ -550,11 +537,11 @@ private:
         {
           setSystemState(SuperState::ABORT);
         }
-        else if (flt_ctrl_state_ == SuperFltCtrlState::AUTO)
+        else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::AUTO)
         {
           setSystemState(SuperState::AUTO);
         }
-        else if (flt_ctrl_state_ == SuperFltCtrlState::HOLD)
+        else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::HOLD)
         {
           setSystemState(SuperState::SEMI_AUTO);
         }
@@ -564,7 +551,7 @@ private:
         {
           setSystemState(SuperState::ABORT);
         }
-        else if (flt_ctrl_state_ == SuperFltCtrlState::HOLD)
+        else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::HOLD)
         {
           setSystemState(SuperState::SEMI_AUTO);
         }
@@ -574,7 +561,7 @@ private:
         {
           setSystemState(SuperState::ABORT);
         }
-        else if (flt_ctrl_state_ == SuperFltCtrlState::AUTO)
+        else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::AUTO)
         {
           setSystemState(SuperState::AUTO);
         }

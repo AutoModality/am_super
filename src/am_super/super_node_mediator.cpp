@@ -1,4 +1,6 @@
 #include <am_super/super_node_mediator.h>
+#include <boost/algorithm/string.hpp>
+
 
 namespace am
 {
@@ -85,4 +87,28 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
   }    // for each node
   return pair(success, failed_nodes);
 }
+
+void SuperNodeMediator::parseManifest(Supervisor &supervisor, string manifest)
+{
+    boost::erase_all(manifest, " ");
+    // if a manifest has been specified
+    if (manifest.size())
+    {
+      // split it based upon commas
+      boost::split(supervisor.manifest, manifest, boost::is_any_of(","));
+    }
+}
+
+
+int SuperNodeMediator::nodesOnlineCount(Supervisor supervisor){
+  return std::count_if(supervisor.nodes.begin(), supervisor.nodes.end(), 
+    [](pair<string,SuperNodeInfo> node_entry){return node_entry.second.online;});
+}
+
+int SuperNodeMediator::manifestedNodesOnlineCount(Supervisor supervisor){
+  return std::count_if(supervisor.nodes.begin(), supervisor.nodes.end(), 
+    [](pair<string,SuperNodeInfo> node_entry){return node_entry.second.online && node_entry.second.manifested;});
+}
+
+
 }

@@ -87,23 +87,10 @@ private:
    */
   SuperFltCtrlState flt_ctrl_state_;
 
-  /**
-   * manifest node (generated from manifest param)
-   */
-  std::vector<string> manifest_;
+ 
 
   /** The current state of the system. */
   SuperNodeMediator::Supervisor supervisor_;
-
-  /**
-   * number of nodes online
-   */
-  int num_nodes_online_;
-
-  /**
-   * number of manifested nodes online
-   */
-  int num_manifest_nodes_online_;
 
   /**
    * amount of time in seconds without hearing from a node that will cause it to go offline
@@ -155,20 +142,17 @@ public:
     /*
      * create initial node list from manifest and create babysitters as needed
      */
-    num_nodes_online_ = 0;
-    num_manifest_nodes_online_ = 0;
     system_state_ = SuperState::OFF;
     // strip spaces from manifest param
-    string tmp_manifest;
-    ros::param::param<string>("~manifest", tmp_manifest, "");
-    boost::erase_all(tmp_manifest, " ");
+    string manifest_param;
+    ros::param::param<string>("~manifest", manifest_param, "");
+    node_mediator_.parseManifest(supervisor_,manifest_param);
     // if a manifest has been specified
-    if (tmp_manifest.size())
+    if (!supervisor_.manifest.empty())
     {
-      // split it based upon commas
-      boost::split(manifest_, tmp_manifest, boost::is_any_of(","));
+
       ROS_INFO_STREAM("configuring nodes from manifest:");
-      for (string& name : manifest_)
+      for (string& name : supervisor_.manifest)
       {
         // create a new node in the list for each name in manifest
         SuperNodeMediator::SuperNodeInfo nr = node_mediator_.initializeManifestedNode(name);
@@ -324,11 +308,6 @@ private:
       {
         ROS_INFO_STREAM("manifested node " << node_name << " came online");
         nr.online = true;
-        num_nodes_online_++;
-        if (nr.manifested)
-        {
-          num_manifest_nodes_online_++;
-        }
         nodes_changed = true;
       }
       if (nr.state != state)
@@ -365,7 +344,6 @@ private:
       nr.state = state;
       nr.status = status;
       supervisor_.nodes.insert(pair<string, SuperNodeMediator::SuperNodeInfo>(node_name, nr));
-      num_nodes_online_++;
       nodes_changed = true;
     }
 
@@ -432,11 +410,6 @@ private:
           if (time_since_contact > timeout_dur)
           {
             nr.online = false;
-            num_nodes_online_--;
-            if (nr.manifested)
-            {
-              num_manifest_nodes_online_--;
-            }
             ROS_ERROR_STREAM("node timed out:" << nr.name);
             reportSystemState();
           }
@@ -447,11 +420,13 @@ private:
     // check for state transition due to timeouts or anything else that changed since last heartbeat
     checkForSystemStateTransition();
 
+    int num_manifest_nodes_online = node_mediator_.manifestedNodesOnlineCount(supervisor_);
     // publish and bag log super status message
     brain_box_msgs::Super2Status status_msg;
-    status_msg.man = manifest_.size();
-    status_msg.man_run = num_manifest_nodes_online_;
-    status_msg.run = num_nodes_online_;
+    status_msg.man = supervisor_.manifest.size();
+    status_msg.man_run = num_manifest_nodes_online;
+    status_msg.run = node_mediator_.nodesOnlineCount(supervisor_);
+
     map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
     for (it = supervisor_.nodes.begin(); it != supervisor_.nodes.end(); it++)
     {
@@ -468,7 +443,7 @@ private:
     std::stringstream ss;
     genSystemState(ss);
 
-    if (manifest_.size() != num_manifest_nodes_online_ || system_state_ == SuperState::ABORT ||
+    if (supervisor_.manifest.size() != num_manifest_nodes_online || system_state_ == SuperState::ABORT ||
         system_state_ == SuperState::HOLD || system_state_ == SuperState::MANUAL)
     {
       // if all manifested nodes aren't running, report as error
@@ -498,8 +473,10 @@ private:
    */
   void genSystemState(std::stringstream& ss)
   {
-    ss << "state: " << state_mediator_.stateToString(system_state_) << ", manifest: " << manifest_.size()
-       << ", manifest online:" << num_manifest_nodes_online_ << ", total online:" << num_nodes_online_;
+    int num_manifest_nodes_online = node_mediator_.manifestedNodesOnlineCount(supervisor_);
+    int num_nodes_online = node_mediator_.nodesOnlineCount(supervisor_);
+    ss << "state: " << state_mediator_.stateToString(system_state_) << ", manifest: " << supervisor_.manifest.size()
+       << ", manifest online:" << num_manifest_nodes_online << ", total online:" << num_nodes_online;
   }
 
   /**

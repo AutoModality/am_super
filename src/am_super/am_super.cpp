@@ -491,9 +491,8 @@ private:
    */
   void checkForSystemStateTransition()
   {
-
-    SuperState new_state;
-    bool state_changed = false;
+    SuperState no_change = SuperState::OFF;
+    SuperState new_state = no_change;
 
     switch (supervisor_.system_state)
     {
@@ -501,7 +500,6 @@ private:
         if (allManifestedNodesCheck(SuperNodeMediator::checkReadyForConfigureState))
         {
           new_state = SuperState::READY;
-          state_changed = true;
         }
         //      else
         //      {
@@ -514,7 +512,6 @@ private:
         if (allManifestedNodesCheck(SuperNodeMediator::checkReadyForActivateState))
         {
           new_state = SuperState::ARMING;
-          state_changed = true;
         }
         else
         {
@@ -526,7 +523,6 @@ private:
         if (allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
         {
           new_state = SuperState::ARMED;
-          state_changed = true;
         }
         else
         {
@@ -538,46 +534,39 @@ private:
         if (!allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
         {
           new_state = SuperState::ABORT;
-          state_changed = true;
         }
         else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::AUTO)
         {
           new_state = SuperState::AUTO;
-          state_changed = true;
         }
         else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::HOLD)
         {
           new_state = SuperState::SEMI_AUTO;
-          state_changed = true;
         }
         break;
       case SuperState::AUTO:
         if (!allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
         {
           new_state = SuperState::ABORT;
-          state_changed = true;
         }
         else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::HOLD)
         {
           new_state = SuperState::SEMI_AUTO;
-          state_changed = true;
         }
         break;
       case SuperState::SEMI_AUTO:
         if (!allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
         {
           new_state = SuperState::ABORT;
-          state_changed = true;
         }
         else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::AUTO)
         {
           new_state = SuperState::AUTO;
-          state_changed = true;
         }
         break;
 
     }
-    if(state_changed){
+    if(new_state != no_change){
       ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << ": changing to " << state_mediator_.stateToString(new_state));
       setSystemState(new_state);
     }

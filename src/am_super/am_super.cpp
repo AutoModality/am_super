@@ -575,8 +575,7 @@ private:
           state_changed = true;
         }
         break;
-      default:
-        // no exit from this state
+
     }
     if(state_changed){
       ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << ": changing to " << state_mediator_.stateToString(new_state));

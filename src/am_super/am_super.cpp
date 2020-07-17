@@ -497,9 +497,6 @@ private:
 
     switch (supervisor_.system_state)
     {
-      case SuperState::OFF:
-        // no exit from this state
-        break;
       case SuperState::BOOTING:
         if (allManifestedNodesCheck(SuperNodeMediator::checkReadyForConfigureState))
         {
@@ -578,18 +575,8 @@ private:
           state_changed = true;
         }
         break;
-      case SuperState::HOLD:
+      default:
         // no exit from this state
-        break;
-      case SuperState::ABORT:
-        // no exit from this state
-        break;
-      case SuperState::MANUAL:
-        // no exit from this state
-        break;
-      case SuperState::SHUTDOWN:
-        // no exit from this state
-        break;
     }
     if(state_changed){
       ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << ": changing to " << state_mediator_.stateToString(new_state));

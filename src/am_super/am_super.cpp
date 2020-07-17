@@ -491,7 +491,7 @@ private:
    */
   void checkForSystemStateTransition()
   {
-    SuperState no_change = SuperState::OFF;
+    SuperState no_change = (SuperState)-1;
     SuperState new_state = no_change;
 
     switch (supervisor_.system_state)
@@ -567,7 +567,7 @@ private:
 
     }
     if(new_state != no_change){
-      ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << ": changing to " << state_mediator_.stateToString(new_state));
+      ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << " --> " << state_mediator_.stateToString(new_state));
       setSystemState(new_state);
     }
   }

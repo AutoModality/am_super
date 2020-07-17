@@ -491,6 +491,10 @@ private:
    */
   void checkForSystemStateTransition()
   {
+
+    SuperState new_state;
+    bool state_changed = false;
+
     switch (supervisor_.system_state)
     {
       case SuperState::OFF:
@@ -499,8 +503,8 @@ private:
       case SuperState::BOOTING:
         if (allManifestedNodesCheck(SuperNodeMediator::checkReadyForConfigureState))
         {
-          ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << ": changing to READY");
-          setSystemState(SuperState::READY);
+          new_state = SuperState::READY;
+          state_changed = true;
         }
         //      else
         //      {
@@ -578,6 +582,10 @@ private:
       case SuperState::SHUTDOWN:
         // no exit from this state
         break;
+    }
+    if(state_changed){
+      ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << ": changing to " << state_mediator_.stateToString(new_state));
+      setSystemState(new_state);
     }
   }
 

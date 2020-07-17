@@ -513,11 +513,11 @@ private:
         //      }
         break;
       case SuperState::READY:
+        // TODO: this should wait for operator to arm
         if (allManifestedNodesCheck(SuperNodeMediator::checkReadyForActivateState))
         {
-          // TODO: this should wait for operator to arm
-          ROS_INFO_STREAM(state_mediator_.stateToString(SuperState::READY) << ": changing to ARMING");
-          setSystemState(SuperState::ARMING);
+          new_state = SuperState::ARMING;
+          state_changed = true;
         }
         else
         {
@@ -528,7 +528,8 @@ private:
       case SuperState::ARMING:
         if (allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
         {
-          setSystemState(SuperState::ARMED);
+          new_state = SuperState::ARMED;
+          state_changed = true;
         }
         else
         {
@@ -539,35 +540,42 @@ private:
       case SuperState::ARMED:
         if (!allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
         {
-          setSystemState(SuperState::ABORT);
+          new_state = SuperState::ABORT;
+          state_changed = true;
         }
         else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::AUTO)
         {
-          setSystemState(SuperState::AUTO);
+          new_state = SuperState::AUTO;
+          state_changed = true;
         }
         else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::HOLD)
         {
-          setSystemState(SuperState::SEMI_AUTO);
+          new_state = SuperState::SEMI_AUTO;
+          state_changed = true;
         }
         break;
       case SuperState::AUTO:
         if (!allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
         {
-          setSystemState(SuperState::ABORT);
+          new_state = SuperState::ABORT;
+          state_changed = true;
         }
         else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::HOLD)
         {
-          setSystemState(SuperState::SEMI_AUTO);
+          new_state = SuperState::SEMI_AUTO;
+          state_changed = true;
         }
         break;
       case SuperState::SEMI_AUTO:
         if (!allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
         {
-          setSystemState(SuperState::ABORT);
+          new_state = SuperState::ABORT;
+          state_changed = true;
         }
         else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::AUTO)
         {
-          setSystemState(SuperState::AUTO);
+          new_state = SuperState::AUTO;
+          state_changed = true;
         }
         break;
       case SuperState::HOLD:

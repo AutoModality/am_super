@@ -216,3 +216,6 @@ if (CATKIN_ENABLE_TESTING)
     )
   endif()
 endif()
+
+add_executable(am_super_status rostests/super_node_status.cpp)
+target_link_libraries(am_super_status ${catkin_LIBRARIES})

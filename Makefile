@@ -16,3 +16,4 @@ install:
 
 clean:
 	rm -rf catkin_ws
+	rm *.deb

@@ -39,14 +39,12 @@ jobs:
       - name: Repo Name
         if: always()
         run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")
-      - name: Unit Test Results
+      - name: Test Results
         if: always()
         id: xunit-viewer
-        uses: AutoModality/action-xunit-viewer@AM-415/rostests
+        uses: AutoModality/action-xunit-viewer@v1.2.0
         with: 
           results: catkin_ws/build/${{env.REPOSITORY_NAME}}/test_results/${{env.REPOSITORY_NAME}}
-      - name: ROS Test Results
-        run: catkin_test_results
       - name: Attach Test Reports
         if: always()
         uses: actions/upload-artifact@v1

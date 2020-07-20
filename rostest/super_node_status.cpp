@@ -12,6 +12,9 @@
 const int TARGET_COUNT = 3; // number of 'ARMED' responses needed to pass test
 int armed_count = 0; // current number of received 'ARMED'
 
+const int MAX_ATTEMPT_COUNT = 10;
+int attempt_count = 0; // current number of attempts
+
 /**
  * callback function for ROS test node whenever data is published 
  * 
@@ -28,8 +31,8 @@ void callback(const brain_box_msgs::VxState& msg)
   {
     ROS_INFO_STREAM("heartbeat not received, retrying...");
   }
+  attempt_count++;
 }
-
 
 TEST(TestNode, testState) 
 {
@@ -39,7 +42,7 @@ TEST(TestNode, testState)
   ros::Rate loop_rate(1); //1 Hz
 
   ROS_INFO_STREAM("Checking for heartbeat until 3 received (Ctrl-C to cancel)..\n");
-  while(armed_count != TARGET_COUNT && ros::ok()) 
+  while(attempt_count < MAX_ATTEMPT_COUNT && armed_count < TARGET_COUNT && ros::ok()) 
   {
     ros::spinOnce();
     loop_rate.sleep();

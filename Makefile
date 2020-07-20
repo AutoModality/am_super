@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 default:
-	source /opt/ros/melodic/setup.bash && cd catkin_ws && catkin build -j3 --no-status --catkin-make-args run_tests
+	source /opt/ros/melodic/setup.bash && cd catkin_ws && catkin build -j3 --no-status && catkin build -j3 --no-status --catkin-make-args run_tests
 
 	rm -f catkin_ws/install/lib/pkgconfig/catkin_tools_prebuild.pc
 
@@ -16,3 +16,4 @@ install:
 
 clean:
 	rm -rf catkin_ws
+	rm *.deb

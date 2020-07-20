@@ -54,6 +54,14 @@ jobs:
       - uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+  industrial_ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: 
+          ROS_DISTRO: melodic
+          ROS_REPO: main
   draft-pr:
     runs-on: ubuntu-18.04
     needs: package

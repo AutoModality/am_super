@@ -1,7 +1,9 @@
 /**
  * ROS Test node to ensure a node can successfully communicate with am_super
  * and retrieve it's status. Specifically, this test checks if am_super is in
- * the ARMED state 3 times. Times out after 10 seconds. 
+ * the ARMED state 3 times. 
+ * 
+ * Times out after rostest default 60 seconds.
  * 
  * Test fails if number of times we receive 'ARMED' from super is less than 3.
  */
@@ -12,8 +14,6 @@
 const int TARGET_COUNT = 3; // number of 'ARMED' responses needed to pass test
 int armed_count = 0; // current number of received 'ARMED'
 
-const int MAX_ATTEMPT_COUNT = 10;
-int attempt_count = 0; // current number of attempts
 
 /**
  * callback function for ROS test node whenever data is published 
@@ -31,7 +31,6 @@ void callback(const brain_box_msgs::VxState& msg)
   {
     ROS_INFO_STREAM("heartbeat not received, retrying...");
   }
-  attempt_count++;
 }
 
 TEST(TestNode, testState) 
@@ -42,7 +41,7 @@ TEST(TestNode, testState)
   ros::Rate loop_rate(1); //1 Hz
 
   ROS_INFO_STREAM("Checking for heartbeat until 3 received (Ctrl-C to cancel)..\n");
-  while(attempt_count < MAX_ATTEMPT_COUNT && armed_count < TARGET_COUNT && ros::ok()) 
+  while(armed_count < TARGET_COUNT && ros::ok()) 
   {
     ros::spinOnce();
     loop_rate.sleep();

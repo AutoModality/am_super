@@ -116,6 +116,12 @@ public:
     return long_name_;
   }
 
+  void setWarnError(uint32_t max_warn, uint32_t max_error)
+  {
+    max_warn_ = max_warn;
+    max_error_ = max_error;
+  }
+
   uint32_t getMaxError() const
   {
     return max_error_;

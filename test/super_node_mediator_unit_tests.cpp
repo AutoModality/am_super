@@ -278,6 +278,15 @@ TEST(Node, transitionReady_BootingToReadyWithNoManifestedNodes)
   ASSERT_EQ(result.second,expected_state);
 }
 
+
+SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
+{
+    SuperNodeMediator::SuperNodeInfo node;
+    node.online=true;
+    node.manifested=true;
+    return node;
+}
+
 TEST(Node, transitionReady_BootingToReadyWhenReadyToConfigure)
 {
   bool expected_ready = true;
@@ -285,10 +294,8 @@ TEST(Node, transitionReady_BootingToReadyWhenReadyToConfigure)
   SuperNodeMediator::Supervisor supervisor;
   supervisor.system_state=SuperState::BOOTING;
   {
-    SuperNodeMediator::SuperNodeInfo node;
-    node.online=true;
-    node.manifested=true;
-    node.state=LifeCycleState::UNCONFIGURED;
+    SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();
+    node.state=LifeCycleState::UNCONFIGURED; // this state makes ready
     supervisor.nodes.insert({"ready-to-configure",node});
   }
   pair<bool,SuperState> result = superNodeMediator.transitionReady(supervisor);
@@ -302,11 +309,9 @@ TEST(Node, transitionReady_BootingNoTransitionWhenNotReadyToConfigure)
   SuperNodeMediator::Supervisor supervisor;
   supervisor.system_state=SuperState::BOOTING;
   {
-    SuperNodeMediator::SuperNodeInfo node;
-    node.online=true;
-    node.manifested=true;
+    SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();
     node.state=LifeCycleState::INVALID;// the state that makes not ready
-    supervisor.nodes.insert({"ready-to-configure",node});
+    supervisor.nodes.insert({"not-ready-to-configure",node});
   }
   pair<bool,SuperState> result = superNodeMediator.transitionReady(supervisor);
   ASSERT_EQ(result.first,expected_ready);

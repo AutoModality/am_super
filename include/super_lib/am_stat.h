@@ -127,9 +127,9 @@ public:
     return max_error_;
   }
 
-  void setMaxError(uint32_t maxError = std::numeric_limits<uint32_t>::max())
+  void setMaxError(uint32_t max_error)
   {
-    max_error_ = maxError;
+    max_error_ = max_error;
   }
 
   uint32_t getMaxWarn() const
@@ -137,9 +137,9 @@ public:
     return max_warn_;
   }
 
-  void setMaxWarn(uint32_t maxWarn = std::numeric_limits<uint32_t>::max())
+  void setMaxWarn(uint32_t max_warn)
   {
-    max_warn_ = maxWarn;
+    max_warn_ = max_warn;
   }
 
   const std::string& getShortName() const

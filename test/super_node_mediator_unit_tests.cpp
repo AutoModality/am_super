@@ -287,32 +287,38 @@ SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
     return node;
 }
 
-TEST(Node, transitionReady_BootingToReadyWhenReadyToConfigure)
+void ASSERT_TRANSITION_READY(SuperState from,LifeCycleState node_state,bool expected_ready,SuperState expected_state = SuperState::OFF)
 {
-  bool expected_ready = true;
-  SuperState expected_state = SuperState::READY;
   SuperNodeMediator::Supervisor supervisor;
-  supervisor.system_state=SuperState::BOOTING;
+  supervisor.system_state=from;
   {
     SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();
-    node.state=LifeCycleState::UNCONFIGURED; // this state makes ready
-    supervisor.nodes.insert({"ready-to-configure",node});
+    node.state=node_state;
+    supervisor.nodes.insert({"manifested-node-name",node});
   }
   pair<bool,SuperState> result = superNodeMediator.transitionReady(supervisor);
   ASSERT_EQ(result.first,expected_ready);
-  ASSERT_EQ(result.second,expected_state);
+  if(result.first)
+  {
+    ASSERT_EQ(result.second,expected_state);
+  }
+}
+TEST(Node, transitionReady_BootingToReadyWhenReadyToConfigure)
+{
+  ASSERT_TRANSITION_READY(SuperState::BOOTING,LifeCycleState::UNCONFIGURED,true,SuperState::READY);
 }
 
 TEST(Node, transitionReady_BootingNoTransitionWhenNotReadyToConfigure)
 {
-  bool expected_ready = false;
-  SuperNodeMediator::Supervisor supervisor;
-  supervisor.system_state=SuperState::BOOTING;
-  {
-    SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();
-    node.state=LifeCycleState::INVALID;// the state that makes not ready
-    supervisor.nodes.insert({"not-ready-to-configure",node});
-  }
-  pair<bool,SuperState> result = superNodeMediator.transitionReady(supervisor);
-  ASSERT_EQ(result.first,expected_ready);
+  ASSERT_TRANSITION_READY(SuperState::BOOTING,LifeCycleState::INVALID,false);
+}
+
+TEST(Node, transitionReady_ReadyNoTransitionWhenNotReadyToActivate)
+{
+ ASSERT_TRANSITION_READY(SuperState::READY,LifeCycleState::INVALID,false);
+}
+
+TEST(Node, transitionReady_ReadyToArmingWhenReadyToActivate)
+{
+ ASSERT_TRANSITION_READY(SuperState::READY,LifeCycleState::ACTIVE,true,SuperState::ARMING);
 }

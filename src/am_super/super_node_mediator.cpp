@@ -31,6 +31,8 @@ struct StateTransition
 
 const std::map<SuperState, StateTransition> state_transitions_ = {
   { SuperState::BOOTING, { SuperState::READY, SuperNodeMediator::checkReadyForConfigureState } },
+   // TODO: this should wait for operator to arm
+  { SuperState::READY, { SuperState::ARMING, SuperNodeMediator::checkReadyForActivateState } },
 };
 
 std::string SuperNodeMediator::nodeNameStripped(std::string node_name)

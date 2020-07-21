@@ -513,9 +513,7 @@ private:
         //      }
         break;
       case SuperState::READY:
-        // TODO: this should wait for operator to arm
-        check=SuperNodeMediator::checkReadyForActivateState;
-        new_state_if_check=SuperState::ARMING;
+       
         lifecycle_command_if_check_fail = LifeCycleCommand::CONFIGURE;
         break;
       case SuperState::ARMING:

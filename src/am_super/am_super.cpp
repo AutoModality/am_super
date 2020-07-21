@@ -493,14 +493,19 @@ private:
   {
     SuperState no_change = (SuperState)-1;
     SuperState new_state = no_change;
+    SuperState new_state_if_check = no_change;
+    std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check;
+    LifeCycleCommand no_lifecycle_command = (LifeCycleCommand)-1;
+    LifeCycleCommand lifecycle_command_if_check_fail = no_lifecycle_command;
+    bool check_positive = true;
+    std::map<SuperNodeMediator::SuperFltCtrlState,SuperState> flt_ctrl_state_map;
 
     switch (supervisor_.system_state)
     {
       case SuperState::BOOTING:
-        if (allManifestedNodesCheck(SuperNodeMediator::checkReadyForConfigureState))
-        {
-          new_state = SuperState::READY;
-        }
+        check = SuperNodeMediator::checkReadyForConfigureState;
+        new_state_if_check = SuperState::READY;
+        
         //      else
         //      {
         //        ROS_INFO_STREAM(stateToString(SuperState::BOOTING) << ": sending CONFIGURE again");
@@ -509,62 +514,59 @@ private:
         break;
       case SuperState::READY:
         // TODO: this should wait for operator to arm
-        if (allManifestedNodesCheck(SuperNodeMediator::checkReadyForActivateState))
-        {
-          new_state = SuperState::ARMING;
-        }
-        else
-        {
-          ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << ": sending CONFIGURE again");
-          sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::CONFIGURE);
-        }
+        check=SuperNodeMediator::checkReadyForActivateState;
+        new_state_if_check=SuperState::ARMING;
+        lifecycle_command_if_check_fail = LifeCycleCommand::CONFIGURE;
         break;
       case SuperState::ARMING:
-        if (allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
-        {
-          new_state = SuperState::ARMED;
-        }
-        else
-        {
-          ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << ": sending ACTIVATE again");
-          sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::ACTIVATE);
-        }
+        check=SuperNodeMediator::checkActivateState;
+        new_state_if_check=SuperState::ARMED;
+        lifecycle_command_if_check_fail=LifeCycleCommand::ACTIVATE;
         break;
       case SuperState::ARMED:
-        if (!allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
-        {
-          new_state = SuperState::ABORT;
-        }
-        else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::AUTO)
-        {
-          new_state = SuperState::AUTO;
-        }
-        else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::HOLD)
-        {
-          new_state = SuperState::SEMI_AUTO;
-        }
+        check_positive=false;sudo apt install gdebi
+        check=SuperNodeMediator::checkActivateState;
+        new_state_if_check= SuperState::ABORT;
+        flt_ctrl_state_map.insert(pair(SuperNodeMediator::SuperFltCtrlState::AUTO,SuperState::AUTO));
+        flt_ctrl_state_map.insert(pair(SuperNodeMediator::SuperFltCtrlState::HOLD,SuperState::SEMI_AUTO));
         break;
       case SuperState::AUTO:
-        if (!allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
-        {
-          new_state = SuperState::ABORT;
-        }
-        else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::HOLD)
-        {
-          new_state = SuperState::SEMI_AUTO;
-        }
+        check_positive=false;
+        check=SuperNodeMediator::checkActivateState;
+        new_state_if_check=SuperState::ABORT;
+        flt_ctrl_state_map.insert(pair(SuperNodeMediator::SuperFltCtrlState::HOLD,SuperState::SEMI_AUTO));
         break;
       case SuperState::SEMI_AUTO:
-        if (!allManifestedNodesCheck(SuperNodeMediator::checkActivateState))
-        {
-          new_state = SuperState::ABORT;
-        }
-        else if (supervisor_.flt_ctrl_state == SuperNodeMediator::SuperFltCtrlState::AUTO)
-        {
-          new_state = SuperState::AUTO;
-        }
+        check_positive=false;
+        check=SuperNodeMediator::checkActivateState;
+        new_state_if_check=SuperState::ABORT;
+        flt_ctrl_state_map.insert(pair(SuperNodeMediator::SuperFltCtrlState::AUTO,SuperState::AUTO));
         break;
 
+    }
+    if(new_state_if_check != no_change)
+    {
+        if (allManifestedNodesCheck(check) == check_positive)
+        {
+          new_state = new_state_if_check;
+        }
+        else{
+
+          //maybe set the state by the filght controller
+          if(flt_ctrl_state_map.count(supervisor_.flt_ctrl_state))
+          {
+            new_state=flt_ctrl_state_map.at(supervisor_.flt_ctrl_state);
+          }
+
+          //send another message for states matching a lifecycle
+          if(lifecycle_command_if_check_fail != no_lifecycle_command)
+          {
+            string_view state_name=state_mediator_.stateToString(supervisor_.system_state);
+            string_view lifecycle_name=AMLifeCycle::commandToString(lifecycle_command_if_check_fail);
+            ROS_INFO_STREAM( state_name << ": sending " << lifecycle_name << " again");
+            sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, lifecycle_command_if_check_fail);
+          }
+        } 
     }
     if(new_state != no_change){
       ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << " --> " << state_mediator_.stateToString(new_state));

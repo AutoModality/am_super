@@ -75,6 +75,12 @@ public:
    */
   SuperNodeMediator::SuperNodeInfo initializeManifestedNode(std::string node_name);
 
+  /**Provides the next state when the system is in a specific state provided by the Supervisor.
+   * @param supervisor is in charge of knowing the state of the system
+   * @return pair with the boolean indicating readiness and the optional state if ready.
+   */
+  pair<bool,SuperState> transitionReady(Supervisor supervisor);
+
   /**@return true if Lifecyle state is ready to be configured */
   static bool checkReadyForConfigureState(SuperNodeMediator::SuperNodeInfo& nr);
 

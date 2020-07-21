@@ -11,6 +11,28 @@ SuperNodeMediator::SuperNodeMediator()
 {
 }
 
+/**Encapsulates properties and methods that relate to the transition of states 
+ * from various sources (SuperState, NodeLifecycle, Flight Controller) to ensure
+ * the system state is correct.
+ */
+struct StateTransition
+{
+  StateTransition(SuperState _toState, std::function<bool(SuperNodeMediator::SuperNodeInfo&)> _check)
+  {
+    toState=_toState;
+    check=_check;
+  }
+  /**The future Supervisor.systemState if checks pass.*/
+  SuperState toState;
+  /**Function that indicates if the transition is allowed (based on node lifecycle)*/
+  std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check;
+};
+
+
+const std::map<SuperState, StateTransition> state_transitions_ = {
+  { SuperState::BOOTING, { SuperState::READY, SuperNodeMediator::checkReadyForConfigureState } },
+};
+
 std::string SuperNodeMediator::nodeNameStripped(std::string node_name)
 {
   if (node_name.size() > 0 && node_name.at(0) == '/')
@@ -34,6 +56,23 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   nr.state = LifeCycleState::UNCONFIGURED;
   nr.status = LifeCycleStatus::OK;
   return nr;
+}
+
+pair<bool,SuperState> SuperNodeMediator::transitionReady(Supervisor supervisor)
+{
+  //required default state is junk and should not be consulted since not ready
+  pair<bool,SuperState> result = pair(false,SuperState::OFF);
+
+  if(state_transitions_.count(supervisor.system_state))
+  {
+    StateTransition transition = state_transitions_.at(supervisor.system_state);
+    bool ready = allManifestedNodesCheck(supervisor,transition.check).first;
+    if(ready)
+    {
+      result = pair(true,transition.toState);
+    }
+  }
+  return result;
 }
 
 bool SuperNodeMediator::checkReadyForConfigureState(SuperNodeMediator::SuperNodeInfo& nr)
@@ -61,7 +100,7 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
   std::string error_message;
   for (pair<string, SuperNodeInfo> nodePair : supervisor.nodes)
   {
-    SuperNodeInfo node = get<1>(nodePair);
+    SuperNodeInfo node = nodePair.second;
     // only check manifested nodes, ignore others
     if (node.manifested)
     {

@@ -267,3 +267,47 @@ TEST(Node, nodesOnlineCount_ManifestedOnlinedMixed)
 
 }
 
+TEST(Node, transitionReady_BootingToReadyWithNoManifestedNodes)
+{
+  bool expected_ready = true;
+  SuperState expected_state = SuperState::READY;
+  SuperNodeMediator::Supervisor supervisor;
+  supervisor.system_state=SuperState::BOOTING;
+  pair<bool,SuperState> result = superNodeMediator.transitionReady(supervisor);
+  ASSERT_EQ(result.first,expected_ready);
+  ASSERT_EQ(result.second,expected_state);
+}
+
+TEST(Node, transitionReady_BootingToReadyWhenReadyToConfigure)
+{
+  bool expected_ready = true;
+  SuperState expected_state = SuperState::READY;
+  SuperNodeMediator::Supervisor supervisor;
+  supervisor.system_state=SuperState::BOOTING;
+  {
+    SuperNodeMediator::SuperNodeInfo node;
+    node.online=true;
+    node.manifested=true;
+    node.state=LifeCycleState::UNCONFIGURED;
+    supervisor.nodes.insert({"ready-to-configure",node});
+  }
+  pair<bool,SuperState> result = superNodeMediator.transitionReady(supervisor);
+  ASSERT_EQ(result.first,expected_ready);
+  ASSERT_EQ(result.second,expected_state);
+}
+
+TEST(Node, transitionReady_BootingNoTransitionWhenNotReadyToConfigure)
+{
+  bool expected_ready = false;
+  SuperNodeMediator::Supervisor supervisor;
+  supervisor.system_state=SuperState::BOOTING;
+  {
+    SuperNodeMediator::SuperNodeInfo node;
+    node.online=true;
+    node.manifested=true;
+    node.state=LifeCycleState::INVALID;// the state that makes not ready
+    supervisor.nodes.insert({"ready-to-configure",node});
+  }
+  pair<bool,SuperState> result = superNodeMediator.transitionReady(supervisor);
+  ASSERT_EQ(result.first,expected_ready);
+}

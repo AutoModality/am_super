@@ -524,7 +524,7 @@ private:
         lifecycle_command_if_check_fail=LifeCycleCommand::ACTIVATE;
         break;
       case SuperState::ARMED:
-        check_positive=false;sudo apt install gdebi
+        check_positive=false;
         check=SuperNodeMediator::checkActivateState;
         new_state_if_check= SuperState::ABORT;
         flt_ctrl_state_map.insert(pair(SuperNodeMediator::SuperFltCtrlState::AUTO,SuperState::AUTO));
@@ -567,6 +567,15 @@ private:
             sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, lifecycle_command_if_check_fail);
           }
         } 
+    }
+    else
+    {
+      //ask the mediator to check with the supervisor
+      pair<bool,SuperState> transitionReady = node_mediator_.transitionReady(supervisor_);
+      if(transitionReady.first)
+      {
+        new_state = transitionReady.second;
+      }
     }
     if(new_state != no_change){
       ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << " --> " << state_mediator_.stateToString(new_state));

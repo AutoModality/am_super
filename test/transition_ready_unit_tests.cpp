@@ -33,38 +33,49 @@ SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
 
 void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState from,LifeCycleState node_state,bool expected_ready,SuperState expected_state = SuperState::OFF)
 {
-SuperNodeMediator::Supervisor supervisor;
-supervisor.system_state=from;
-{
-    SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();
-    node.state=node_state;
-    supervisor.nodes.insert({"manifested-node-name",node});
+    SuperNodeMediator::Supervisor supervisor;
+    supervisor.system_state=from;
+    {
+        SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();
+        node.state=node_state;
+        supervisor.nodes.insert({"manifested-node-name",node});
+    }
+    pair<bool,SuperState> result = superNodeMediator.transitionReady(supervisor);
+    ASSERT_EQ(result.first,expected_ready);
+    if(result.first)
+    {
+        ASSERT_EQ(result.second,expected_state);
+    }
 }
-pair<bool,SuperState> result = superNodeMediator.transitionReady(supervisor);
-ASSERT_EQ(result.first,expected_ready);
-if(result.first)
-{
-    ASSERT_EQ(result.second,expected_state);
-}
-}
+
 TEST_F(TransitionReady, transitionReady_BootingToReadyWhenReadyToConfigure)
 {
-ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::BOOTING,LifeCycleState::UNCONFIGURED,true,SuperState::READY);
+    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::BOOTING,LifeCycleState::UNCONFIGURED,true,SuperState::READY);
 }
 
 TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenNotReadyToConfigure)
 {
-ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::BOOTING,LifeCycleState::INVALID,false);
+    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::BOOTING,LifeCycleState::INVALID,false);
 }
 
 TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotReadyToActivate)
 {
-ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::READY,LifeCycleState::INVALID,false);
+    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::READY,LifeCycleState::INVALID,false);
 }
 
 TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenReadyToActivate)
 {
-ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::READY,LifeCycleState::ACTIVE,true,SuperState::ARMING);
+    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::READY,LifeCycleState::ACTIVE,true,SuperState::ARMING);
+}
+
+TEST_F(TransitionReady, transitionReady_ArmingToArmedWhenReadyToActivate)
+{
+    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::ARMING,LifeCycleState::ACTIVE,true,SuperState::ARMED);
+}
+
+TEST_F(TransitionReady, transitionReady_ArmingNoTransitionWhenNotReadyToActivate)
+{
+    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::ARMING,LifeCycleState::INVALID,false);
 }
 
 

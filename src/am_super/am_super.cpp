@@ -503,9 +503,6 @@ private:
     switch (supervisor_.system_state)
     {
       case SuperState::BOOTING:
-        check = SuperNodeMediator::checkReadyForConfigureState;
-        new_state_if_check = SuperState::READY;
-        
         //      else
         //      {
         //        ROS_INFO_STREAM(stateToString(SuperState::BOOTING) << ": sending CONFIGURE again");
@@ -517,8 +514,6 @@ private:
         lifecycle_command_if_check_fail = LifeCycleCommand::CONFIGURE;
         break;
       case SuperState::ARMING:
-        check=SuperNodeMediator::checkActivateState;
-        new_state_if_check=SuperState::ARMED;
         lifecycle_command_if_check_fail=LifeCycleCommand::ACTIVATE;
         break;
       case SuperState::ARMED:

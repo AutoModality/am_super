@@ -78,14 +78,34 @@ TEST_F(TransitionReady, transitionReady_ArmingNoTransitionWhenNotReadyToActivate
     ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::ARMING,LifeCycleState::INVALID,false);
 }
 
+TEST_F(TransitionReady, transitionReady_ArmedToAbortWhenDectivated)
+{
+    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::ARMED,LifeCycleState::INACTIVE,true,SuperState::ABORT);
+}
+
+TEST_F(TransitionReady, transitionReady_ArmedNoTransitionRemainingActivated)
+{
+    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::ARMED,LifeCycleState::ACTIVE,false);
+}
+
+TEST_F(TransitionReady, transitionReady_AutoToAbortWhenDeactivated)
+{
+    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::AUTO,LifeCycleState::INACTIVE,true,SuperState::ABORT);
+}
+
+TEST_F(TransitionReady, transitionReady_ArmedNoTransitionWhenRemainingActive)
+{
+    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::AUTO,LifeCycleState::ACTIVE,false);
+}
+
 
 TEST_F(TransitionReady, transitionReady_BootingToReadyWithNoManifestedNodes)
 {
-bool expected_ready = true;
-SuperState expected_state = SuperState::READY;
-SuperNodeMediator::Supervisor supervisor;
-supervisor.system_state=SuperState::BOOTING;
-pair<bool,SuperState> result = superNodeMediator -> transitionReady(supervisor);
-ASSERT_EQ(result.first,expected_ready);
-ASSERT_EQ(result.second,expected_state);
+    bool expected_ready = true;
+    SuperState expected_state = SuperState::READY;
+    SuperNodeMediator::Supervisor supervisor;
+    supervisor.system_state=SuperState::BOOTING;
+    pair<bool,SuperState> result = superNodeMediator -> transitionReady(supervisor);
+    ASSERT_EQ(result.first,expected_ready);
+    ASSERT_EQ(result.second,expected_state);
 }

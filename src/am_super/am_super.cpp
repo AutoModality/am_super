@@ -491,89 +491,15 @@ private:
    */
   void checkForSystemStateTransition()
   {
-    SuperState no_change = (SuperState)-1;
-    SuperState new_state = no_change;
-    SuperState new_state_if_check = no_change;
-    std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check;
-    LifeCycleCommand no_lifecycle_command = (LifeCycleCommand)-1;
-    LifeCycleCommand lifecycle_command_if_check_fail = no_lifecycle_command;
-    bool check_positive = true;
-    std::map<SuperNodeMediator::SuperFltCtrlState,SuperState> flt_ctrl_state_map;
-
-    switch (supervisor_.system_state)
+    //ask the mediator to check with the supervisor
+    pair<bool,SuperState> transitionReady = node_mediator_.transitionReady(supervisor_);
+    if(transitionReady.first)
     {
-      case SuperState::BOOTING:
-        //      else
-        //      {
-        //        ROS_INFO_STREAM(stateToString(SuperState::BOOTING) << ": sending CONFIGURE again");
-        //        sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::CONFIGURE);
-        //      }
-        break;
-      case SuperState::READY:
-       
-        lifecycle_command_if_check_fail = LifeCycleCommand::CONFIGURE;
-        break;
-      case SuperState::ARMING:
-        lifecycle_command_if_check_fail=LifeCycleCommand::ACTIVATE;
-        break;
-      case SuperState::ARMED:
-        check_positive=false;
-        check=SuperNodeMediator::checkActivateState;
-        new_state_if_check= SuperState::ABORT;
-        flt_ctrl_state_map.insert(pair(SuperNodeMediator::SuperFltCtrlState::AUTO,SuperState::AUTO));
-        flt_ctrl_state_map.insert(pair(SuperNodeMediator::SuperFltCtrlState::HOLD,SuperState::SEMI_AUTO));
-        break;
-      case SuperState::AUTO:
-        check_positive=false;
-        check=SuperNodeMediator::checkActivateState;
-        new_state_if_check=SuperState::ABORT;
-        flt_ctrl_state_map.insert(pair(SuperNodeMediator::SuperFltCtrlState::HOLD,SuperState::SEMI_AUTO));
-        break;
-      case SuperState::SEMI_AUTO:
-        check_positive=false;
-        check=SuperNodeMediator::checkActivateState;
-        new_state_if_check=SuperState::ABORT;
-        flt_ctrl_state_map.insert(pair(SuperNodeMediator::SuperFltCtrlState::AUTO,SuperState::AUTO));
-        break;
-
-    }
-    if(new_state_if_check != no_change)
-    {
-        if (allManifestedNodesCheck(check) == check_positive)
-        {
-          new_state = new_state_if_check;
-        }
-        else{
-
-          //maybe set the state by the filght controller
-          if(flt_ctrl_state_map.count(supervisor_.flt_ctrl_state))
-          {
-            new_state=flt_ctrl_state_map.at(supervisor_.flt_ctrl_state);
-          }
-
-          //send another message for states matching a lifecycle
-          if(lifecycle_command_if_check_fail != no_lifecycle_command)
-          {
-            string_view state_name=state_mediator_.stateToString(supervisor_.system_state);
-            string_view lifecycle_name=AMLifeCycle::commandToString(lifecycle_command_if_check_fail);
-            ROS_INFO_STREAM( state_name << ": sending " << lifecycle_name << " again");
-            sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, lifecycle_command_if_check_fail);
-          }
-        } 
-    }
-    else
-    {
-      //ask the mediator to check with the supervisor
-      pair<bool,SuperState> transitionReady = node_mediator_.transitionReady(supervisor_);
-      if(transitionReady.first)
-      {
-        new_state = transitionReady.second;
-      }
-    }
-    if(new_state != no_change){
+      SuperState new_state=transitionReady.second;
       ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << " --> " << state_mediator_.stateToString(new_state));
       setSystemState(new_state);
     }
+    
   }
 
   /**

@@ -17,23 +17,30 @@ SuperNodeMediator::SuperNodeMediator()
  */
 struct StateTransition
 {
-  StateTransition(SuperState _toState, std::function<bool(SuperNodeMediator::SuperNodeInfo&)> _check)
+  StateTransition(SuperState _toState, std::function<bool(SuperNodeMediator::SuperNodeInfo&)> _check, bool _on_check_result)
   {
     toState=_toState;
     check=_check;
+    on_check_result=_on_check_result;
   }
   /**The future Supervisor.systemState if checks pass.*/
   SuperState toState;
   /**Function that indicates if the transition is allowed (based on node lifecycle)*/
   std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check;
+
+  /**If the check result matches this value, then transition*/
+  bool on_check_result; 
 };
 
-
+/** keyed by the current system state, if the check method passes then the new state will be the given.*/
 const std::map<SuperState, StateTransition> state_transitions_ = {
-  { SuperState::BOOTING, { SuperState::READY, SuperNodeMediator::checkReadyForConfigureState } },
+  { SuperState::BOOTING,   { SuperState::READY,  SuperNodeMediator::checkReadyForConfigureState,true } },
    // TODO: this should wait for operator to arm
-  { SuperState::READY, { SuperState::ARMING, SuperNodeMediator::checkReadyForActivateState } },
-  { SuperState::ARMING, { SuperState::ARMED, SuperNodeMediator::checkReadyForActivateState } },
+  { SuperState::READY,     { SuperState::ARMING, SuperNodeMediator::checkReadyForActivateState,true } },
+  { SuperState::ARMING,    { SuperState::ARMED,  SuperNodeMediator::checkActivateState,true } },
+  { SuperState::ARMED,     { SuperState::ABORT,  SuperNodeMediator::checkActivateState,false } },
+  { SuperState::AUTO,      { SuperState::ABORT,  SuperNodeMediator::checkActivateState,false } },
+  { SuperState::SEMI_AUTO, { SuperState::ABORT,  SuperNodeMediator::checkActivateState,false } },
 };
 
 
@@ -65,18 +72,18 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
 pair<bool,SuperState> SuperNodeMediator::transitionReady(Supervisor supervisor)
 {
   //required default state is junk and should not be consulted since not ready
-  pair<bool,SuperState> result = pair(false,SuperState::OFF);
+  pair<bool,SuperState> transition_instructions = pair(false,SuperState::OFF);
 
   if(state_transitions_.count(supervisor.system_state))
   {
     StateTransition transition = state_transitions_.at(supervisor.system_state);
-    bool ready = allManifestedNodesCheck(supervisor,transition.check).first;
-    if(ready)
+    bool check_result = allManifestedNodesCheck(supervisor,transition.check).first;
+    if(check_result == transition.on_check_result)
     {
-      result = pair(true,transition.toState);
+      transition_instructions = pair(true,transition.toState);
     }
   }
-  return result;
+  return transition_instructions;
 }
 
 bool SuperNodeMediator::checkReadyForConfigureState(SuperNodeMediator::SuperNodeInfo& nr)

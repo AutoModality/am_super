@@ -31,10 +31,15 @@ SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
     return node;
 }
 
-void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState from,LifeCycleState node_state,bool expected_ready,SuperState expected_state = SuperState::OFF)
+
+
+void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState from, LifeCycleState node_state,
+                                 SuperNodeMediator::SuperFltCtrlState flt_ctrl_state, bool expected_ready, 
+                                 SuperState expected_state)
 {
     SuperNodeMediator::Supervisor supervisor;
     supervisor.system_state=from;
+    supervisor.flt_ctrl_state=flt_ctrl_state;
     {
         SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();
         node.state=node_state;
@@ -46,6 +51,12 @@ void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState fr
     {
         ASSERT_EQ(result.second,expected_state);
     }
+}
+
+void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState from,LifeCycleState node_state,
+                                bool expected_ready,SuperState expected_state = SuperState::OFF)
+{
+    ASSERT_TRANSITION_READY(superNodeMediator,from,node_state,(SuperNodeMediator::SuperFltCtrlState) -1,expected_ready,expected_state);
 }
 
 TEST_F(TransitionReady, transitionReady_BootingToReadyWhenReadyToConfigure)
@@ -98,14 +109,11 @@ TEST_F(TransitionReady, transitionReady_ArmedNoTransitionWhenRemainingActive)
     ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::AUTO,LifeCycleState::ACTIVE,false);
 }
 
+//======================= FLIGHT Controller States =====================================
 
-TEST_F(TransitionReady, transitionReady_BootingToReadyWithNoManifestedNodes)
+
+TEST_F(TransitionReady, transitionReady_ArmedToAutoWhenFlightControllerIsAuto)
 {
-    bool expected_ready = true;
-    SuperState expected_state = SuperState::READY;
-    SuperNodeMediator::Supervisor supervisor;
-    supervisor.system_state=SuperState::BOOTING;
-    pair<bool,SuperState> result = superNodeMediator -> transitionReady(supervisor);
-    ASSERT_EQ(result.first,expected_ready);
-    ASSERT_EQ(result.second,expected_state);
+    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::ARMED,LifeCycleState::ACTIVE,
+        SuperNodeMediator::SuperFltCtrlState::AUTO,true,SuperState::AUTO);
 }

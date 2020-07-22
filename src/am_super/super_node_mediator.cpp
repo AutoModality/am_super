@@ -17,11 +17,13 @@ SuperNodeMediator::SuperNodeMediator()
  */
 struct StateTransition
 {
-  StateTransition(SuperState _toState, std::function<bool(SuperNodeMediator::SuperNodeInfo&)> _check, bool _on_check_result)
+  StateTransition(SuperState _toState, std::function<bool(SuperNodeMediator::SuperNodeInfo&)> _check, 
+                    bool _on_check_result, std::map<SuperNodeMediator::SuperFltCtrlState,SuperState> _flt_ctrl_state_map)
   {
     toState=_toState;
     check=_check;
     on_check_result=_on_check_result;
+    flt_ctrl_state_map=_flt_ctrl_state_map;
   }
   /**The future Supervisor.systemState if checks pass.*/
   SuperState toState;
@@ -30,17 +32,24 @@ struct StateTransition
 
   /**If the check result matches this value, then transition*/
   bool on_check_result; 
+
+  /**State change based on flight controller state */ 
+  std::map<SuperNodeMediator::SuperFltCtrlState,SuperState> flt_ctrl_state_map;
 };
 
 /** keyed by the current system state, if the check method passes then the new state will be the given.*/
 const std::map<SuperState, StateTransition> state_transitions_ = {
-  { SuperState::BOOTING,   { SuperState::READY,  SuperNodeMediator::checkReadyForConfigureState,true } },
+  { SuperState::BOOTING,   { SuperState::READY,  SuperNodeMediator::checkReadyForConfigureState,true,{} } },
    // TODO: this should wait for operator to arm
-  { SuperState::READY,     { SuperState::ARMING, SuperNodeMediator::checkReadyForActivateState,true } },
-  { SuperState::ARMING,    { SuperState::ARMED,  SuperNodeMediator::checkActivateState,true } },
-  { SuperState::ARMED,     { SuperState::ABORT,  SuperNodeMediator::checkActivateState,false } },
-  { SuperState::AUTO,      { SuperState::ABORT,  SuperNodeMediator::checkActivateState,false } },
-  { SuperState::SEMI_AUTO, { SuperState::ABORT,  SuperNodeMediator::checkActivateState,false } },
+  { SuperState::READY,     { SuperState::ARMING, SuperNodeMediator::checkReadyForActivateState, true,{} } },
+  { SuperState::ARMING,    { SuperState::ARMED,  SuperNodeMediator::checkActivateState,         true,{} } },
+  { SuperState::ARMED,     { SuperState::ABORT,  SuperNodeMediator::checkActivateState,         false,
+    { {SuperNodeMediator::SuperFltCtrlState::AUTO,SuperState::AUTO}, 
+      {SuperNodeMediator::SuperFltCtrlState::HOLD,SuperState::SEMI_AUTO} } } },
+  { SuperState::AUTO,      { SuperState::ABORT,  SuperNodeMediator::checkActivateState,         false,
+    { {SuperNodeMediator::SuperFltCtrlState::HOLD,SuperState::SEMI_AUTO} } } },
+  { SuperState::SEMI_AUTO, { SuperState::ABORT,  SuperNodeMediator::checkActivateState,         false,
+    { {SuperNodeMediator::SuperFltCtrlState::AUTO,SuperState::AUTO} } } },
 };
 
 
@@ -73,7 +82,6 @@ pair<bool,SuperState> SuperNodeMediator::transitionReady(Supervisor supervisor)
 {
   //required default state is junk and should not be consulted since not ready
   pair<bool,SuperState> transition_instructions = pair(false,SuperState::OFF);
-
   if(state_transitions_.count(supervisor.system_state))
   {
     StateTransition transition = state_transitions_.at(supervisor.system_state);
@@ -81,6 +89,16 @@ pair<bool,SuperState> SuperNodeMediator::transitionReady(Supervisor supervisor)
     if(check_result == transition.on_check_result)
     {
       transition_instructions = pair(true,transition.toState);
+    }
+    else
+    {
+      //no transition based on state alone. 
+      //maybe set the state by the filght controller
+      if(transition.flt_ctrl_state_map.count(supervisor.flt_ctrl_state))
+      {
+        SuperState new_state=transition.flt_ctrl_state_map.at(supervisor.flt_ctrl_state);
+        transition_instructions = pair(true,new_state);
+      }
     }
   }
   return transition_instructions;

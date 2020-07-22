@@ -59,14 +59,22 @@ public:
     value_ = 0;
   }
 
+  void setWarnError(uint32_t min_error, uint32_t min_warn, uint32_t max_warn, uint32_t max_error)
+  {
+    min_error_ = min_error;
+    min_warn_ = min_warn;
+    max_warn_ = max_warn;
+    max_error_ = max_error;
+  }
+
   uint32_t getMinError() const
   {
     return min_error_;
   }
 
-  void setMinError(uint32_t minError = 0)
+  void setMinError(uint32_t min_error)
   {
-    min_error_ = minError;
+    min_error_ = min_error;
   }
 
   uint32_t getMinWarn() const
@@ -74,9 +82,9 @@ public:
     return min_warn_;
   }
 
-  void setMinWarn(uint32_t minWarn = 0)
+  void setMinWarn(uint32_t min_warn)
   {
-    min_warn_ = minWarn;
+    min_warn_ = min_warn;
   }
 };
 

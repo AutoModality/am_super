@@ -267,6 +267,3 @@ TEST(Node, nodesOnlineCount_ManifestedOnlinedMixed)
 
 }
 
-
-
-

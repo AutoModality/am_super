@@ -496,7 +496,6 @@ private:
     if(transitionReady.first)
     {
       SuperState new_state=transitionReady.second;
-      ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << " --> " << state_mediator_.stateToString(new_state));
       setSystemState(new_state);
     }
     
@@ -511,8 +510,8 @@ private:
    */
   void setSystemState(SuperState state)
   {
-    ROS_INFO_STREAM("request change system state from: " << state_mediator_.stateToString(supervisor_.system_state)
-                                                         << " to: " << state_mediator_.stateToString(state));
+    ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << " --> " << state_mediator_.stateToString(state));
+
     bool legal = state_mediator_.allowsTransition(supervisor_.system_state, state);
 
     if (!legal)

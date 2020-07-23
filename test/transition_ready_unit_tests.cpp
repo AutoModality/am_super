@@ -35,11 +35,11 @@ SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
     return node;
 }
 
-
+LifeCycleCommand no_command=(LifeCycleCommand)-1;
 
 void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState from, LifeCycleState node_state,
                                  SuperNodeMediator::SuperFltCtrlState flt_ctrl_state, bool expected_ready, 
-                                 SuperState expected_state)
+                                 SuperState expected_state, bool expected_resend_life_cycle_command, LifeCycleCommand life_cycle_command)
 {
     SuperNodeMediator::Supervisor supervisor;
     supervisor.system_state=from;
@@ -47,7 +47,7 @@ void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState fr
     {
         SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();
         node.state=node_state;
-        supervisor.nodes.insert({"manifested-node-name",node});
+        supervisor.nodes.insert({"manresend_life_cycle_commandifested-node-name",node});
     }
     SuperNodeMediator::TransitionInstructions result = superNodeMediator.transitionReady(supervisor);
     ASSERT_EQ(result.ready_for_transition,expected_ready);
@@ -55,12 +55,27 @@ void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState fr
     {
         ASSERT_EQ(result.new_state,expected_state);
     }
+
+    ASSERT_EQ(result.resend_life_cycle_command,expected_resend_life_cycle_command);
+    if(result.resend_life_cycle_command)
+    {
+        ASSERT_EQ(result.life_cycle_command,life_cycle_command);
+    }
+}
+
+void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState from, LifeCycleState node_state,
+                                 SuperNodeMediator::SuperFltCtrlState flt_ctrl_state, bool expected_ready, 
+                                 SuperState expected_state)
+{
+    ASSERT_TRANSITION_READY(superNodeMediator,from,node_state,flt_ctrl_state,expected_ready,expected_state,
+    false,(LifeCycleCommand)NULL);
+
 }
 
 void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState from,LifeCycleState node_state,
                                 bool expected_ready,SuperState expected_state = SuperState::OFF)
 {
-    ASSERT_TRANSITION_READY(superNodeMediator,from,node_state,(SuperNodeMediator::SuperFltCtrlState) -1,expected_ready,expected_state);
+    ASSERT_TRANSITION_READY(superNodeMediator,from,node_state,(SuperNodeMediator::SuperFltCtrlState) NULL,expected_ready,expected_state);
 }
 
 TEST_F(TransitionReady, transitionReady_BootingToReadyWhenReadyToConfigure)
@@ -70,12 +85,18 @@ TEST_F(TransitionReady, transitionReady_BootingToReadyWhenReadyToConfigure)
 
 TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenNotReadyToConfigure)
 {
-    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::BOOTING,LifeCycleState::INVALID,false);
+    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::BOOTING,LifeCycleState::INVALID,false,(SuperState)NULL);
 }
 
+/**Not ready to transition from Ready so send another configure command */
 TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotReadyToActivate)
 {
-    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::READY,LifeCycleState::INVALID,false);
+    ASSERT_TRANSITION_READY(*superNodeMediator,
+        SuperState::READY,
+        LifeCycleState::INVALID,
+        (SuperNodeMediator::SuperFltCtrlState) NULL,
+        false,(SuperState)NULL,
+        true,LifeCycleCommand::CONFIGURE);
 }
 
 TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenReadyToActivate)
@@ -90,7 +111,12 @@ TEST_F(TransitionReady, transitionReady_ArmingToArmedWhenReadyToActivate)
 
 TEST_F(TransitionReady, transitionReady_ArmingNoTransitionWhenNotReadyToActivate)
 {
-    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::ARMING,LifeCycleState::INVALID,false);
+    ASSERT_TRANSITION_READY(*superNodeMediator,
+        SuperState::ARMING,
+        LifeCycleState::INVALID,
+        (SuperNodeMediator::SuperFltCtrlState) NULL,
+        false,(SuperState)NULL,
+        true,LifeCycleCommand::ACTIVATE);
 }
 
 TEST_F(TransitionReady, transitionReady_ArmedToAbortWhenDectivated)
@@ -140,6 +166,3 @@ TEST_F(TransitionReady, transitionReady_SemiAutoToAutoWhenFlightControllerIsHold
     ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::SEMI_AUTO,LifeCycleState::ACTIVE,
         SuperNodeMediator::SuperFltCtrlState::AUTO,true,SuperState::AUTO);
 }
-
-//======================== Lifecycle Commands ===============================================
-

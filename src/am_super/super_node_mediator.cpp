@@ -120,7 +120,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
 
       if(transition.hasLifecycleCommand())
       {
-        transition_instructions.resend_life_cycle_command=false;
+        transition_instructions.resend_life_cycle_command=true;
         transition_instructions.life_cycle_command=transition.life_cycle_command;
       }
     }

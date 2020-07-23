@@ -8,7 +8,6 @@
 #include <super_lib/am_life_cycle.h>
 #include <am_super/super_state.h>
 
-
 using namespace std;
 namespace am
 {
@@ -56,10 +55,9 @@ public:
     SuperState system_state;
 
     /**
-     * Allows super to manage flight control. 
+     * Allows super to manage flight control.
      */
     SuperFltCtrlState flt_ctrl_state;
-
   };
 
   /**Standardizes the node name which sometimes starts with `/`.
@@ -92,7 +90,7 @@ public:
 
   /**Provides the next state when the system is in a specific state provided by the Supervisor.
    * https://automodality.atlassian.net/wiki/spaces/AMROS/pages/929234949/AMROS+System+States
-   * 
+   *
    * @param supervisor is in charge of knowing the state of the system
    * @return pair with the boolean indicating transition is ready and the optional state if ready.
    */
@@ -103,7 +101,7 @@ public:
    * that notify other nodes to keep trying (early in the lifecycle).
    * @return true with the lifecycle if needed or false with no lifecycle if not needed.
    */
-  pair<bool,LifeCycleCommand> lifeCycleCommand(SuperState system_state);
+  pair<bool, LifeCycleCommand> lifeCycleCommand(SuperState system_state);
 
   /**@return true if Lifecyle state is ready to be configured */
   static bool checkReadyForConfigureState(SuperNodeMediator::SuperNodeInfo& nr);
@@ -114,24 +112,24 @@ public:
   /**@return true if Lifecyle state equals Activate */
   static bool checkActivateState(SuperNodeMediator::SuperNodeInfo& nr);
 
-  /** Reads the given manifest string, typically provided by a ROS param, 
-   * converts it to a vector or node names which will be assigned to the given 
+  /** Reads the given manifest string, typically provided by a ROS param,
+   * converts it to a vector or node names which will be assigned to the given
    * Supervisor.
-   * 
+   *
    * @param supervisor maintaing state receiving node names in the manifest
    * @param manifest comma separate list of node names
    */
-  void parseManifest(Supervisor &supervisor, string manifest);
+  void parseManifest(Supervisor& supervisor, string manifest);
 
   /**
      * check if all manifested nodes are ready for configuration.
      * The manifest indicates the node is necessary for operation.
-     * 
+     *
      * This means:
      * - all are online
      * - all states are UNCONFIGURED or INACTIVE or ACTIVE
      * - all statuses are not error
-     * 
+     *
      * @param supervisor with the state of the system to be checked
      * @param check function that will be called with each node registered with Supervisor
      * @return a pair with overall success and a map containing any erroneous node names with message explaining why
@@ -142,7 +140,7 @@ public:
 
   /**@return the number of nodes where online=true*/
   int nodesOnlineCount(Supervisor supervisor);
-  
+
   /**@return the number of nodes where online=true and manifested=true*/
   int manifestedNodesOnlineCount(Supervisor supervisor);
 

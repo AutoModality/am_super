@@ -32,8 +32,6 @@ using namespace std;
 
 namespace am
 {
-
-
 /**
  *  AM supervisor class. aggregates system state and system health and manages node lifecycle.
  *
@@ -63,14 +61,11 @@ private:
   ros::Subscriber node_status_sub_;
   ros::Timer heartbeat_timer_;
 
-
   /** manage logic for SuperState transitions */
   SuperStateMediator state_mediator_;
 
   /** Node behavior management.*/
   SuperNodeMediator node_mediator_;
-
- 
 
   /** The current state of the system. */
   SuperNodeMediator::Supervisor supervisor_;
@@ -119,11 +114,10 @@ public:
     // strip spaces from manifest param
     string manifest_param;
     ros::param::param<string>("~manifest", manifest_param, "");
-    node_mediator_.parseManifest(supervisor_,manifest_param);
+    node_mediator_.parseManifest(supervisor_, manifest_param);
     // if a manifest has been specified
     if (!supervisor_.manifest.empty())
     {
-
       ROS_INFO_STREAM("configuring nodes from manifest:");
       for (string& name : supervisor_.manifest)
       {
@@ -208,7 +202,6 @@ private:
    */
   void nodeStateCB(const ros::MessageEvent<brain_box_msgs::LifeCycleState const>& event)
   {
-
     const brain_box_msgs::LifeCycleState::ConstPtr& rmsg = event.getMessage();
 
     /*
@@ -231,7 +224,6 @@ private:
    */
   void statusCB(const ros::MessageEvent<brain_box_msgs::NodeStatus const>& event)
   {
-
     const brain_box_msgs::NodeStatus::ConstPtr& rmsg = event.getMessage();
 
     /*
@@ -371,7 +363,6 @@ private:
           reportSystemState();
         }
       }
-      
     }
 
     // check for state transition due to timeouts or anything else that changed since last heartbeat
@@ -403,7 +394,7 @@ private:
         supervisor_.system_state == SuperState::HOLD || supervisor_.system_state == SuperState::MANUAL)
     {
       // if all manifested nodes aren't running, report as error
-      ROS_ERROR_STREAM(ss.str());   
+      ROS_ERROR_STREAM(ss.str());
     }
     else
     {
@@ -431,8 +422,9 @@ private:
   {
     int num_manifest_nodes_online = node_mediator_.manifestedNodesOnlineCount(supervisor_);
     int num_nodes_online = node_mediator_.nodesOnlineCount(supervisor_);
-    ss << "state: " << state_mediator_.stateToString(supervisor_.system_state) << ", manifest: " << supervisor_.manifest.size()
-       << ", manifest online:" << num_manifest_nodes_online << ", total online:" << num_nodes_online;
+    ss << "state: " << state_mediator_.stateToString(supervisor_.system_state)
+       << ", manifest: " << supervisor_.manifest.size() << ", manifest online:" << num_manifest_nodes_online
+       << ", total online:" << num_nodes_online;
   }
 
   /**
@@ -489,23 +481,23 @@ private:
   /**
    * check for state transition based upon current state and values of member fields.
    * Will call to modify the system state if transition is necessary. Will also call
-   * lifecycle command if indicated to do so based on the state.  
+   * lifecycle command if indicated to do so based on the state.
    * See SuperNodeMediator::TransitionInstructions
    */
   void checkForSystemStateTransition()
   {
-    //ask the mediator to check with the supervisor
+    // ask the mediator to check with the supervisor
     SuperNodeMediator::TransitionInstructions transition_instructions = node_mediator_.transitionReady(supervisor_);
-    if(transition_instructions.ready_for_transition)
+    if (transition_instructions.ready_for_transition)
     {
       setSystemState(transition_instructions.new_state);
     }
-    else if(transition_instructions.resend_life_cycle_command)
+    else if (transition_instructions.resend_life_cycle_command)
     {
-        LifeCycleCommand command = transition_instructions.life_cycle_command;
-        ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << ": sending " 
-          << AMLifeCycle::commandToString(command) <<  " again");
-        sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, command);
+      LifeCycleCommand command = transition_instructions.life_cycle_command;
+      ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state)
+                      << ": sending " << AMLifeCycle::commandToString(command) << " again");
+      sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, command);
     }
   }
 
@@ -518,14 +510,15 @@ private:
    */
   void setSystemState(SuperState state)
   {
-    ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << " --> " << state_mediator_.stateToString(state));
+    ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << " --> "
+                                                                            << state_mediator_.stateToString(state));
 
     bool legal = state_mediator_.allowsTransition(supervisor_.system_state, state);
 
     if (!legal)
     {
-      ROS_ERROR_STREAM("illegal state transition from " << state_mediator_.stateToString(supervisor_.system_state) << " to "
-                                                        << state_mediator_.stateToString(state));
+      ROS_ERROR_STREAM("illegal state transition from " << state_mediator_.stateToString(supervisor_.system_state)
+                                                        << " to " << state_mediator_.stateToString(state));
     }
     else
     {

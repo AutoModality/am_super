@@ -37,6 +37,14 @@ SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
 
 LifeCycleCommand no_command=(LifeCycleCommand)-1;
 
+/**The main test method providing reuse for testing states. Overloaded methods are provided 
+ * for ease of use.
+ * 
+ * Three main tests are happening:
+ * 1. State transition if the check equals expected
+ * 2. State transition if the flight controller state matches desired states.
+ * 3. Lifecycle command provided for check failures that want to encourage re-issue
+ */
 void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState from, LifeCycleState node_state,
                                  SuperNodeMediator::SuperFltCtrlState flt_ctrl_state, bool expected_ready, 
                                  SuperState expected_state, bool expected_resend_life_cycle_command, LifeCycleCommand life_cycle_command)
@@ -63,6 +71,7 @@ void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState fr
     }
 }
 
+/**When flight controller states are expected.*/
 void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState from, LifeCycleState node_state,
                                  SuperNodeMediator::SuperFltCtrlState flt_ctrl_state, bool expected_ready, 
                                  SuperState expected_state)
@@ -72,6 +81,7 @@ void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState fr
 
 }
 
+/**For the simplest cases without flight controller or lifecycle commands*/
 void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState from,LifeCycleState node_state,
                                 bool expected_ready,SuperState expected_state = SuperState::OFF)
 {

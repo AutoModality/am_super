@@ -1,4 +1,6 @@
 <launch>
-    <node pkg="am_super" type="am_super" name="am_super"/>
-    <test test-name="super_status" pkg="am_super" type="am_super_status" />
+    <node pkg="am_super" type="am_super" name="am_super">
+        <rosparam command="load" file="$(dirname)/am_super_status.yaml"/>
+    </node>
+    <test test-name="super_status" pkg="am_super" type="am_super_status" time-limit="10" />
 </launch>

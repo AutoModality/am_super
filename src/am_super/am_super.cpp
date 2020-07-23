@@ -487,7 +487,10 @@ private:
   }
 
   /**
-   * check for state transition based upon current state and values of member fields
+   * check for state transition based upon current state and values of member fields.
+   * Will call to modify the system state if transition is necessary. Will also call
+   * lifecycle command if indicated to do so based on the state.  
+   * See SuperNodeMediator::TransitionInstructions
    */
   void checkForSystemStateTransition()
   {

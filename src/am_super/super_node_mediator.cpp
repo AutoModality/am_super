@@ -17,18 +17,18 @@ SuperNodeMediator::SuperNodeMediator()
  */
 struct StateTransition
 {
-  StateTransition(SuperState _toState, std::function<bool(SuperNodeMediator::SuperNodeInfo&)> _check, 
+  StateTransition(SuperState _to_state, std::function<bool(SuperNodeMediator::SuperNodeInfo&)> _check, 
                     bool _on_check_result, std::map<SuperNodeMediator::SuperFltCtrlState,SuperState> _flt_ctrl_state_map,
                     LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1)
   {
-    toState=_toState;
+    to_state=_to_state;
     check=_check;
     on_check_result=_on_check_result;
     flt_ctrl_state_map=_flt_ctrl_state_map;
     life_cycle_command = _life_cycle_command;
   }
   /**The future Supervisor.systemState if checks pass.*/
-  SuperState toState;
+  SuperState to_state;
   /**Function that indicates if the transition is allowed (based on node lifecycle)*/
   std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check;
 
@@ -53,7 +53,7 @@ struct StateTransition
 /** keyed by the current system state, if the check method passes then the new state will be the given.*/
 const std::map<SuperState, StateTransition> state_transitions_ = {
   { SuperState::BOOTING,   { SuperState::READY,  SuperNodeMediator::checkReadyForConfigureState,true,{} } },
-   // TODO: this should wait for operator to arm
+   // TODO: this should wait for operator to arm AM-421
   { SuperState::READY,     { SuperState::ARMING, SuperNodeMediator::checkReadyForActivateState, true,{}, LifeCycleCommand::CONFIGURE } },
   { SuperState::ARMING,    { SuperState::ARMED,  SuperNodeMediator::checkActivateState,         true,{}, LifeCycleCommand::ACTIVATE } },
   { SuperState::ARMED,     { SuperState::ABORT,  SuperNodeMediator::checkActivateState,         false,
@@ -98,14 +98,18 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   transition_instructions.ready_for_transition=false;
   transition_instructions.resend_life_cycle_command=false;
 
+  //only check those states registered with state_transitions
   if(state_transitions_.count(supervisor.system_state))
   {
     StateTransition transition = state_transitions_.at(supervisor.system_state);
+
+    //each state has a check method providing the logic that should cause transition (based on manifest nodes lifecycle)
+    //some transitions happen only when check fails (mostly to abort)
     bool check_result = allManifestedNodesCheck(supervisor,transition.check).first;
     if(check_result == transition.on_check_result)
     {
       transition_instructions.ready_for_transition=true;
-      transition_instructions.new_state =transition.toState;
+      transition_instructions.new_state =transition.to_state;
     }
     else
     {
@@ -118,6 +122,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
         transition_instructions.new_state=new_state;
       }
 
+      //some check failures send lifecycle commands to encourage nodes to progress so the state can change
       if(transition.hasLifecycleCommand())
       {
         transition_instructions.resend_life_cycle_command=true;

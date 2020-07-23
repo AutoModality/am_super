@@ -18,12 +18,14 @@ SuperNodeMediator::SuperNodeMediator()
 struct StateTransition
 {
   StateTransition(SuperState _toState, std::function<bool(SuperNodeMediator::SuperNodeInfo&)> _check, 
-                    bool _on_check_result, std::map<SuperNodeMediator::SuperFltCtrlState,SuperState> _flt_ctrl_state_map)
+                    bool _on_check_result, std::map<SuperNodeMediator::SuperFltCtrlState,SuperState> _flt_ctrl_state_map,
+                    LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1)
   {
     toState=_toState;
     check=_check;
     on_check_result=_on_check_result;
     flt_ctrl_state_map=_flt_ctrl_state_map;
+    life_cycle_command = _life_cycle_command;
   }
   /**The future Supervisor.systemState if checks pass.*/
   SuperState toState;
@@ -35,14 +37,25 @@ struct StateTransition
 
   /**State change based on flight controller state */ 
   std::map<SuperNodeMediator::SuperFltCtrlState,SuperState> flt_ctrl_state_map;
+
+  /**Certain states are waiting on nodes to do their thing.  Sending lifecycle commands to new nodes 
+   * or nodes that missed previous messages will help flush these pending nodes to finish.
+   */
+  LifeCycleCommand life_cycle_command;
+
+  bool hasLifecycleCommand()
+  {
+    //-1 is also the constructor default
+    return life_cycle_command != (LifeCycleCommand) -1;
+  }
 };
 
 /** keyed by the current system state, if the check method passes then the new state will be the given.*/
 const std::map<SuperState, StateTransition> state_transitions_ = {
   { SuperState::BOOTING,   { SuperState::READY,  SuperNodeMediator::checkReadyForConfigureState,true,{} } },
    // TODO: this should wait for operator to arm
-  { SuperState::READY,     { SuperState::ARMING, SuperNodeMediator::checkReadyForActivateState, true,{} } },
-  { SuperState::ARMING,    { SuperState::ARMED,  SuperNodeMediator::checkActivateState,         true,{} } },
+  { SuperState::READY,     { SuperState::ARMING, SuperNodeMediator::checkReadyForActivateState, true,{}, LifeCycleCommand::CONFIGURE } },
+  { SuperState::ARMING,    { SuperState::ARMED,  SuperNodeMediator::checkActivateState,         true,{}, LifeCycleCommand::ACTIVATE } },
   { SuperState::ARMED,     { SuperState::ABORT,  SuperNodeMediator::checkActivateState,         false,
     { {SuperNodeMediator::SuperFltCtrlState::AUTO,SuperState::AUTO}, 
       {SuperNodeMediator::SuperFltCtrlState::HOLD,SuperState::SEMI_AUTO} } } },
@@ -78,17 +91,21 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   return nr;
 }
 
-pair<bool,SuperState> SuperNodeMediator::transitionReady(Supervisor supervisor)
+SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Supervisor supervisor)
 {
   //required default state is junk and should not be consulted since not ready
-  pair<bool,SuperState> transition_instructions = pair(false,SuperState::OFF);
+  TransitionInstructions transition_instructions;
+  transition_instructions.ready_for_transition=false;
+  transition_instructions.resend_life_cycle_command=false;
+
   if(state_transitions_.count(supervisor.system_state))
   {
     StateTransition transition = state_transitions_.at(supervisor.system_state);
     bool check_result = allManifestedNodesCheck(supervisor,transition.check).first;
     if(check_result == transition.on_check_result)
     {
-      transition_instructions = pair(true,transition.toState);
+      transition_instructions.ready_for_transition=true;
+      transition_instructions.new_state =transition.toState;
     }
     else
     {
@@ -97,7 +114,14 @@ pair<bool,SuperState> SuperNodeMediator::transitionReady(Supervisor supervisor)
       if(transition.flt_ctrl_state_map.count(supervisor.flt_ctrl_state))
       {
         SuperState new_state=transition.flt_ctrl_state_map.at(supervisor.flt_ctrl_state);
-        transition_instructions = pair(true,new_state);
+        transition_instructions.ready_for_transition=true;
+        transition_instructions.new_state=new_state;
+      }
+
+      if(transition.hasLifecycleCommand())
+      {
+        transition_instructions.resend_life_cycle_command=false;
+        transition_instructions.life_cycle_command=transition.life_cycle_command;
       }
     }
   }

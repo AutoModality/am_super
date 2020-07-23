@@ -18,7 +18,7 @@ public:
   SuperNodeMediator();
 
   /**
-   * Instructions Super gives to flight controller.
+   * Instructions Super receives from flight controller.
    */
   enum SuperFltCtrlState
   {
@@ -75,11 +75,35 @@ public:
    */
   SuperNodeMediator::SuperNodeInfo initializeManifestedNode(std::string node_name);
 
-  /**Provides the next state when the system is in a specific state provided by the Supervisor.
-   * @param supervisor is in charge of knowing the state of the system
-   * @return pair with the boolean indicating readiness and the optional state if ready.
+  /**Provided by transitionReady method used by the node to trnasition states and send signals according
+   * the properties within.
    */
-  pair<bool,SuperState> transitionReady(Supervisor supervisor);
+  struct TransitionInstructions
+  {
+    /**System state should become new_state*/
+    bool ready_for_transition;
+    /**The new system state if ready_for_transition*/
+    SuperState new_state;
+    /** if True, then command should be sent.  if ready_for_transition=true, then this is false*/
+    bool resend_life_cycle_command;
+    /** The command that notifies nodes to continue processing so the state can transition*/
+    LifeCycleCommand life_cycle_command;
+  };
+
+  /**Provides the next state when the system is in a specific state provided by the Supervisor.
+   * https://automodality.atlassian.net/wiki/spaces/AMROS/pages/929234949/AMROS+System+States
+   * 
+   * @param supervisor is in charge of knowing the state of the system
+   * @return pair with the boolean indicating transition is ready and the optional state if ready.
+   */
+  SuperNodeMediator::TransitionInstructions transitionReady(Supervisor supervisor);
+
+  /**
+   * Called when transitionReady state fails to provide a LifeCycleCommand for those states
+   * that notify other nodes to keep trying (early in the lifecycle).
+   * @return true with the lifecycle if needed or false with no lifecycle if not needed.
+   */
+  pair<bool,LifeCycleCommand> lifeCycleCommand(SuperState system_state);
 
   /**@return true if Lifecyle state is ready to be configured */
   static bool checkReadyForConfigureState(SuperNodeMediator::SuperNodeInfo& nr);

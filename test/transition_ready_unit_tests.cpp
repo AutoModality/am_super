@@ -6,6 +6,10 @@
 using namespace std;
 using namespace am;
 
+/** Validates state transitions. 
+ * https://automodality.atlassian.net/wiki/spaces/AMROS/pages/929234949/AMROS+System+States
+ * 
+ */ 
 class TransitionReady : public ::testing::Test
 {
 protected:
@@ -45,11 +49,11 @@ void ASSERT_TRANSITION_READY( SuperNodeMediator superNodeMediator, SuperState fr
         node.state=node_state;
         supervisor.nodes.insert({"manifested-node-name",node});
     }
-    pair<bool,SuperState> result = superNodeMediator.transitionReady(supervisor);
-    ASSERT_EQ(result.first,expected_ready);
-    if(result.first)
+    SuperNodeMediator::TransitionInstructions result = superNodeMediator.transitionReady(supervisor);
+    ASSERT_EQ(result.ready_for_transition,expected_ready);
+    if(result.ready_for_transition)
     {
-        ASSERT_EQ(result.second,expected_state);
+        ASSERT_EQ(result.new_state,expected_state);
     }
 }
 
@@ -136,3 +140,6 @@ TEST_F(TransitionReady, transitionReady_SemiAutoToAutoWhenFlightControllerIsHold
     ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::SEMI_AUTO,LifeCycleState::ACTIVE,
         SuperNodeMediator::SuperFltCtrlState::AUTO,true,SuperState::AUTO);
 }
+
+//======================== Lifecycle Commands ===============================================
+

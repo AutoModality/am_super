@@ -492,13 +492,18 @@ private:
   void checkForSystemStateTransition()
   {
     //ask the mediator to check with the supervisor
-    pair<bool,SuperState> transitionReady = node_mediator_.transitionReady(supervisor_);
-    if(transitionReady.first)
+    SuperNodeMediator::TransitionInstructions transition_instructions = node_mediator_.transitionReady(supervisor_);
+    if(transition_instructions.ready_for_transition)
     {
-      SuperState new_state=transitionReady.second;
-      setSystemState(new_state);
+      setSystemState(transition_instructions.new_state);
     }
-    
+    else if(transition_instructions.resend_life_cycle_command)
+    {
+        LifeCycleCommand command = transition_instructions.life_cycle_command;
+        ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << ": sending " 
+          << AMLifeCycle::commandToString(command) <<  " again");
+        sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, command);
+    }
   }
 
   /**

@@ -158,12 +158,6 @@ TEST_F(TransitionReady, transitionReady_ArmedToAutoWhenFlightControllerIsAuto)
         SuperNodeMediator::SuperFltCtrlState::AUTO,true,SuperState::AUTO);
 }
 
-TEST_F(TransitionReady, transitionReady_ArmedToSemiAutoWhenFlightControllerIsHold)
-{
-    ASSERT_TRANSITION_READY(*superNodeMediator,SuperState::ARMED,LifeCycleState::ACTIVE,
-        SuperNodeMediator::SuperFltCtrlState::HOLD,true,SuperState::SEMI_AUTO);
-}
-
 
 TEST_F(TransitionReady, transitionReady_AutoToSemiAutoWhenFlightControllerIsHold)
 {

@@ -162,17 +162,17 @@ TEST(Node, allManifestedNodesCheck_ErrorStatusReturnsFalse)
 TEST(Node, parseManifest_EmptyManifest)
 {
   SuperNodeMediator::Supervisor supervisor;
-  superNodeMediator.parseManifest(supervisor,"");
-  ASSERT_EQ(supervisor.manifest.size(),0);
+  superNodeMediator.parseManifest(supervisor, "");
+  ASSERT_EQ(supervisor.manifest.size(), 0);
 }
 
 TEST(Node, parseManifest_SpacesStripped)
 {
   SuperNodeMediator::Supervisor supervisor;
-  superNodeMediator.parseManifest(supervisor,"first, second, third");
-  vector<string> expected{"first","second","third"};
-  ASSERT_EQ(supervisor.manifest.size(),3);
-  ASSERT_EQ(supervisor.manifest,expected);
+  superNodeMediator.parseManifest(supervisor, "first, second, third");
+  vector<string> expected{ "first", "second", "third" };
+  ASSERT_EQ(supervisor.manifest.size(), 3);
+  ASSERT_EQ(supervisor.manifest, expected);
 }
 
 /**Demonstrates trailing commas are not handled. Not by design, just
@@ -181,54 +181,54 @@ TEST(Node, parseManifest_SpacesStripped)
 TEST(Node, parseManifest_TrailingCommasIsNotIgnored)
 {
   SuperNodeMediator::Supervisor supervisor;
-  superNodeMediator.parseManifest(supervisor,"first,");
-  vector<string> expected{"first",""};
-  ASSERT_EQ(supervisor.manifest.size(),2);
-  ASSERT_EQ(supervisor.manifest,expected);
+  superNodeMediator.parseManifest(supervisor, "first,");
+  vector<string> expected{ "first", "" };
+  ASSERT_EQ(supervisor.manifest.size(), 2);
+  ASSERT_EQ(supervisor.manifest, expected);
 }
 
 TEST(Node, parseManifest_Single)
 {
   SuperNodeMediator::Supervisor supervisor;
-  superNodeMediator.parseManifest(supervisor,"first");
-  vector<string> expected{"first"};
-  ASSERT_EQ(supervisor.manifest.size(),1);
-  ASSERT_EQ(supervisor.manifest,expected);
+  superNodeMediator.parseManifest(supervisor, "first");
+  vector<string> expected{ "first" };
+  ASSERT_EQ(supervisor.manifest.size(), 1);
+  ASSERT_EQ(supervisor.manifest, expected);
 }
 TEST(Node, parseManifest_Double)
 {
   SuperNodeMediator::Supervisor supervisor;
-  superNodeMediator.parseManifest(supervisor,"first,second");
-  vector<string> expected{"first","second"};
-  ASSERT_EQ(supervisor.manifest.size(),2);
-  ASSERT_EQ(supervisor.manifest,expected);
+  superNodeMediator.parseManifest(supervisor, "first,second");
+  vector<string> expected{ "first", "second" };
+  ASSERT_EQ(supervisor.manifest.size(), 2);
+  ASSERT_EQ(supervisor.manifest, expected);
 }
 
 TEST(Node, nodesOnlineCount_EmptyNodesIsZero)
 {
   SuperNodeMediator::Supervisor supervisor;
   int count = superNodeMediator.nodesOnlineCount(supervisor);
-  ASSERT_EQ(count,0);
+  ASSERT_EQ(count, 0);
 }
 
 TEST(Node, nodesOnlineCount_OneNotOnlineIsZero)
 {
   SuperNodeMediator::Supervisor supervisor;
   SuperNodeMediator::SuperNodeInfo node;
-  node.online=false;
-  supervisor.nodes.insert({"whatever",node});
+  node.online = false;
+  supervisor.nodes.insert({ "whatever", node });
   int count = superNodeMediator.nodesOnlineCount(supervisor);
-  ASSERT_EQ(count,0);
+  ASSERT_EQ(count, 0);
 }
 
 TEST(Node, nodesOnlineCount_OneOnlineIsOne)
 {
   SuperNodeMediator::Supervisor supervisor;
   SuperNodeMediator::SuperNodeInfo node;
-  node.online=true;
-  supervisor.nodes.insert({"whatever",node});
+  node.online = true;
+  supervisor.nodes.insert({ "whatever", node });
   int count = superNodeMediator.nodesOnlineCount(supervisor);
-  ASSERT_EQ(count,1);
+  ASSERT_EQ(count, 1);
 }
 
 /**Combination of each of manifested and online testing both methods*/
@@ -237,33 +237,31 @@ TEST(Node, nodesOnlineCount_ManifestedOnlinedMixed)
   SuperNodeMediator::Supervisor supervisor;
   {
     SuperNodeMediator::SuperNodeInfo node;
-    node.online=true;
-    node.manifested=true;
-    supervisor.nodes.insert({"manifested-online",node});
+    node.online = true;
+    node.manifested = true;
+    supervisor.nodes.insert({ "manifested-online", node });
   }
   {
     SuperNodeMediator::SuperNodeInfo node;
-    node.online=false;
-    node.manifested=true;
-    supervisor.nodes.insert({"manifested-not-online",node});
+    node.online = false;
+    node.manifested = true;
+    supervisor.nodes.insert({ "manifested-not-online", node });
   }
   {
     SuperNodeMediator::SuperNodeInfo node;
-    node.online=true;
-    node.manifested=false;
-    supervisor.nodes.insert({"not-manifested-online",node});
+    node.online = true;
+    node.manifested = false;
+    supervisor.nodes.insert({ "not-manifested-online", node });
   }
   {
     SuperNodeMediator::SuperNodeInfo node;
-    node.online=false;
-    node.manifested=false;
-    supervisor.nodes.insert({"not-manifested-not-online",node});
+    node.online = false;
+    node.manifested = false;
+    supervisor.nodes.insert({ "not-manifested-not-online", node });
   }
 
   int online_count = superNodeMediator.nodesOnlineCount(supervisor);
-  ASSERT_EQ(online_count,2);
+  ASSERT_EQ(online_count, 2);
   int manifested_online_count = superNodeMediator.manifestedNodesOnlineCount(supervisor);
-  ASSERT_EQ(manifested_online_count,1) << "Only 1 is manifested and online";
-
+  ASSERT_EQ(manifested_online_count, 1) << "Only 1 is manifested and online";
 }
-

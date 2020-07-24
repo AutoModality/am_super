@@ -211,7 +211,7 @@ if (CATKIN_ENABLE_TESTING)
 
   # For ros testing
   find_package(rostest REQUIRED)
-  add_rostest_gtest(am_super_status rostest/am_super_status.launch rostest/super_node_status.cpp )
+  add_rostest_gtest(am_super_status rostest/life_cycle_test.launch rostest/super_node_status.cpp )
   target_link_libraries(am_super_status ${catkin_LIBRARIES})
 
   add_executable(life_cycle_test_node rostest/life_cycle_test_node.cpp)

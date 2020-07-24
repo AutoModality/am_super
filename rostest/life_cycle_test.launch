@@ -1,6 +1,6 @@
 <launch>
     <node pkg="am_super" type="am_super" name="am_super">
-        <rosparam command="load" file="$(dirname)/am_super_status.yaml"/>
+        <rosparam command="load" file="$(dirname)/test.yaml"/>
     </node>
     <test test-name="super_status" pkg="am_super" type="am_super_status" time-limit="10" />
     <node pkg="am_super" type="life_cycle_test_node" name="life_cycle_test_node" output="screen">

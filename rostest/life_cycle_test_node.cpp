@@ -38,7 +38,13 @@ public:
         throttle_sub_ = nh_.subscribe("throttle", 100, &AMNode::throttleCB, this);
     }
 
-
+     void onConfigure()
+     {
+        ROS_INFO_STREAM("Being told to configure");
+        AMLifeCycle::onConfigure();
+        ROS_INFO_STREAM("Asked parent to configure");
+     }
+    
     void stat1CB(const std_msgs::Int32::ConstPtr  &msg)
     {
         ROS_INFO_STREAM("got stat1 message: " << msg->data);

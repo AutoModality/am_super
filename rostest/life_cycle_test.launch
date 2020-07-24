@@ -3,7 +3,7 @@
         <rosparam command="load" file="$(dirname)/test.yaml"/>
     </node>
     <test test-name="super_status" pkg="am_super" type="am_super_status" time-limit="10" />
-    <node pkg="am_super" type="life_cycle_test_node" name="life_cycle_test_node" output="screen">
+    <!-- <node pkg="am_super" type="life_cycle_test_node" name="life_cycle_test_node" output="screen">
      	<param name="init_state" value="UNCONFIGURED"/>
-    </node>
+    </node> -->
 </launch>

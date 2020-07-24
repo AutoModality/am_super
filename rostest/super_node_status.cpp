@@ -14,6 +14,13 @@
 const int TARGET_COUNT = 3;  // number of 'ARMED' responses needed to pass test
 int armed_count = 0;         // current number of received 'ARMED'
 
+class LifecycleNodeTest : public ::testing::Test
+{
+protected:
+  
+};
+
+
 /**
  * callback function for ROS test node whenever data is published
  *
@@ -32,7 +39,7 @@ void callback(const brain_box_msgs::VxState& msg)
   }
 }
 
-TEST(TestNode, testState)
+TEST_F(LifecycleNodeTest, testState)
 {
   ros::NodeHandle n;
 

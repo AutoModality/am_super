@@ -214,9 +214,6 @@ if (CATKIN_ENABLE_TESTING)
   add_rostest_gtest(am_super_status rostest/life_cycle_test.launch rostest/super_node_status.cpp )
   target_link_libraries(am_super_status ${catkin_LIBRARIES} super_lib)
 
-  add_executable(life_cycle_test_node rostest/life_cycle_test_node.cpp)
-  target_link_libraries(life_cycle_test_node ${catkin_LIBRARIES} super_lib)
-
   # Create a target ${PROJECT_NAME}_coverage_report
   if(ENABLE_COVERAGE_TESTING)
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" )

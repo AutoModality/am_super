@@ -10,14 +10,26 @@
 #include "ros/ros.h"                 // ros header file
 #include <gtest/gtest.h>             // googletest header file
 #include <brain_box_msgs/VxState.h>  // msg for status
+#include <super_lib/am_life_cycle.h>
+
 
 const int TARGET_COUNT = 3;  // number of 'ARMED' responses needed to pass test
 int armed_count = 0;         // current number of received 'ARMED'
 
-class LifecycleNodeTest : public ::testing::Test
+class LifecycleNodeTest : public ::testing::Test, am::AMLifeCycle
 {
+public:
+  LifecycleNodeTest()
+  {
+    ROS_INFO_STREAM("Constructing Lifecycle Node Test");
+  }
+  void onConfigure()
+  {
+    ROS_INFO_STREAM("Being told to configure");
+    AMLifeCycle::onConfigure();
+    ROS_INFO_STREAM("Asked parent to configure");
+  }
 protected:
-  
 };
 
 

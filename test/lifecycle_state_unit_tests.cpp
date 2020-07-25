@@ -26,3 +26,13 @@ TEST(LifeCycle, stateTestStringConversion)
   }
 }
 
+
+TEST(LifeCycle, LifeCycle_stateToString_BadStringReturnsFalse)
+{
+  LifeCycleState default_state=LifeCycleState::FINALIZED;
+  LifeCycleState state = default_state;
+  string bad_string;
+  bool bad_strings_should_return_false = AMLifeCycle::stringToState(bad_string,state);
+  ASSERT_FALSE(bad_strings_should_return_false);
+  ASSERT_EQ(state,default_state) << "State should be unchanged since the string is bad";
+}

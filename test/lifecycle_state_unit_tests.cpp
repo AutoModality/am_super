@@ -27,7 +27,7 @@ TEST(LifeCycle, stateTestStringConversion)
 }
 
 
-TEST(LifeCycle, LifeCycle_stateToString_BadStringReturnsFalse)
+TEST(LifeCycle, stateToString_BadStringReturnsFalse)
 {
   LifeCycleState default_state=LifeCycleState::FINALIZED;
   LifeCycleState state = default_state;

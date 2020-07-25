@@ -60,6 +60,7 @@ public:
 
   static constexpr std::string_view EMPTY_STRING = "";
 
+  static const std::vector<LifeCycleState> allLifeCycleStates();
   static const std::string_view& stateToString(LifeCycleState state);
   static bool stringToState(std::string& state_str, LifeCycleState& state);
   static const std::string_view& statusToString(LifeCycleStatus status);

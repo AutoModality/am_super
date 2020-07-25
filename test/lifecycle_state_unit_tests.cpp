@@ -7,7 +7,8 @@ using namespace std;
 TEST(LifeCycle, stateTestBadState)
 {
   LifeCycleState state = LifeCycleState(20);
-  string str = AMLifeCycle::stateToString(state);
+  string str;
+  str = AMLifeCycle::stateToString(state);
   ASSERT_EQ(str, "INVALID");
 }
 

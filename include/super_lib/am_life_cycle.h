@@ -35,6 +35,7 @@ private:
 public:
   static constexpr std::string_view BROADCAST_NODE_NAME = "";
 
+  /* State string messages for LifeCycle */
   static constexpr std::string_view STATE_INVALID_STRING = "INVALID";
   static constexpr std::string_view STATE_UNCONFIGURED_STRING = "UNCONFIGURED";
   static constexpr std::string_view STATE_INACTIVE_STRING = "INACTIVE";
@@ -45,7 +46,7 @@ public:
   static constexpr std::string_view STATE_ACTIVATING_STRING = "ACTIVATING";
   static constexpr std::string_view STATE_DEACTIVATING_STRING = "DEACTIVATING";
   static constexpr std::string_view STATE_ERROR_PROCESSING_STRING = "ERROR_PROCESSING";
-  static constexpr std::string_view STATE_SHUTTING_DOWN = "SHUTTING_DOWN";
+  static constexpr std::string_view STATE_SHUTTING_DOWN = "SHUTTING_DOWN";  
 
   static constexpr std::string_view STATUS_OK_STRING = "OK";
   static constexpr std::string_view STATUS_WARN_STRING = "WARN";

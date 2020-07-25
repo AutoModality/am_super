@@ -4,7 +4,7 @@
 using namespace am;
 using namespace std;
 
-TEST(LifeCycle, stateTestBadState)
+TEST(LifeCycle, stateToString_BadStringReturnsINVALID)
 {
   LifeCycleState state = LifeCycleState(20);
   string str;

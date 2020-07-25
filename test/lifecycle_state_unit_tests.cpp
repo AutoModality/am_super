@@ -4,6 +4,13 @@
 using namespace am;
 using namespace std;
 
+TEST(LifeCycle, stateTestBadState)
+{
+  LifeCycleState state = LifeCycleState(20);
+  string str = AMLifeCycle::stateToString(state);
+  ASSERT_EQ(str, "INVALID");
+}
+
 TEST(LifeCycle, stateTestStringConversion)
 {
   vector<LifeCycleState> allStates = AMLifeCycle::allLifeCycleStates();

@@ -23,12 +23,6 @@ public:
   {
     ROS_INFO_STREAM("Constructing Lifecycle Node Test");
   }
-  void onConfigure()
-  {
-    ROS_INFO_STREAM("Being told to configure");
-    AMLifeCycle::onConfigure();
-    ROS_INFO_STREAM("Asked parent to configure");
-  }
 protected:
 };
 

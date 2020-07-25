@@ -52,6 +52,21 @@ AMLifeCycle::~AMLifeCycle()
 {
 }
 
+/* Constants for mapping State string to State */
+const std::map<std::string, LifeCycleState> state_info = {
+  {"INVALID", LifeCycleState::INVALID},
+  {"UNCONFIGURED", LifeCycleState::UNCONFIGURED},
+  {"INACTIVE", LifeCycleState::INACTIVE},
+  {"ACTIVE", LifeCycleState::ACTIVE},
+  {"FINALIZED", LifeCycleState::FINALIZED},
+  {"CONFIGURING", LifeCycleState::CONFIGURING},
+  {"CLEANING_UP", LifeCycleState::CLEANING_UP},
+  {"ACTIVATING", LifeCycleState::ACTIVATING},
+  {"DEACTIVATING", LifeCycleState::DEACTIVATING},
+  {"ERROR_PROCESSING", LifeCycleState::ERROR_PROCESSING},
+  {"SHUTTING_DOWN", LifeCycleState::SHUTTING_DOWN}
+};
+
 void AMLifeCycle::lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg)
 {
   ROS_DEBUG_STREAM_THROTTLE(1.0, commandToString((LifeCycleCommand)msg->command));
@@ -337,55 +352,7 @@ const std::string_view& AMLifeCycle::stateToString(LifeCycleState state)
 
 bool AMLifeCycle::stringToState(std::string& state_str, LifeCycleState& state)
 {
-  if (!state_str.compare(STATE_UNCONFIGURED_STRING))
-  {
-    state = LifeCycleState::UNCONFIGURED;
-  }
-  else if (!state_str.compare(STATE_INACTIVE_STRING))
-  {
-    state = LifeCycleState::INACTIVE;
-  }
-  else if (!state_str.compare(STATE_ACTIVE_STRING))
-  {
-    state = LifeCycleState::ACTIVE;
-  }
-  else if (!state_str.compare(STATE_FINALIZED_STRING))
-  {
-    state = LifeCycleState::FINALIZED;
-  }
-  else if (!state_str.compare(STATE_CONFIGURING_STRING))
-  {
-    state = LifeCycleState::CONFIGURING;
-  }
-  else if (!state_str.compare(STATE_CLEANING_UP_STRING))
-  {
-    state = LifeCycleState::CLEANING_UP;
-  }
-  else if (!state_str.compare(STATE_ACTIVATING_STRING))
-  {
-    state = LifeCycleState::ACTIVATING;
-  }
-  else if (!state_str.compare(STATE_DEACTIVATING_STRING))
-  {
-    state = LifeCycleState::DEACTIVATING;
-  }
-  else if (!state_str.compare(STATE_ERROR_PROCESSING_STRING))
-  {
-    state = LifeCycleState::ERROR_PROCESSING;
-  }
-  else if (!state_str.compare(STATE_INVALID_STRING))
-  {
-    state = LifeCycleState::INVALID;
-  }
-  else if (!state_str.compare(STATE_SHUTTING_DOWN))
-  {
-    state = LifeCycleState::SHUTTING_DOWN;
-  }
-  else
-  {
-    return false;
-  }
-  return true;
+  state = state_info.at(state_str);
 }
 
 const std::string_view& AMLifeCycle::statusToString(LifeCycleStatus state)
@@ -542,4 +509,8 @@ void AMLifeCycle::setThrottleS(const double throttleS)
     error_throttle_s_ = throttleS;
   }
 }
+
+
+
 };
+

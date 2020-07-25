@@ -353,6 +353,7 @@ const std::string_view& AMLifeCycle::stateToString(LifeCycleState state)
 bool AMLifeCycle::stringToState(std::string& state_str, LifeCycleState& state)
 {
   state = state_info.at(state_str);
+  return true;
 }
 
 const std::string_view& AMLifeCycle::statusToString(LifeCycleStatus state)

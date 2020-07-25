@@ -327,6 +327,8 @@ const std::string_view& AMLifeCycle::stateToString(LifeCycleState state)
       return STATE_DEACTIVATING_STRING;
     case LifeCycleState::ERROR_PROCESSING:
       return STATE_ERROR_PROCESSING_STRING;
+    case LifeCycleState::SHUTTING_DOWN:
+      return STATE_SHUTTING_DOWN;
     case LifeCycleState::INVALID:
     default:
       return STATE_INVALID_STRING;
@@ -374,6 +376,10 @@ bool AMLifeCycle::stringToState(std::string& state_str, LifeCycleState& state)
   else if (!state_str.compare(STATE_INVALID_STRING))
   {
     state = LifeCycleState::INVALID;
+  }
+  else if (!state_str.compare(STATE_SHUTTING_DOWN))
+  {
+    state = LifeCycleState::SHUTTING_DOWN;
   }
   else
   {

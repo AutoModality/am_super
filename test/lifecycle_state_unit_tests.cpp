@@ -4,12 +4,17 @@
 using namespace am;
 using namespace std;
 
-
-
 TEST(LifeCycle, stateTestStringConversion)
 {
   vector<LifeCycleState> allStates = AMLifeCycle::allLifeCycleStates();
   string str;
-  LifeCycleState state, state_final;
+  LifeCycleState state;
+
+  for(int i = 0; i < allStates.size(); i++) 
+  {
+    str = AMLifeCycle::stateToString(allStates[i]);
+    ASSERT_TRUE(AMLifeCycle::stringToState(str, state));
+    ASSERT_EQ(allStates[i], state);
+  }
 }
 

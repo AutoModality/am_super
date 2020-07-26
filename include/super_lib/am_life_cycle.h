@@ -154,6 +154,9 @@ protected:
   double getThrottleS() const;
   void setThrottleS(const double throttleS);
 
+  /**Providing consistency when logging the current state. */
+  void logState();
+  
 };  // class AMLifeCycle
 
 };  // namespace am

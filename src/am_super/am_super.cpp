@@ -263,7 +263,7 @@ private:
       SuperNodeMediator::SuperNodeInfo& nr = it->second;
       if (!nr.online)
       {
-        ROS_INFO_STREAM("manifested node " << node_name << " came online");
+        ROS_INFO_STREAM("manifested node '" << node_name << "' came online");
         nr.online = true;
         nodes_changed = true;
       }

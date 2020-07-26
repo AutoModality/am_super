@@ -16,23 +16,73 @@
 #include <brain_box_msgs/VxState.h>  // msg for status
 #include <super_lib/am_life_cycle.h>
 
+using namespace std;
+using namespace am;
 
 const int TARGET_COUNT = 3;  // number of 'ARMED' responses needed to pass test
 int armed_count = 0;         // current number of received 'ARMED'
 
-class LifecycleNodeTest : public ::testing::Test, am::AMLifeCycle
+class LifeCycleNodeTest : public ::testing::Test, am::AMLifeCycle
 {
+
+
 public:
-  LifecycleNodeTest()
+  LifeCycleNodeTest()
   {
     ROS_INFO_STREAM("Constructing Lifecycle Node Test");
     //see launch file for "init_state" = UNCONFIGURED
   }
 
   void onConfigure(){
-    ROS_INFO_STREAM("Configuring");
+    AMLifeCycle::onConfigure();
+    configured=true;
   }
+  void onActivate(){
+    AMLifeCycle::onActivate();
+    activated=true;
+  }
+
+  void onCleanup()
+  {
+    AMLifeCycle::onCleanup();
+    cleanedUp=true;
+  }
+
+
+  void onDeactivate()
+  {
+    AMLifeCycle::onDeactivate();
+    deactivated=true;
+  }
+
+
+  void onDestroy()
+  {
+    AMLifeCycle::onDestroy();
+    destroyed=true;
+  }
+
+  void onError()
+  {
+    AMLifeCycle::onError();
+    errored=true;
+  }
+
+  void onShutdown()
+  {
+   AMLifeCycle::onShutdown();
+   shutdown=true;
+  }
+  
+
 protected:
+  bool configured = false;
+  bool activated = false;
+  bool cleanedUp = false;
+  bool deactivated = false;
+  bool destroyed = false;
+  bool errored = false;
+  bool shutdown = false;
 };
 
 
@@ -54,7 +104,7 @@ void callback(const brain_box_msgs::VxState& msg)
   }
 }
 
-TEST_F(LifecycleNodeTest, testState)
+TEST_F(LifeCycleNodeTest, testState)
 {
   ros::NodeHandle n;
 
@@ -69,6 +119,14 @@ TEST_F(LifecycleNodeTest, testState)
   }
 
   ASSERT_EQ(armed_count, TARGET_COUNT);
+  EXPECT_TRUE(configured);
+  EXPECT_TRUE(activated);
+  EXPECT_FALSE(cleanedUp);
+  EXPECT_FALSE(deactivated);
+  EXPECT_FALSE(destroyed);
+  EXPECT_FALSE(errored);
+  EXPECT_FALSE(shutdown);
+
 }
 
 int main(int argc, char** argv)

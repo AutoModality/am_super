@@ -70,11 +70,11 @@ public:
 
   /**
    * @brief Converts a LifeCycleState into the proper string representation. 
-   * If the LifeCycleState is not a valid one, returns LifeCycleState::INVALID
+   * If the LifeCycleState is not a valid one, returns "INVALID"
    * 
    * @param state LifeCycleState enum representing the state of LifeCycle
    * 
-   * @returns The string that represents the state
+   * @returns The string that represents the state. "INVALID" if invalid.
    */ 
   static const std::string_view& stateToString(LifeCycleState state);
 

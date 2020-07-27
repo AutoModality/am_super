@@ -338,10 +338,8 @@ const std::string_view& AMLifeCycle::stateToString(LifeCycleState state)
     {
       return str_state_bimap_.right.at(state);
     }
-    else
-    {
-      return STATE_INVALID_STRING;
-    }
+    return STATE_INVALID_STRING;
+    
 }
 
 bool AMLifeCycle::stringToState(std::string& state_str, LifeCycleState& state)
@@ -406,10 +404,7 @@ const std::string_view& AMLifeCycle::commandToString(LifeCycleCommand command)
     {
       return str_command_bimap_.right.at(command);
     }
-    else
-    {
-      return EMPTY_STRING;
-    }
+    return EMPTY_STRING;
 }
 
 bool AMLifeCycle::stringToCommand(std::string& command_str, LifeCycleCommand& command)

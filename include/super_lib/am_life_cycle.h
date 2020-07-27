@@ -74,6 +74,10 @@ public:
    */
   static const std::vector<LifeCycleCommand> getLifeCycleCommands();
 
+  /**
+   * @brief Stores all status' for LifeCycleStatus into a vector
+   * @returns vector of LifeCycleStatus
+   */
   static const std::vector<LifeCycleStatus> getLifeCycleStatus();
 
   /**
@@ -99,17 +103,36 @@ public:
    */ 
   static bool stringToState(std::string& state_str, LifeCycleState& state);
 
-  
+  /**
+   * @brief Converts a LifeCycleStatus into its proper string representation. 
+   * If the LifeCycleStatus is not a valid one, returns ""
+   * 
+   * @param status LifeCycleStatus enum representing the status
+   * 
+   * @returns The string that represents the status. "" if invalid.
+   */ 
   static const std::string_view& statusToString(LifeCycleStatus status);
+  
+  /**
+   * @brief Reads the string passed in and stores into 'status' the respective
+   * LifeCycleStatus. If the string is not a valid one, the 'status' passed in 
+   * is unchanged
+   * 
+   * @param status_str the string that is converted into a status and stored in 'status'
+   * @param status holds the current status
+   * 
+   * @returns true if the status_str is valid and state was updated
+   * @returns false if the status_str is invalid and state was unchanged
+   */ 
   static bool stringToStatus(std::string& status_str, LifeCycleStatus& status);
 
   /**
    * @brief Converts a LifeCycleCommand into its proper string representation. 
-   * If the LifeCycleCommand is not a valid one, returns "INVALID"
+   * If the LifeCycleCommand is not a valid one, returns ""
    * 
    * @param command LifeCycleCommand enum representing the command
    * 
-   * @returns The string that represents the command. "INVALID" if invalid.
+   * @returns The string that represents the command. "" if invalid.
    */ 
   static const std::string_view& commandToString(LifeCycleCommand command);
 

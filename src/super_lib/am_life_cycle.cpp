@@ -132,14 +132,14 @@ void AMLifeCycle::transition(std::string transition_name, LifeCycleState initial
   }
   else
   {
-    ROS_INFO_STREAM("received illegal activate in state " << stateToString(state_));
+    ROS_WARN_STREAM("received illegal activate in state " << stateToString(state_));
   }
 }
 
 void AMLifeCycle::doTransition(std::string transition_name, bool success, LifeCycleState success_state,
                                LifeCycleState failure_state)
 {
-  ROS_INFO_STREAM(stateToString(state_));
+  logState();
   if (success)
   {
     ROS_INFO_STREAM(transition_name << " succeeded");
@@ -154,7 +154,7 @@ void AMLifeCycle::doTransition(std::string transition_name, bool success, LifeCy
 
 void AMLifeCycle::onActivate()
 {
-  ROS_INFO_STREAM(stateToString(state_));
+  logState();
   doActivate(true);
 }
 
@@ -165,19 +165,18 @@ void AMLifeCycle::doActivate(bool success)
 
 void AMLifeCycle::onCleanup()
 {
-  ROS_INFO_STREAM(stateToString(state_));
+  logState();
   doCleanup(true);
 }
 
 void AMLifeCycle::doCleanup(bool success)
 {
   doTransition("cleanup", success, LifeCycleState::UNCONFIGURED, LifeCycleState::INACTIVE);
-  ROS_INFO_STREAM(stateToString(state_));
+  logState();
 }
 
 void AMLifeCycle::onConfigure()
 {
-  ROS_INFO_STREAM(stateToString(state_));
   doConfigure(true);
 }
 
@@ -188,8 +187,13 @@ void AMLifeCycle::doConfigure(bool success)
 
 void AMLifeCycle::onDeactivate()
 {
-  ROS_INFO_STREAM(stateToString(state_));
+  logState();
   doDeactivate(true);
+}
+
+void AMLifeCycle::logState()
+{
+    ROS_INFO_STREAM("LifeCycle: " << stateToString(state_));
 }
 
 void AMLifeCycle::doDeactivate(bool success)
@@ -212,13 +216,13 @@ void AMLifeCycle::destroy()
 
 void AMLifeCycle::onDestroy()
 {
-  ROS_INFO_STREAM(stateToString(state_));
+  logState();
   doDestroy(true);
 }
 
 void AMLifeCycle::doDestroy(bool success)
 {
-  ROS_INFO_STREAM(stateToString(state_));
+  logState();
   // TODO: how do we call node destructor and exit main()? raise some type of ROS error?
 }
 
@@ -239,13 +243,13 @@ void AMLifeCycle::error()
 
 void AMLifeCycle::onError()
 {
-  ROS_INFO_STREAM(stateToString(state_));
+  logState();
   doError(true);
 }
 
 void AMLifeCycle::doError(bool success)
 {
-  ROS_INFO_STREAM(stateToString(state_));
+  logState();
   if (success)
   {
     state_ = LifeCycleState::UNCONFIGURED;
@@ -277,13 +281,13 @@ void AMLifeCycle::shutdown()
 
 void AMLifeCycle::onShutdown()
 {
-  ROS_INFO_STREAM(stateToString(state_));
+  logState();
   doShutdown(true);
 }
 
 void AMLifeCycle::doShutdown(bool success)
 {
-  ROS_INFO_STREAM(stateToString(state_));
+  logState();
   setState(LifeCycleState::FINALIZED);
 }
 
@@ -314,18 +318,20 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
   ss << AMLifeCycle::stateToString(state_) << "," << AMLifeCycle::statusToString(status_) << ","
      << stats_list_.getStatsStrShort();
 
+  double throttle;
   switch (status_)
   {
     case LifeCycleStatus::OK:
-      ROS_INFO_STREAM_THROTTLE(ok_throttle_s_, ss.str());
+      throttle = ok_throttle_s_;
       break;
     case LifeCycleStatus::WARN:
-      ROS_WARN_STREAM_THROTTLE(warn_throttle_s_, ss.str());
+      throttle = warn_throttle_s_;
       break;
     case LifeCycleStatus::ERROR:
-      ROS_ERROR_STREAM_THROTTLE(error_throttle_s_, ss.str());
+      throttle = error_throttle_s_;
       break;
   }
+  ROS_INFO_STREAM_THROTTLE(ok_throttle_s_, "LifeCycle heartbeat: " << ss.str());
 
   stats_list_.reset();
 

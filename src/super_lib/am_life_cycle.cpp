@@ -1,8 +1,15 @@
 #include <super_lib/am_life_cycle.h>
 #include <brain_box_msgs/LifeCycleState.h>
+#include <boost/bimap.hpp>
+#include <boost/assign.hpp>
+
+
+
 
 namespace am
 {
+  
+
 // static constexpr std::string AMLifeCycle::STATE_INVALID_STRING;
 // static constexpr std::string AMLifeCycle::STATE_UNCONFIGURED_STRING;
 
@@ -51,6 +58,26 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
 AMLifeCycle::~AMLifeCycle()
 {
 }
+
+typedef boost::bimap<std::string_view, am::LifeCycleState> bm_type;
+
+const bm_type state_info = boost::assign::list_of< bm_type::relation > 
+  (AMLifeCycle::STATE_INVALID_STRING, LifeCycleState::INVALID)
+  (AMLifeCycle::STATE_UNCONFIGURED_STRING, LifeCycleState::UNCONFIGURED)
+  (AMLifeCycle::STATE_INACTIVE_STRING, LifeCycleState::INACTIVE)
+  (AMLifeCycle::STATE_ACTIVE_STRING, LifeCycleState::ACTIVE)
+  (AMLifeCycle::STATE_FINALIZED_STRING, LifeCycleState::FINALIZED)
+  (AMLifeCycle::STATE_CONFIGURING_STRING, LifeCycleState::CONFIGURING)
+  (AMLifeCycle::STATE_CLEANING_UP_STRING, LifeCycleState::CLEANING_UP)
+  (AMLifeCycle::STATE_ACTIVATING_STRING, LifeCycleState::ACTIVATING)
+  (AMLifeCycle::STATE_DEACTIVATING_STRING, LifeCycleState::DEACTIVATING)
+  (AMLifeCycle::STATE_ERROR_PROCESSING_STRING, LifeCycleState::ERROR_PROCESSING)
+  (AMLifeCycle::STATE_SHUTTING_DOWN, LifeCycleState::SHUTTING_DOWN);
+
+
+
+
+
 
 void AMLifeCycle::lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg)
 {
@@ -307,79 +334,26 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
 
 const std::string_view& AMLifeCycle::stateToString(LifeCycleState state)
 {
-  switch (state)
-  {
-    case LifeCycleState::UNCONFIGURED:
-      return STATE_UNCONFIGURED_STRING;
-    case LifeCycleState::INACTIVE:
-      return STATE_INACTIVE_STRING;
-    case LifeCycleState::ACTIVE:
-      return STATE_ACTIVE_STRING;
-    case LifeCycleState::FINALIZED:
-      return STATE_FINALIZED_STRING;
-    case LifeCycleState::CONFIGURING:
-      return STATE_CONFIGURING_STRING;
-    case LifeCycleState::CLEANING_UP:
-      return STATE_CLEANING_UP_STRING;
-    case LifeCycleState::ACTIVATING:
-      return STATE_ACTIVATING_STRING;
-    case LifeCycleState::DEACTIVATING:
-      return STATE_DEACTIVATING_STRING;
-    case LifeCycleState::ERROR_PROCESSING:
-      return STATE_ERROR_PROCESSING_STRING;
-    case LifeCycleState::INVALID:
-    default:
+    if(state_info.right.count(state))
+    {
+      return state_info.right.at(state);
+    }
+    else
+    {
       return STATE_INVALID_STRING;
-  }
+    }
 }
+
+    
 
 bool AMLifeCycle::stringToState(std::string& state_str, LifeCycleState& state)
 {
-  if (!state_str.compare(STATE_UNCONFIGURED_STRING))
+  if(state_info.left.count(state_str))
   {
-    state = LifeCycleState::UNCONFIGURED;
+    state = state_info.left.at(state_str);
+    return true;
   }
-  else if (!state_str.compare(STATE_INACTIVE_STRING))
-  {
-    state = LifeCycleState::INACTIVE;
-  }
-  else if (!state_str.compare(STATE_ACTIVE_STRING))
-  {
-    state = LifeCycleState::ACTIVE;
-  }
-  else if (!state_str.compare(STATE_FINALIZED_STRING))
-  {
-    state = LifeCycleState::FINALIZED;
-  }
-  else if (!state_str.compare(STATE_CONFIGURING_STRING))
-  {
-    state = LifeCycleState::CONFIGURING;
-  }
-  else if (!state_str.compare(STATE_CLEANING_UP_STRING))
-  {
-    state = LifeCycleState::CLEANING_UP;
-  }
-  else if (!state_str.compare(STATE_ACTIVATING_STRING))
-  {
-    state = LifeCycleState::ACTIVATING;
-  }
-  else if (!state_str.compare(STATE_DEACTIVATING_STRING))
-  {
-    state = LifeCycleState::DEACTIVATING;
-  }
-  else if (!state_str.compare(STATE_ERROR_PROCESSING_STRING))
-  {
-    state = LifeCycleState::ERROR_PROCESSING;
-  }
-  else if (!state_str.compare(STATE_INVALID_STRING))
-  {
-    state = LifeCycleState::INVALID;
-  }
-  else
-  {
-    return false;
-  }
-  return true;
+  return false;
 }
 
 const std::string_view& AMLifeCycle::statusToString(LifeCycleStatus state)
@@ -497,6 +471,17 @@ void AMLifeCycle::setState(const LifeCycleState state)
   }
 }
 
+const std::vector<LifeCycleState> AMLifeCycle::allLifeCycleStates()
+{
+  std::vector<LifeCycleState> all;
+  for (int enumIndex = (int)LifeCycleState::INVALID; enumIndex <= (int)LifeCycleState::LAST_STATE; enumIndex++)
+  {
+    LifeCycleState state = static_cast<LifeCycleState>(enumIndex);
+    all.push_back(state);
+  }
+  return all;
+}
+
 LifeCycleStatus AMLifeCycle::getStatus() const
 {
   return status_;
@@ -525,4 +510,8 @@ void AMLifeCycle::setThrottleS(const double throttleS)
     error_throttle_s_ = throttleS;
   }
 }
+
+
+
 };
+

@@ -35,6 +35,7 @@ private:
 public:
   static constexpr std::string_view BROADCAST_NODE_NAME = "";
 
+  /* State string messages for LifeCycle */
   static constexpr std::string_view STATE_INVALID_STRING = "INVALID";
   static constexpr std::string_view STATE_UNCONFIGURED_STRING = "UNCONFIGURED";
   static constexpr std::string_view STATE_INACTIVE_STRING = "INACTIVE";
@@ -45,6 +46,7 @@ public:
   static constexpr std::string_view STATE_ACTIVATING_STRING = "ACTIVATING";
   static constexpr std::string_view STATE_DEACTIVATING_STRING = "DEACTIVATING";
   static constexpr std::string_view STATE_ERROR_PROCESSING_STRING = "ERROR_PROCESSING";
+  static constexpr std::string_view STATE_SHUTTING_DOWN = "SHUTTING_DOWN";  
 
   static constexpr std::string_view STATUS_OK_STRING = "OK";
   static constexpr std::string_view STATUS_WARN_STRING = "WARN";
@@ -60,8 +62,36 @@ public:
 
   static constexpr std::string_view EMPTY_STRING = "";
 
+  /**
+   * @brief Stores all states for LifeCycleStates into a vector
+   * @returns vector of LifeCycleStates
+   */
+  static const std::vector<LifeCycleState> allLifeCycleStates();
+
+  /**
+   * @brief Converts a LifeCycleState into the proper string representation. 
+   * If the LifeCycleState is not a valid one, returns "INVALID"
+   * 
+   * @param state LifeCycleState enum representing the state of LifeCycle
+   * 
+   * @returns The string that represents the state. "INVALID" if invalid.
+   */ 
   static const std::string_view& stateToString(LifeCycleState state);
+
+  /**
+   * @brief Reads the string passed in and stores into 'state' the respective
+   * LifeCycleState. If the string is not a valid one, the 'state' passed in 
+   * is unchanged
+   * 
+   * @param state_str the string that is converted to a state and stored in 'state'
+   * @param state holds the current state
+   * 
+   * @returns true if the state_str is valid and state was updated
+   * @returns false if the state_str is invalid and state was unchanged
+   */ 
   static bool stringToState(std::string& state_str, LifeCycleState& state);
+
+
   static const std::string_view& statusToString(LifeCycleStatus status);
   static bool stringToStatus(std::string& status_str, LifeCycleStatus& status);
   static const std::string_view& commandToString(LifeCycleCommand command);

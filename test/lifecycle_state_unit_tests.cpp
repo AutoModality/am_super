@@ -15,8 +15,6 @@ TEST(LifeCycle, statusToString_BadStatusReturnsInvalidString)
 TEST(LifeCycle, statusTestStringConversion)
 {
   vector<LifeCycleStatus> allStatus = AMLifeCycle::getLifeCycleStatus();
-  ASSERT_EQ((int)allStatus.size(), 3);
-
   string str;
   LifeCycleStatus status;
 

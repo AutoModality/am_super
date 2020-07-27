@@ -74,6 +74,8 @@ public:
    */
   static const std::vector<LifeCycleCommand> getLifeCycleCommands();
 
+  static const std::vector<LifeCycleStatus> getLifeCycleStatus();
+
   /**
    * @brief Converts a LifeCycleState into the proper string representation. 
    * If the LifeCycleState is not a valid one, returns "INVALID"

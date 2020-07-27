@@ -446,6 +446,17 @@ const std::vector<LifeCycleState> AMLifeCycle::getLifeCycleStates()
   return all;
 }
 
+const std::vector<LifeCycleStatus> AMLifeCycle::getLifeCycleStatus()
+{
+  std::vector<LifeCycleStatus> all;
+  for (int enumIndex = (int)LifeCycleStatus::OK; enumIndex <= (int)LifeCycleStatus::LAST_STATUS; enumIndex++)
+  {
+    LifeCycleStatus Status = static_cast<LifeCycleStatus>(enumIndex);
+    all.push_back(Status);
+  }
+  return all;
+}
+
 LifeCycleStatus AMLifeCycle::getStatus() const
 {
   return status_;

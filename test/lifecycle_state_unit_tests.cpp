@@ -4,17 +4,49 @@
 using namespace am;
 using namespace std;
 
+TEST(LifeCycle, commandToString_BadCommandReturnsInvalidString)
+{
+  LifeCycleCommand cmd = LifeCycleCommand(20);
+  string str;
+  str = AMLifeCycle::commandToString(cmd);
+  ASSERT_EQ(str, AMLifeCycle::EMPTY_STRING);
+}
+
+TEST(LifeCycle, commandTestStringConversion)
+{
+  vector<LifeCycleCommand> allCommands = AMLifeCycle::getLifeCycleCommands();
+  string str;
+  LifeCycleCommand cmd;
+
+  for(int i = 0; i < allCommands.size(); i++)
+  {
+    str = AMLifeCycle::commandToString(allCommands[i]);
+    ASSERT_TRUE(AMLifeCycle::stringToCommand(str, cmd));
+    ASSERT_EQ(allCommands[i], cmd);
+  }
+}
+
+TEST(LifeCycle, stringToCommand_BadStringReturnsFalse)
+{
+  LifeCycleCommand initial_cmd = LifeCycleCommand::ACTIVATE;
+  LifeCycleCommand cmd = initial_cmd;
+  string bad_string;
+  bool bad_strings_should_return_false = AMLifeCycle::stringToCommand(bad_string, cmd);
+  ASSERT_FALSE(bad_strings_should_return_false);
+  ASSERT_EQ(cmd, initial_cmd) << "Command should be unchanged since the string is bad";
+}
+
 TEST(LifeCycle, stateToString_BadStateReturnsInvalidString)
 {
   LifeCycleState state = LifeCycleState(20);
   string str;
   str = AMLifeCycle::stateToString(state);
-  ASSERT_EQ(str, "INVALID");
+  ASSERT_EQ(str, AMLifeCycle::STATE_INVALID_STRING);
 }
 
 TEST(LifeCycle, stateTestStringConversion)
 {
-  vector<LifeCycleState> allStates = AMLifeCycle::allLifeCycleStates();
+  vector<LifeCycleState> allStates = AMLifeCycle::getLifeCycleStates();
   string str;
   LifeCycleState state;
 
@@ -26,8 +58,7 @@ TEST(LifeCycle, stateTestStringConversion)
   }
 }
 
-
-TEST(LifeCycle, stateToString_BadStringReturnsFalse)
+TEST(LifeCycle, stringToState_BadStringReturnsFalse)
 {
   LifeCycleState default_state=LifeCycleState::FINALIZED;
   LifeCycleState state = default_state;

@@ -63,10 +63,16 @@ public:
   static constexpr std::string_view EMPTY_STRING = "";
 
   /**
-   * @brief Stores all states for LifeCycleStates into a vector
+   * @brief Stores all states for LifeCycleState into a vector
    * @returns vector of LifeCycleStates
    */
-  static const std::vector<LifeCycleState> allLifeCycleStates();
+  static const std::vector<LifeCycleState> getLifeCycleStates();
+
+  /**
+   * @brief Stores all commands for LifeCycleCommand into a vector
+   * @returns vector of LifeCycleCommands
+   */
+  static const std::vector<LifeCycleCommand> getLifeCycleCommands();
 
   /**
    * @brief Converts a LifeCycleState into the proper string representation. 
@@ -91,11 +97,32 @@ public:
    */ 
   static bool stringToState(std::string& state_str, LifeCycleState& state);
 
-
+  
   static const std::string_view& statusToString(LifeCycleStatus status);
   static bool stringToStatus(std::string& status_str, LifeCycleStatus& status);
+
+  /**
+   * @brief Converts a LifeCycleCommand into its proper string representation. 
+   * If the LifeCycleCommand is not a valid one, returns "INVALID"
+   * 
+   * @param command LifeCycleCommand enum representing the command
+   * 
+   * @returns The string that represents the command. "INVALID" if invalid.
+   */ 
   static const std::string_view& commandToString(LifeCycleCommand command);
-  static bool stringToCommand(std::string& status_str, LifeCycleCommand& command);
+
+  /**
+   * @brief Reads the string passed in and stores into 'command' the respective
+   * LifeCycleCommand. If the string is not a valid one, the 'command' passed in 
+   * is unchanged
+   * 
+   * @param command_str the string that is converted into a command and stored in 'command'
+   * @param command holds the current command
+   * 
+   * @returns true if the command_str is valid and state was updated
+   * @returns false if the command_str is invalid and state was unchanged
+   */ 
+  static bool stringToCommand(std::string& command_str, LifeCycleCommand& command);
 
 protected:
   std::string node_name_;

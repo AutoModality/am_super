@@ -59,26 +59,6 @@ AMLifeCycle::~AMLifeCycle()
 {
 }
 
-typedef boost::bimap<std::string_view, am::LifeCycleState> bm_type;
-
-const bm_type state_info = boost::assign::list_of< bm_type::relation > 
-  (AMLifeCycle::STATE_INVALID_STRING, LifeCycleState::INVALID)
-  (AMLifeCycle::STATE_UNCONFIGURED_STRING, LifeCycleState::UNCONFIGURED)
-  (AMLifeCycle::STATE_INACTIVE_STRING, LifeCycleState::INACTIVE)
-  (AMLifeCycle::STATE_ACTIVE_STRING, LifeCycleState::ACTIVE)
-  (AMLifeCycle::STATE_FINALIZED_STRING, LifeCycleState::FINALIZED)
-  (AMLifeCycle::STATE_CONFIGURING_STRING, LifeCycleState::CONFIGURING)
-  (AMLifeCycle::STATE_CLEANING_UP_STRING, LifeCycleState::CLEANING_UP)
-  (AMLifeCycle::STATE_ACTIVATING_STRING, LifeCycleState::ACTIVATING)
-  (AMLifeCycle::STATE_DEACTIVATING_STRING, LifeCycleState::DEACTIVATING)
-  (AMLifeCycle::STATE_ERROR_PROCESSING_STRING, LifeCycleState::ERROR_PROCESSING)
-  (AMLifeCycle::STATE_SHUTTING_DOWN, LifeCycleState::SHUTTING_DOWN);
-
-
-
-
-
-
 void AMLifeCycle::lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg)
 {
   ROS_DEBUG_STREAM_THROTTLE(1.0, commandToString((LifeCycleCommand)msg->command));
@@ -338,11 +318,25 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
   sendNodeUpdate();
 }
 
+typedef boost::bimap<std::string_view, am::LifeCycleState> str_state_bimap;
+const str_state_bimap str_state_bimap_ = boost::assign::list_of< str_state_bimap::relation > 
+  (AMLifeCycle::STATE_INVALID_STRING, LifeCycleState::INVALID)
+  (AMLifeCycle::STATE_UNCONFIGURED_STRING, LifeCycleState::UNCONFIGURED)
+  (AMLifeCycle::STATE_INACTIVE_STRING, LifeCycleState::INACTIVE)
+  (AMLifeCycle::STATE_ACTIVE_STRING, LifeCycleState::ACTIVE)
+  (AMLifeCycle::STATE_FINALIZED_STRING, LifeCycleState::FINALIZED)
+  (AMLifeCycle::STATE_CONFIGURING_STRING, LifeCycleState::CONFIGURING)
+  (AMLifeCycle::STATE_CLEANING_UP_STRING, LifeCycleState::CLEANING_UP)
+  (AMLifeCycle::STATE_ACTIVATING_STRING, LifeCycleState::ACTIVATING)
+  (AMLifeCycle::STATE_DEACTIVATING_STRING, LifeCycleState::DEACTIVATING)
+  (AMLifeCycle::STATE_ERROR_PROCESSING_STRING, LifeCycleState::ERROR_PROCESSING)
+  (AMLifeCycle::STATE_SHUTTING_DOWN, LifeCycleState::SHUTTING_DOWN);
+
 const std::string_view& AMLifeCycle::stateToString(LifeCycleState state)
 {
-    if(state_info.right.count(state))
+    if(str_state_bimap_.right.count(state))
     {
-      return state_info.right.at(state);
+      return str_state_bimap_.right.at(state);
     }
     else
     {
@@ -350,13 +344,11 @@ const std::string_view& AMLifeCycle::stateToString(LifeCycleState state)
     }
 }
 
-    
-
 bool AMLifeCycle::stringToState(std::string& state_str, LifeCycleState& state)
 {
-  if(state_info.left.count(state_str))
+  if(str_state_bimap_.left.count(state_str))
   {
-    state = state_info.left.at(state_str);
+    state = str_state_bimap_.left.at(state_str);
     return true;
   }
   return false;
@@ -398,64 +390,36 @@ bool AMLifeCycle::stringToStatus(std::string& status_str, LifeCycleStatus& statu
   return true;
 }
 
-const std::string_view& AMLifeCycle::commandToString(LifeCycleCommand state)
+typedef boost::bimap<std::string_view, am::LifeCycleCommand> str_command_bimap;
+const str_command_bimap str_command_bimap_ = boost::assign::list_of< str_command_bimap::relation > 
+  (AMLifeCycle::COMMAND_ACTIVATE_STRING, LifeCycleCommand::ACTIVATE)
+  (AMLifeCycle::COMMAND_CLEANUP_STRING, LifeCycleCommand::CLEANUP)
+  (AMLifeCycle::COMMAND_CONFIGURE_STRING, LifeCycleCommand::CONFIGURE)
+  (AMLifeCycle::COMMAND_CREATE_STRING, LifeCycleCommand::CREATE)
+  (AMLifeCycle::COMMAND_DEACTIVATE_STRING, LifeCycleCommand::DEACTIVATE)
+  (AMLifeCycle::COMMAND_DESTROY_STRING, LifeCycleCommand::DESTROY)
+  (AMLifeCycle::COMMAND_SHUTDOWN_STRING, LifeCycleCommand::SHUTDOWN);
+
+const std::string_view& AMLifeCycle::commandToString(LifeCycleCommand command)
 {
-  switch (state)
-  {
-    case LifeCycleCommand::CREATE:
-      return COMMAND_CREATE_STRING;
-    case LifeCycleCommand::CONFIGURE:
-      return COMMAND_CONFIGURE_STRING;
-    case LifeCycleCommand::CLEANUP:
-      return COMMAND_CLEANUP_STRING;
-    case LifeCycleCommand::ACTIVATE:
-      return COMMAND_ACTIVATE_STRING;
-    case LifeCycleCommand::DEACTIVATE:
-      return COMMAND_DEACTIVATE_STRING;
-    case LifeCycleCommand::SHUTDOWN:
-      return COMMAND_SHUTDOWN_STRING;
-    case LifeCycleCommand::DESTROY:
-      return COMMAND_DESTROY_STRING;
-    default:
+  if(str_command_bimap_.right.count(command))
+    {
+      return str_command_bimap_.right.at(command);
+    }
+    else
+    {
       return EMPTY_STRING;
-  }
+    }
 }
 
-bool AMLifeCycle::stringToCommand(std::string& status_str, LifeCycleCommand& status)
+bool AMLifeCycle::stringToCommand(std::string& command_str, LifeCycleCommand& command)
 {
-  if (!status_str.compare(COMMAND_CREATE_STRING))
+  if(str_command_bimap_.left.count(command_str))
   {
-    status = LifeCycleCommand::CREATE;
+    command = str_command_bimap_.left.at(command_str);
+    return true;
   }
-  else if (!status_str.compare(COMMAND_CONFIGURE_STRING))
-  {
-    status = LifeCycleCommand::CONFIGURE;
-  }
-  else if (!status_str.compare(COMMAND_CLEANUP_STRING))
-  {
-    status = LifeCycleCommand::CLEANUP;
-  }
-  else if (!status_str.compare(COMMAND_ACTIVATE_STRING))
-  {
-    status = LifeCycleCommand::ACTIVATE;
-  }
-  else if (!status_str.compare(COMMAND_DEACTIVATE_STRING))
-  {
-    status = LifeCycleCommand::DEACTIVATE;
-  }
-  else if (!status_str.compare(COMMAND_SHUTDOWN_STRING))
-  {
-    status = LifeCycleCommand::SHUTDOWN;
-  }
-  else if (!status_str.compare(COMMAND_DESTROY_STRING))
-  {
-    status = LifeCycleCommand::DESTROY;
-  }
-  else
-  {
-    return false;
-  }
-  return true;
+  return false;
 }
 
 LifeCycleState AMLifeCycle::getState() const
@@ -477,7 +441,18 @@ void AMLifeCycle::setState(const LifeCycleState state)
   }
 }
 
-const std::vector<LifeCycleState> AMLifeCycle::allLifeCycleStates()
+const std::vector<LifeCycleCommand> AMLifeCycle::getLifeCycleCommands()
+{
+  std::vector<LifeCycleCommand> all;
+  for (int enumIndex = (int)LifeCycleCommand::CREATE; enumIndex <= (int)LifeCycleCommand::LAST_COMMAND; enumIndex++)
+  {
+    LifeCycleCommand command = static_cast<LifeCycleCommand>(enumIndex);
+    all.push_back(command);
+  }
+  return all;
+}
+
+const std::vector<LifeCycleState> AMLifeCycle::getLifeCycleStates()
 {
   std::vector<LifeCycleState> all;
   for (int enumIndex = (int)LifeCycleState::INVALID; enumIndex <= (int)LifeCycleState::LAST_STATE; enumIndex++)

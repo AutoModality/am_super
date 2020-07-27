@@ -339,7 +339,6 @@ const std::string_view& AMLifeCycle::stateToString(LifeCycleState state)
       return str_state_bimap_.right.at(state);
     }
     return STATE_INVALID_STRING;
-    
 }
 
 bool AMLifeCycle::stringToState(std::string& state_str, LifeCycleState& state)
@@ -352,40 +351,29 @@ bool AMLifeCycle::stringToState(std::string& state_str, LifeCycleState& state)
   return false;
 }
 
-const std::string_view& AMLifeCycle::statusToString(LifeCycleStatus state)
+typedef boost::bimap<std::string_view, am::LifeCycleStatus> str_status_bimap;
+const str_status_bimap str_status_bimap_ = boost::assign::list_of< str_status_bimap::relation > 
+  (AMLifeCycle::STATUS_OK_STRING, LifeCycleStatus::OK)
+  (AMLifeCycle::STATUS_WARN_STRING, LifeCycleStatus::WARN)
+  (AMLifeCycle::STATUS_ERROR_STRING, LifeCycleStatus::ERROR);
+
+const std::string_view& AMLifeCycle::statusToString(LifeCycleStatus status)
 {
-  switch (state)
-  {
-    case LifeCycleStatus::OK:
-      return STATUS_OK_STRING;
-    case LifeCycleStatus::WARN:
-      return STATUS_WARN_STRING;
-    case LifeCycleStatus::ERROR:
-      return STATUS_ERROR_STRING;
-    default:
-      return EMPTY_STRING;
-  }
+  if(str_status_bimap_.right.count(status))
+    {
+      return str_status_bimap_.right.at(status);
+    }
+    return AMLifeCycle::EMPTY_STRING;
 }
 
 bool AMLifeCycle::stringToStatus(std::string& status_str, LifeCycleStatus& status)
 {
-  if (!status_str.compare(STATUS_OK_STRING))
+  if(str_status_bimap_.left.count(status_str))
   {
-    status = LifeCycleStatus::OK;
+    status = str_status_bimap_.left.at(status_str);
+    return true;
   }
-  else if (!status_str.compare(STATUS_WARN_STRING))
-  {
-    status = LifeCycleStatus::WARN;
-  }
-  else if (!status_str.compare(STATUS_ERROR_STRING))
-  {
-    status = LifeCycleStatus::ERROR;
-  }
-  else
-  {
-    return false;
-  }
-  return true;
+  return false;
 }
 
 typedef boost::bimap<std::string_view, am::LifeCycleCommand> str_command_bimap;

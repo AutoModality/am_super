@@ -4,6 +4,41 @@
 using namespace am;
 using namespace std;
 
+TEST(LifeCycle, statusToString_BadStatusReturnsInvalidString)
+{
+  LifeCycleStatus status = LifeCycleStatus(20);
+  string str;
+  str = AMLifeCycle::statusToString(status);
+  ASSERT_EQ(str, AMLifeCycle::EMPTY_STRING);
+}
+
+TEST(LifeCycle, statusTestStringConversion)
+{
+  vector<LifeCycleStatus> allStatus = AMLifeCycle::getLifeCycleStatus();
+  ASSERT_EQ((int)allStatus.size(), 3);
+
+  string str;
+  LifeCycleStatus status;
+
+  for(int i = 0; i < allStatus.size(); i++)
+  {
+    str = AMLifeCycle::statusToString(allStatus[i]);
+    ROS_INFO_STREAM(str << '\n');
+    ASSERT_TRUE(AMLifeCycle::stringToStatus(str, status));
+    ASSERT_EQ(allStatus[i], status);
+  }
+} 
+
+TEST(LifeCycle, stringToStatus_BadStringReturnsFalse)
+{
+  LifeCycleStatus initial_status = LifeCycleStatus::OK;
+  LifeCycleStatus status = initial_status;
+  string bad_string;
+  bool bad_strings_should_return_false = AMLifeCycle::stringToStatus(bad_string, status);
+  ASSERT_FALSE(bad_strings_should_return_false);
+  ASSERT_EQ(status, initial_status) << "Status should be unchanged since the string is bad";
+}
+
 TEST(LifeCycle, commandToString_BadCommandReturnsInvalidString)
 {
   LifeCycleCommand cmd = LifeCycleCommand(20);

@@ -58,7 +58,7 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
 AMLifeCycle::~AMLifeCycle()
 {
 }
-/* for bimap
+
 typedef boost::bimap<std::string_view, am::LifeCycleState> bm_type;
 
 const bm_type state_info = boost::assign::list_of< bm_type::relation > 
@@ -73,23 +73,10 @@ const bm_type state_info = boost::assign::list_of< bm_type::relation >
   (AMLifeCycle::STATE_DEACTIVATING_STRING, LifeCycleState::DEACTIVATING)
   (AMLifeCycle::STATE_ERROR_PROCESSING_STRING, LifeCycleState::ERROR_PROCESSING)
   (AMLifeCycle::STATE_SHUTTING_DOWN, LifeCycleState::SHUTTING_DOWN);
-*/
 
 
-const std::map<std::string_view, LifeCycleState> state_info = 
-{
-  {AMLifeCycle::STATE_INVALID_STRING, LifeCycleState::INVALID},
-  {AMLifeCycle::STATE_UNCONFIGURED_STRING, LifeCycleState::UNCONFIGURED},
-  {AMLifeCycle::STATE_INACTIVE_STRING, LifeCycleState::INACTIVE},
-  {AMLifeCycle::STATE_ACTIVE_STRING, LifeCycleState::ACTIVE},
-  {AMLifeCycle::STATE_FINALIZED_STRING, LifeCycleState::FINALIZED},
-  {AMLifeCycle::STATE_CONFIGURING_STRING, LifeCycleState::CONFIGURING},
-  {AMLifeCycle::STATE_CLEANING_UP_STRING, LifeCycleState::CLEANING_UP},
-  {AMLifeCycle::STATE_ACTIVATING_STRING, LifeCycleState::ACTIVATING},
-  {AMLifeCycle::STATE_DEACTIVATING_STRING, LifeCycleState::DEACTIVATING},
-  {AMLifeCycle::STATE_ERROR_PROCESSING_STRING, LifeCycleState::ERROR_PROCESSING},
-  {AMLifeCycle::STATE_SHUTTING_DOWN, LifeCycleState::SHUTTING_DOWN}
-};
+
+
 
 
 void AMLifeCycle::lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg)
@@ -347,43 +334,23 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
 
 const std::string_view& AMLifeCycle::stateToString(LifeCycleState state)
 {
-  switch (state)
-  {
-    case LifeCycleState::UNCONFIGURED:
-      return STATE_UNCONFIGURED_STRING;
-    case LifeCycleState::INACTIVE:
-      return STATE_INACTIVE_STRING;
-    case LifeCycleState::ACTIVE:
-      return STATE_ACTIVE_STRING;
-    case LifeCycleState::FINALIZED:
-      return STATE_FINALIZED_STRING;
-    case LifeCycleState::CONFIGURING:
-      return STATE_CONFIGURING_STRING;
-    case LifeCycleState::CLEANING_UP:
-      return STATE_CLEANING_UP_STRING;
-    case LifeCycleState::ACTIVATING:
-      return STATE_ACTIVATING_STRING;
-    case LifeCycleState::DEACTIVATING:
-      return STATE_DEACTIVATING_STRING;
-    case LifeCycleState::ERROR_PROCESSING:
-      return STATE_ERROR_PROCESSING_STRING;
-    case LifeCycleState::SHUTTING_DOWN:
-      return STATE_SHUTTING_DOWN;
-    case LifeCycleState::INVALID:
-    default:
+    if(state_info.right.count(state))
+    {
+      return state_info.right.at(state);
+    }
+    else
+    {
       return STATE_INVALID_STRING;
-  }
+    }
 }
+
+    
 
 bool AMLifeCycle::stringToState(std::string& state_str, LifeCycleState& state)
 {
-  if(state_info.count(state_str))
+  if(state_info.left.count(state_str))
   {
-    state = state_info.at(state_str);
-
-    // for bimap (doesn't compile)
-    //state = state_info.left.at(state_str); 
-
+    state = state_info.left.at(state_str);
     return true;
   }
   return false;

@@ -1,37 +1,10 @@
-#include <gtest/gtest.h>  // googletest header file
-#include "gmock/gmock.h" 
+#include <gtest/gtest.h>  // googletest header file 
 #include <super_lib/am_life_cycle.h>
 
 using namespace am;
 using namespace std;
 
 
-class A
-{
-protected:
-  string yourEyesOnly()
-  {
-    return "from A";
-  }
-};
-
-class LifeCycleTestFixture : public ::testing::Test, public :: A
-{
-protected:
-  string see = "me";
-  string someMethod()
-  {
-    return "too";
-  }
-};
-
-
-TEST_F(LifeCycleTestFixture, setStatus_AllAllPersistent)
-{
-  EXPECT_EQ(see,"you");
-  EXPECT_EQ(someMethod(),"jeez");
-  EXPECT_EQ(yourEyesOnly(),"bee");
-}
 
 TEST(LifeCycle, statusToString_BadStatusReturnsInvalidString)
 {

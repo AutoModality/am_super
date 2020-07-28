@@ -207,7 +207,7 @@ if (CATKIN_ENABLE_TESTING)
   catkin_add_gtest(${PROJECT_NAME}_test ${TEST_FILES} ${SUPER_MEDIATOR_FILES})
 
   if(TARGET ${PROJECT_NAME}_test)
-    target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES} super_lib gmock_main)
+    target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES} super_lib)
   endif()
 
   # For ros testing

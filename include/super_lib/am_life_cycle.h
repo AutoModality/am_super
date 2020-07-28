@@ -78,7 +78,7 @@ public:
    * @brief Stores all status' for LifeCycleStatus into a vector
    * @returns vector of LifeCycleStatus
    */
-  static const std::vector<LifeCycleStatus> getLifeCycleStatus();
+  static const std::vector<LifeCycleStatus> getLifeCycleStatuses();
 
   /**
    * @brief Converts a LifeCycleState into the proper string representation. 

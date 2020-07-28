@@ -12,18 +12,26 @@ TEST(LifeCycle, statusToString_BadStatusReturnsInvalidString)
   ASSERT_EQ(str, AMLifeCycle::EMPTY_STRING);
 }
 
+TEST(LifeCycle, getLifeCycleStatuses_AllReturnedInOrder)
+{
+  vector<LifeCycleStatus> all = AMLifeCycle::getLifeCycleStatuses();
+  ASSERT_EQ(all[0],LifeCycleStatus::OK);
+  ASSERT_EQ(all[1],LifeCycleStatus::WARN);
+  ASSERT_EQ(all[2],LifeCycleStatus::ERROR);
+}
+
 TEST(LifeCycle, statusTestStringConversion)
 {
-  vector<LifeCycleStatus> allStatus = AMLifeCycle::getLifeCycleStatus();
-  string str;
-  LifeCycleStatus status;
+  vector<LifeCycleStatus> allStatus = AMLifeCycle::getLifeCycleStatuses();
+  string string_from_status;
+  LifeCycleStatus status_from_string;
 
-  for(int i = 0; i < allStatus.size(); i++)
+  for(LifeCycleStatus expected_status: allStatus)
   {
-    str = AMLifeCycle::statusToString(allStatus[i]);
-    ROS_INFO_STREAM(str << '\n');
-    ASSERT_TRUE(AMLifeCycle::stringToStatus(str, status));
-    ASSERT_EQ(allStatus[i], status);
+    string_from_status = AMLifeCycle::statusToString(expected_status);
+    bool success = AMLifeCycle::stringToStatus(string_from_status, status_from_string);
+    ASSERT_EQ(status_from_string,expected_status);
+    ASSERT_TRUE(success);
   }
 } 
 

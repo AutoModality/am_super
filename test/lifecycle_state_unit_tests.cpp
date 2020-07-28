@@ -1,23 +1,52 @@
 #include <gtest/gtest.h>  // googletest header file
+#include "gmock/gmock.h" 
 #include <super_lib/am_life_cycle.h>
 
 using namespace am;
 using namespace std;
+
+
+class A
+{
+protected:
+  string yourEyesOnly()
+  {
+    return "from A";
+  }
+};
+
+class LifeCycleTestFixture : public ::testing::Test, public :: A
+{
+protected:
+  string see = "me";
+  string someMethod()
+  {
+    return "too";
+  }
+};
+
+
+TEST_F(LifeCycleTestFixture, setStatus_AllAllPersistent)
+{
+  EXPECT_EQ(see,"you");
+  EXPECT_EQ(someMethod(),"jeez");
+  EXPECT_EQ(yourEyesOnly(),"bee");
+}
 
 TEST(LifeCycle, statusToString_BadStatusReturnsInvalidString)
 {
   LifeCycleStatus status = LifeCycleStatus(20);
   string str;
   str = AMLifeCycle::statusToString(status);
-  ASSERT_EQ(str, AMLifeCycle::EMPTY_STRING);
+  EXPECT_EQ(str, AMLifeCycle::EMPTY_STRING);
 }
 
 TEST(LifeCycle, getLifeCycleStatuses_AllReturnedInOrder)
 {
   vector<LifeCycleStatus> all = AMLifeCycle::getLifeCycleStatuses();
-  ASSERT_EQ(all[0],LifeCycleStatus::OK);
-  ASSERT_EQ(all[1],LifeCycleStatus::WARN);
-  ASSERT_EQ(all[2],LifeCycleStatus::ERROR);
+  EXPECT_EQ(all[0],LifeCycleStatus::OK);
+  EXPECT_EQ(all[1],LifeCycleStatus::WARN);
+  EXPECT_EQ(all[2],LifeCycleStatus::ERROR);
 }
 
 TEST(LifeCycle, statusTestStringConversion)
@@ -30,8 +59,8 @@ TEST(LifeCycle, statusTestStringConversion)
   {
     string_from_status = AMLifeCycle::statusToString(expected_status);
     bool success = AMLifeCycle::stringToStatus(string_from_status, status_from_string);
-    ASSERT_EQ(status_from_string,expected_status);
-    ASSERT_TRUE(success);
+    EXPECT_EQ(status_from_string,expected_status);
+    EXPECT_TRUE(success);
   }
 } 
 
@@ -41,8 +70,8 @@ TEST(LifeCycle, stringToStatus_BadStringReturnsFalse)
   LifeCycleStatus status = initial_status;
   string bad_string;
   bool bad_strings_should_return_false = AMLifeCycle::stringToStatus(bad_string, status);
-  ASSERT_FALSE(bad_strings_should_return_false);
-  ASSERT_EQ(status, initial_status) << "Status should be unchanged since the string is bad";
+  EXPECT_FALSE(bad_strings_should_return_false);
+  EXPECT_EQ(status, initial_status) << "Status should be unchanged since the string is bad";
 }
 
 TEST(LifeCycle, commandToString_BadCommandReturnsInvalidString)
@@ -50,7 +79,7 @@ TEST(LifeCycle, commandToString_BadCommandReturnsInvalidString)
   LifeCycleCommand cmd = LifeCycleCommand(20);
   string str;
   str = AMLifeCycle::commandToString(cmd);
-  ASSERT_EQ(str, AMLifeCycle::EMPTY_STRING);
+  EXPECT_EQ(str, AMLifeCycle::EMPTY_STRING);
 }
 
 TEST(LifeCycle, commandTestStringConversion)
@@ -62,8 +91,8 @@ TEST(LifeCycle, commandTestStringConversion)
   for(int i = 0; i < allCommands.size(); i++)
   {
     str = AMLifeCycle::commandToString(allCommands[i]);
-    ASSERT_TRUE(AMLifeCycle::stringToCommand(str, cmd));
-    ASSERT_EQ(allCommands[i], cmd);
+    EXPECT_TRUE(AMLifeCycle::stringToCommand(str, cmd));
+    EXPECT_EQ(allCommands[i], cmd);
   }
 }
 
@@ -73,8 +102,8 @@ TEST(LifeCycle, stringToCommand_BadStringReturnsFalse)
   LifeCycleCommand cmd = initial_cmd;
   string bad_string;
   bool bad_strings_should_return_false = AMLifeCycle::stringToCommand(bad_string, cmd);
-  ASSERT_FALSE(bad_strings_should_return_false);
-  ASSERT_EQ(cmd, initial_cmd) << "Command should be unchanged since the string is bad";
+  EXPECT_FALSE(bad_strings_should_return_false);
+  EXPECT_EQ(cmd, initial_cmd) << "Command should be unchanged since the string is bad";
 }
 
 TEST(LifeCycle, stateToString_BadStateReturnsInvalidString)
@@ -82,7 +111,7 @@ TEST(LifeCycle, stateToString_BadStateReturnsInvalidString)
   LifeCycleState state = LifeCycleState(20);
   string str;
   str = AMLifeCycle::stateToString(state);
-  ASSERT_EQ(str, AMLifeCycle::STATE_INVALID_STRING);
+  EXPECT_EQ(str, AMLifeCycle::STATE_INVALID_STRING);
 }
 
 TEST(LifeCycle, stateTestStringConversion)
@@ -94,8 +123,8 @@ TEST(LifeCycle, stateTestStringConversion)
   for(int i = 0; i < allStates.size(); i++) 
   {
     str = AMLifeCycle::stateToString(allStates[i]);
-    ASSERT_TRUE(AMLifeCycle::stringToState(str, state));
-    ASSERT_EQ(allStates[i], state);
+    EXPECT_TRUE(AMLifeCycle::stringToState(str, state));
+    EXPECT_EQ(allStates[i], state);
   }
 }
 
@@ -105,6 +134,6 @@ TEST(LifeCycle, stringToState_BadStringReturnsFalse)
   LifeCycleState state = default_state;
   string bad_string;
   bool bad_strings_should_return_false = AMLifeCycle::stringToState(bad_string,state);
-  ASSERT_FALSE(bad_strings_should_return_false);
-  ASSERT_EQ(state,default_state) << "State should be unchanged since the string is bad";
+  EXPECT_FALSE(bad_strings_should_return_false);
+  EXPECT_EQ(state,default_state) << "State should be unchanged since the string is bad";
 }

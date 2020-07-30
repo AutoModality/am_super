@@ -203,8 +203,9 @@ file(GLOB TEST_FILES
 if (CATKIN_ENABLE_TESTING)
 
   ## Add gtest based cpp test target and link libraries
-  list(REMOVE_ITEM am_super_cpp_files src/am_super/am_super.cpp )
+
   catkin_add_gtest(${PROJECT_NAME}_test ${TEST_FILES} ${SUPER_MEDIATOR_FILES})
+
   if(TARGET ${PROJECT_NAME}_test)
     target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES} super_lib)
   endif()

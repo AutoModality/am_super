@@ -4,26 +4,30 @@
 using namespace am;
 using namespace std;
 
-TEST(LifeCycleMediator, getAndSetStatus_OK)
+
+
+void ASSERT_LIFE_CYCLE_STATUS(LifeCycleStatus expected_status,bool expected_success)
 {
-    LifeCycleStatus expected_status = LifeCycleStatus::OK;
     AMLifeCycleMediator mediator;
     AMLifeCycleMediator::LifeCycleInfo info;
-
     bool success = mediator.setStatus(expected_status, info);
     LifeCycleStatus actual = mediator.getStatus(info);
     EXPECT_EQ(actual, expected_status);
-    EXPECT_TRUE(success);
+    EXPECT_EQ(success,expected_success);
+}
+
+TEST(LifeCycleMediator, getAndSetStatus_OK)
+{
+    ASSERT_LIFE_CYCLE_STATUS(LifeCycleStatus::OK,true);
+}
+
+TEST(LifeCycleMediator, getAndSetStatus_WARN)
+{
+    ASSERT_LIFE_CYCLE_STATUS(LifeCycleStatus::WARN,true);
 }
 
 TEST(LifeCycleMediator, getAndSetStatus_ERROR)
 {
-    LifeCycleStatus expected_status = LifeCycleStatus::ERROR;
-    AMLifeCycleMediator mediator;
-    AMLifeCycleMediator::LifeCycleInfo info;
-
-    bool success = mediator.setStatus(expected_status, info);
-    LifeCycleStatus actual = mediator.getStatus(info);
-    EXPECT_EQ(actual, expected_status);
-    EXPECT_TRUE(success);
+    ASSERT_LIFE_CYCLE_STATUS(LifeCycleStatus::ERROR,true);
+   
 }

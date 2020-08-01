@@ -10,11 +10,8 @@ bool AMLifeCycleMediator::setStatus(const LifeCycleStatus& status, LifeCycleInfo
     {
         return false;
     }
-    else
-    {
-        info.status = status;
-        return true;
-    }
+    info.status = status;
+    return true;
 }
 LifeCycleStatus AMLifeCycleMediator::getStatus(const LifeCycleInfo& info)
 {

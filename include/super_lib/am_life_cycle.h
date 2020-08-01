@@ -236,7 +236,7 @@ protected:
 
   LifeCycleState getState() const;
   LifeCycleStatus getStatus() const;
-  void setStatus(const LifeCycleStatus status);
+  bool setStatus(const LifeCycleStatus status);
   double getThrottleS() const;
   void setThrottleS(const double throttleS);
 

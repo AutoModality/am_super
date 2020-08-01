@@ -7,13 +7,12 @@ using namespace am;
 /** Stateless methods providing function without coupling to ROS or any 
  * systems providing testable code.
  */
-
 class AMLifeCycleMediator
 {
 
 public:
     /**
-     * 
+     * Holds information about AMLifeCycle
      */
     struct LifeCycleInfo
     {

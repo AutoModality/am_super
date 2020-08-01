@@ -1,21 +1,22 @@
 #include <super_lib/am_life_cycle_mediator.h>
+#include <super_lib/am_life_cycle.h>
 
+using namespace am;
+using namespace std;
 
-    bool AMLifeCycleMediator::setStatus(LifeCycleStatus status, LifeCycleInfo info)
+bool AMLifeCycleMediator::setStatus(const LifeCycleStatus& status, LifeCycleInfo& info)
+{
+    if (status == LifeCycleStatus::LAST_STATUS)
     {
-        if (status_ == LifeCycleStatus::LAST_STATUS)
-        {
-           return false;
-        }
-        else
-        {
-            status_ = status;
-            return true;
-        }
-        
+        return false;
     }
-    LifeCycleStatus AMLifeCycleMediator::getLifeCycleStatus(LifeCycleInfo info);
-
+    else
     {
-        return info.status;
+        info.status = status;
+        return true;
     }
+}
+LifeCycleStatus AMLifeCycleMediator::getStatus(const LifeCycleInfo& info)
+{
+    return info.status;
+}

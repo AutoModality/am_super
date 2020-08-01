@@ -464,7 +464,7 @@ LifeCycleStatus AMLifeCycle::getStatus() const
 
 void AMLifeCycle::setStatus(const LifeCycleStatus status)
 {
-  life_cycle_mediator_.setStatus(status,life_cycle_info_);
+  life_cycle_mediator_.setStatus(status, life_cycle_info_);
 }
 
 void AMLifeCycle::setThrottleS(const double throttleS)

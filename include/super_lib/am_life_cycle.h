@@ -9,6 +9,7 @@
 
 #include <super_lib/am_stat_list.h>
 #include <super_lib/am_life_cycle_types.h>
+#include <super_lib/am_life_cycle_mediator.h>
 
 namespace am
 {
@@ -21,6 +22,9 @@ private:
 
   LifeCycleState state_;
   LifeCycleStatus status_;
+  AMLifeCycleMediator life_cycle_mediator_;
+  AMLifeCycleMediator::LifeCycleInfo life_cycle_info_;
+  
   double ok_throttle_s_ = DEFAULT_OK_THROTTLE_S;
   double warn_throttle_s_ = DEFAULT_WARN_THROTTLE_S;
   double error_throttle_s_ = DEFAULT_ERROR_THROTTLE_S;

@@ -4,7 +4,18 @@
 using namespace am;
 using namespace std;
 
-TEST(LifeCycleMediator, getAndSetStatus)
+TEST(LifeCycleMediator, getAndSetStatus_OK)
+{
+    LifeCycleStatus expected_status = LifeCycleStatus::OK;
+    AMLifeCycleMediator mediator;
+    AMLifeCycleMediator::LifeCycleInfo info;
+
+    mediator.setStatus(expected_status, info);
+    LifeCycleStatus actual = mediator.getStatus(info);
+    EXPECT_EQ(actual, expected_status);
+}
+
+TEST(LifeCycleMediator, getAndSetStatus_ERROR)
 {
     LifeCycleStatus expected_status = LifeCycleStatus::ERROR;
     AMLifeCycleMediator mediator;

@@ -10,9 +10,10 @@ TEST(LifeCycleMediator, getAndSetStatus_OK)
     AMLifeCycleMediator mediator;
     AMLifeCycleMediator::LifeCycleInfo info;
 
-    mediator.setStatus(expected_status, info);
+    bool success = mediator.setStatus(expected_status, info);
     LifeCycleStatus actual = mediator.getStatus(info);
     EXPECT_EQ(actual, expected_status);
+    EXPECT_TRUE(success);
 }
 
 TEST(LifeCycleMediator, getAndSetStatus_ERROR)
@@ -21,7 +22,8 @@ TEST(LifeCycleMediator, getAndSetStatus_ERROR)
     AMLifeCycleMediator mediator;
     AMLifeCycleMediator::LifeCycleInfo info;
 
-    mediator.setStatus(expected_status, info);
+    bool success = mediator.setStatus(expected_status, info);
     LifeCycleStatus actual = mediator.getStatus(info);
     EXPECT_EQ(actual, expected_status);
+    EXPECT_TRUE(success);
 }

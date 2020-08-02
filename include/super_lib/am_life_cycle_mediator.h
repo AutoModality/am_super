@@ -18,6 +18,7 @@ public:
     struct LifeCycleInfo
     {
         LifeCycleStatus status;
+        LifeCycleState state;
     };
     /**
      * @brief Sets the current LifeCycleStatus in the mediator
@@ -38,6 +39,9 @@ public:
      * @returns info.state - the current LifeCycleStatus in the mediator
      */ 
     LifeCycleStatus getStatus(const LifeCycleInfo& info);
+
+    bool setState(const LifeCycleState& state, LifeCycleInfo& info);
+    LifeCycleState getState(const LifeCycleInfo& info);
 };
 }
 #endif // AM_LIFE_CYCLE_MEDIATOR_H_

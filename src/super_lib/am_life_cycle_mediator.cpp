@@ -62,6 +62,39 @@ bool AMLifeCycleMediator::stringToStatus(std::string& status_str, LifeCycleStatu
   return false;
 }
 
+typedef boost::bimap<std::string_view, am::LifeCycleState> str_state_bimap;
+const str_state_bimap str_state_bimap_ = boost::assign::list_of< str_state_bimap::relation > 
+  (AMLifeCycle::STATE_INVALID_STRING, LifeCycleState::INVALID)
+  (AMLifeCycle::STATE_UNCONFIGURED_STRING, LifeCycleState::UNCONFIGURED)
+  (AMLifeCycle::STATE_INACTIVE_STRING, LifeCycleState::INACTIVE)
+  (AMLifeCycle::STATE_ACTIVE_STRING, LifeCycleState::ACTIVE)
+  (AMLifeCycle::STATE_FINALIZED_STRING, LifeCycleState::FINALIZED)
+  (AMLifeCycle::STATE_CONFIGURING_STRING, LifeCycleState::CONFIGURING)
+  (AMLifeCycle::STATE_CLEANING_UP_STRING, LifeCycleState::CLEANING_UP)
+  (AMLifeCycle::STATE_ACTIVATING_STRING, LifeCycleState::ACTIVATING)
+  (AMLifeCycle::STATE_DEACTIVATING_STRING, LifeCycleState::DEACTIVATING)
+  (AMLifeCycle::STATE_ERROR_PROCESSING_STRING, LifeCycleState::ERROR_PROCESSING)
+  (AMLifeCycle::STATE_SHUTTING_DOWN, LifeCycleState::SHUTTING_DOWN);
+
+const std::string_view& AMLifeCycleMediator::stateToString(LifeCycleState state)
+{
+    if(str_state_bimap_.right.count(state))
+    {
+      return str_state_bimap_.right.at(state);
+    }
+    return AMLifeCycle::STATE_INVALID_STRING;
+}
+
+bool AMLifeCycleMediator::stringToState(std::string& state_str, LifeCycleState& state)
+{
+  if(str_state_bimap_.left.count(state_str))
+  {
+    state = str_state_bimap_.left.at(state_str);
+    return true;
+  }
+  return false;
+}
+
 bool AMLifeCycleMediator::setStatus(const LifeCycleStatus& status, LifeCycleInfo& info)
 {
   if (status == LifeCycleStatus::LAST_STATUS) 

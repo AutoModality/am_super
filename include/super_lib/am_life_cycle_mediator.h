@@ -49,6 +49,8 @@ public:
     static const std::string_view& statusToString(LifeCycleStatus status);
     static bool stringToStatus(std::string& status_str, LifeCycleStatus& status);
 
+    static const std::string_view& stateToString(LifeCycleState state);
+    static bool stringToState(std::string& state_str, LifeCycleState& state);
 };
 }
 #endif // AM_LIFE_CYCLE_MEDIATOR_H_

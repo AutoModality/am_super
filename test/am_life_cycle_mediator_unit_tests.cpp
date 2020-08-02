@@ -100,3 +100,17 @@ TEST(LifeCycleMediator, statusTestStringConversion)
     EXPECT_TRUE(success);
   }
 } 
+
+TEST(LifeCycleMediator, stateTestStringConversion)
+{
+  vector<LifeCycleState> allStates = AMLifeCycle::getLifeCycleStates();
+  string str;
+  LifeCycleState state;
+
+  for(int i = 0; i < allStates.size(); i++) 
+  {
+    str = AMLifeCycleMediator::stateToString(allStates[i]);
+    EXPECT_TRUE(AMLifeCycleMediator::stringToState(str, state));
+    EXPECT_EQ(allStates[i], state);
+  }
+}

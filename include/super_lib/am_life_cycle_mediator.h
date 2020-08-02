@@ -42,6 +42,10 @@ public:
 
     bool setState(const LifeCycleState& state, LifeCycleInfo& info);
     LifeCycleState getState(const LifeCycleInfo& info);
+
+    static const std::string_view& commandToString(const LifeCycleCommand& command);
+    static bool stringToCommand(const std::string& command_str, LifeCycleCommand& command);
+
 };
 }
 #endif // AM_LIFE_CYCLE_MEDIATOR_H_

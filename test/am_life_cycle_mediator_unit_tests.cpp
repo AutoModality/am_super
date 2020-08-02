@@ -72,3 +72,16 @@ TEST(LifeCycleMediator, getAndSetState_ERROR_PROCESSING)
   ASSERT_LIFE_CYCLE_STATE(LifeCycleState::ERROR_PROCESSING, true);
 }
 
+TEST(LifeCycleMediator, commandTestStringConversion)
+{
+  vector<LifeCycleCommand> allCommands = AMLifeCycle::getLifeCycleCommands();
+  string str;
+  LifeCycleCommand cmd;
+
+  for(int i = 0; i < allCommands.size(); i++)
+  {
+    str = AMLifeCycleMediator::commandToString(allCommands[i]);
+    EXPECT_TRUE(AMLifeCycleMediator::stringToCommand(str, cmd));
+    EXPECT_EQ(allCommands[i], cmd);
+  }
+}

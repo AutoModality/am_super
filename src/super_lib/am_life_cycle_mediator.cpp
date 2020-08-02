@@ -1,8 +1,43 @@
 #include <super_lib/am_life_cycle_mediator.h>
 #include <super_lib/am_life_cycle.h>
+#include <boost/bimap.hpp>
+#include <boost/assign.hpp>
+
+
 
 namespace am
 {
+
+typedef boost::bimap<std::string_view, am::LifeCycleCommand> str_command_bimap;
+const str_command_bimap str_command_bimap_ = boost::assign::list_of< str_command_bimap::relation > 
+  (AMLifeCycle::COMMAND_ACTIVATE_STRING, LifeCycleCommand::ACTIVATE)
+  (AMLifeCycle::COMMAND_CLEANUP_STRING, LifeCycleCommand::CLEANUP)
+  (AMLifeCycle::COMMAND_CONFIGURE_STRING, LifeCycleCommand::CONFIGURE)
+  (AMLifeCycle::COMMAND_CREATE_STRING, LifeCycleCommand::CREATE)
+  (AMLifeCycle::COMMAND_DEACTIVATE_STRING, LifeCycleCommand::DEACTIVATE)
+  (AMLifeCycle::COMMAND_DESTROY_STRING, LifeCycleCommand::DESTROY)
+  (AMLifeCycle::COMMAND_SHUTDOWN_STRING, LifeCycleCommand::SHUTDOWN);
+
+
+
+const std::string_view& AMLifeCycleMediator::commandToString(const LifeCycleCommand& command)
+{
+  if(str_command_bimap_.right.count(command))
+    {
+      return str_command_bimap_.right.at(command);
+    }
+  return AMLifeCycle::EMPTY_STRING;
+}
+
+bool AMLifeCycleMediator::stringToCommand(const std::string& command_str, LifeCycleCommand& command)
+{
+  if(str_command_bimap_.left.count(command_str))
+  {
+    command = str_command_bimap_.left.at(command_str);
+    return true;
+  }
+  return false;
+}
 
 bool AMLifeCycleMediator::setStatus(const LifeCycleStatus& status, LifeCycleInfo& info)
 {

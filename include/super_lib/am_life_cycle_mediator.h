@@ -2,8 +2,9 @@
 #define AM_LIFE_CYCLE_MEDIATOR_H_
 
 #include <super_lib/am_life_cycle_types.h>
-using namespace am;
 
+namespace am 
+{
 /** Stateless methods providing function without coupling to ROS or any 
  * systems providing testable code.
  */
@@ -38,5 +39,5 @@ public:
      */ 
     LifeCycleStatus getStatus(const LifeCycleInfo& info);
 };
-
+}
 #endif // AM_LIFE_CYCLE_MEDIATOR_H_

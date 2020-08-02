@@ -1,8 +1,8 @@
 #include <super_lib/am_life_cycle_mediator.h>
 #include <super_lib/am_life_cycle.h>
 
-using namespace am;
-using namespace std;
+namespace am
+{
 
 bool AMLifeCycleMediator::setStatus(const LifeCycleStatus& status, LifeCycleInfo& info)
 {
@@ -17,3 +17,5 @@ LifeCycleStatus AMLifeCycleMediator::getStatus(const LifeCycleInfo& info)
 {
     return info.status;
 }
+
+} //namespace am

@@ -29,5 +29,19 @@ TEST(LifeCycleMediator, getAndSetStatus_WARN)
 TEST(LifeCycleMediator, getAndSetStatus_ERROR)
 {
     ASSERT_LIFE_CYCLE_STATUS(LifeCycleStatus::ERROR,true);
-   
+}
+
+TEST(LifeCycleMediator, getAndSetStatus_ignores_LAST_STATUS)
+{
+    AMLifeCycleMediator mediator;
+    AMLifeCycleMediator::LifeCycleInfo info;
+    
+    bool success = mediator.setStatus(LifeCycleStatus::OK, info);
+    ASSERT_TRUE(success); //following tests depend on this being true, therefore assert
+
+    success = mediator.setStatus(LifeCycleStatus::LAST_STATUS, info);
+    LifeCycleStatus final_status = mediator.getStatus(info);
+
+    EXPECT_FALSE(success); //expect setStatus is return false;
+    EXPECT_EQ(LifeCycleStatus::OK, final_status); //expect no change in status
 }

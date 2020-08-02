@@ -18,8 +18,6 @@ const str_command_bimap str_command_bimap_ = boost::assign::list_of< str_command
   (AMLifeCycle::COMMAND_DESTROY_STRING, LifeCycleCommand::DESTROY)
   (AMLifeCycle::COMMAND_SHUTDOWN_STRING, LifeCycleCommand::SHUTDOWN);
 
-
-
 const std::string_view& AMLifeCycleMediator::commandToString(const LifeCycleCommand& command)
 {
   if(str_command_bimap_.right.count(command))
@@ -34,6 +32,31 @@ bool AMLifeCycleMediator::stringToCommand(const std::string& command_str, LifeCy
   if(str_command_bimap_.left.count(command_str))
   {
     command = str_command_bimap_.left.at(command_str);
+    return true;
+  }
+  return false;
+}
+
+typedef boost::bimap<std::string_view, am::LifeCycleStatus> str_status_bimap;
+const str_status_bimap str_status_bimap_ = boost::assign::list_of< str_status_bimap::relation > 
+  (AMLifeCycle::STATUS_OK_STRING, LifeCycleStatus::OK)
+  (AMLifeCycle::STATUS_WARN_STRING, LifeCycleStatus::WARN)
+  (AMLifeCycle::STATUS_ERROR_STRING, LifeCycleStatus::ERROR);
+
+const std::string_view& AMLifeCycleMediator::statusToString(LifeCycleStatus status)
+{
+  if(str_status_bimap_.right.count(status))
+    {
+      return str_status_bimap_.right.at(status);
+    }
+    return AMLifeCycle::EMPTY_STRING;
+}
+
+bool AMLifeCycleMediator::stringToStatus(std::string& status_str, LifeCycleStatus& status)
+{
+  if(str_status_bimap_.left.count(status_str))
+  {
+    status = str_status_bimap_.left.at(status_str);
     return true;
   }
   return false;

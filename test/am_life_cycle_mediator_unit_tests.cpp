@@ -85,3 +85,18 @@ TEST(LifeCycleMediator, commandTestStringConversion)
     EXPECT_EQ(allCommands[i], cmd);
   }
 }
+
+TEST(LifeCycleMediator, statusTestStringConversion)
+{
+  vector<LifeCycleStatus> allStatus = AMLifeCycle::getLifeCycleStatuses();
+  string string_from_status;
+  LifeCycleStatus status_from_string;
+
+  for(LifeCycleStatus expected_status: allStatus)
+  {
+    string_from_status = AMLifeCycleMediator::statusToString(expected_status);
+    bool success = AMLifeCycleMediator::stringToStatus(string_from_status, status_from_string);
+    EXPECT_EQ(status_from_string,expected_status);
+    EXPECT_TRUE(success);
+  }
+} 

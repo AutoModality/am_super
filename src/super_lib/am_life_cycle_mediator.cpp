@@ -103,7 +103,7 @@ bool AMLifeCycleMediator::setStatus(const LifeCycleStatus& status, LifeCycleInfo
   info.status = status;
   return true;
 }
-LifeCycleStatus AMLifeCycleMediator::getStatus(const LifeCycleInfo& info)
+LifeCycleStatus AMLifeCycleMediator::getStatus(const LifeCycleInfo& info) const
 {
   return info.status;
 }
@@ -117,7 +117,7 @@ bool AMLifeCycleMediator::setState(const LifeCycleState& state, LifeCycleInfo& i
   return true;
 }
 
-LifeCycleState AMLifeCycleMediator::getState(const LifeCycleInfo& info)
+LifeCycleState AMLifeCycleMediator::getState(const LifeCycleInfo& info) const
 {
   return info.state;
 }

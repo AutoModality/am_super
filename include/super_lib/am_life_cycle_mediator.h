@@ -44,10 +44,10 @@ public:
      * 
      * @returns info.state - the current LifeCycleStatus in the mediator
      */ 
-    LifeCycleStatus getStatus(const LifeCycleInfo& info);
+    LifeCycleStatus getStatus(const LifeCycleInfo& info) const;
 
     bool setState(const LifeCycleState& state, LifeCycleInfo& info);
-    LifeCycleState getState(const LifeCycleInfo& info);
+    LifeCycleState getState(const LifeCycleInfo& info) const;
 
     static const std::string_view& commandToString(const LifeCycleCommand& command);
     static bool stringToCommand(const std::string& command_str, LifeCycleCommand& command);

@@ -21,13 +21,13 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
   LifeCycleState init_state;
   if (stringToState(init_state_str, init_state))
   {
-    state_ = init_state;
+    life_cycle_info_.state = init_state;
   }
   else
   {
-    state_ = LifeCycleState::ACTIVE;
+    life_cycle_info_.state = LifeCycleState::ACTIVE;
   }
-  status_ = LifeCycleStatus::OK;
+  life_cycle_info_.status = LifeCycleStatus::OK;
   state_pub_ = nh_.advertise<brain_box_msgs::LifeCycleState>("/node_state", 100);
 
   updater_.setHardwareID("none");
@@ -100,19 +100,19 @@ void AMLifeCycle::lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr m
 void AMLifeCycle::transition(std::string transition_name, LifeCycleState initial_state, LifeCycleState transition_state,
                              LifeCycleState final_state, std::function<void(void)> on_function)
 {
-  if (state_ == initial_state)
+  if (life_cycle_info_.state == initial_state)
   {
-    ROS_INFO_STREAM(transition_name << ", current state: " << stateToString(state_));
+    ROS_INFO_STREAM(transition_name << ", current state: " << stateToString(life_cycle_info_.state));
     setState(transition_state);
     on_function();
   }
-  else if (state_ == transition_state || state_ == final_state)
+  else if (life_cycle_info_.state == transition_state || life_cycle_info_.state == final_state)
   {
     ROS_DEBUG_STREAM("ignoring redundant " << transition_name);
   }
   else
   {
-    ROS_WARN_STREAM("received illegal activate in state " << stateToString(state_));
+    ROS_WARN_STREAM("received illegal activate in state " << stateToString(life_cycle_info_.state));
   }
 }
 
@@ -173,7 +173,7 @@ void AMLifeCycle::onDeactivate()
 
 void AMLifeCycle::logState()
 {
-    ROS_INFO_STREAM("LifeCycle: " << stateToString(state_));
+    ROS_INFO_STREAM("LifeCycle: " << stateToString(life_cycle_info_.state));
 }
 
 void AMLifeCycle::doDeactivate(bool success)
@@ -183,13 +183,13 @@ void AMLifeCycle::doDeactivate(bool success)
 
 void AMLifeCycle::destroy()
 {
-  if (state_ != LifeCycleState::FINALIZED)
+  if (life_cycle_info_.state != LifeCycleState::FINALIZED)
   {
-    ROS_INFO_STREAM("received illegal activate in state " << stateToString(state_));
+    ROS_INFO_STREAM("received illegal activate in state " << stateToString(life_cycle_info_.state));
   }
-  else if (state_ == LifeCycleState::SHUTTING_DOWN || state_ == LifeCycleState::FINALIZED)
+  else if (life_cycle_info_.state == LifeCycleState::SHUTTING_DOWN || life_cycle_info_.state == LifeCycleState::FINALIZED)
   {
-    ROS_INFO_STREAM("current state: " << stateToString(state_));
+    ROS_INFO_STREAM("current state: " << stateToString(life_cycle_info_.state));
     onDestroy();
   }
 }
@@ -208,14 +208,14 @@ void AMLifeCycle::doDestroy(bool success)
 
 void AMLifeCycle::error()
 {
-  if (state_ == LifeCycleState::ERROR_PROCESSING || state_ == LifeCycleState::FINALIZED ||
-      state_ == LifeCycleState::UNCONFIGURED)
+  if (life_cycle_info_.state == LifeCycleState::ERROR_PROCESSING || life_cycle_info_.state == LifeCycleState::FINALIZED ||
+      life_cycle_info_.state == LifeCycleState::UNCONFIGURED)
   {
     ROS_DEBUG_STREAM("ignoring redundant error");
   }
   else
   {
-    ROS_INFO_STREAM("current state: " << stateToString(state_));
+    ROS_INFO_STREAM("current state: " << stateToString(life_cycle_info_.state));
     setState(LifeCycleState::ERROR_PROCESSING);
     onError();
   }
@@ -232,30 +232,30 @@ void AMLifeCycle::doError(bool success)
   logState();
   if (success)
   {
-    state_ = LifeCycleState::UNCONFIGURED;
+    life_cycle_info_.state = LifeCycleState::UNCONFIGURED;
   }
   else
   {
-    state_ = LifeCycleState::FINALIZED;
+    life_cycle_info_.state = LifeCycleState::FINALIZED;
   }
   sendNodeUpdate();
 }
 
 void AMLifeCycle::shutdown()
 {
-  if (state_ == LifeCycleState::UNCONFIGURED || state_ == LifeCycleState::INACTIVE || state_ == LifeCycleState::ACTIVE)
+  if (life_cycle_info_.state == LifeCycleState::UNCONFIGURED || life_cycle_info_.state == LifeCycleState::INACTIVE || life_cycle_info_.state == LifeCycleState::ACTIVE)
   {
-    ROS_INFO_STREAM("current state: " << stateToString(state_));
+    ROS_INFO_STREAM("current state: " << stateToString(life_cycle_info_.state));
     setState(LifeCycleState::SHUTTING_DOWN);
     onShutdown();
   }
-  else if (state_ == LifeCycleState::SHUTTING_DOWN || state_ == LifeCycleState::FINALIZED)
+  else if (life_cycle_info_.state == LifeCycleState::SHUTTING_DOWN || life_cycle_info_.state == LifeCycleState::FINALIZED)
   {
     ROS_DEBUG_STREAM("ignoring redundant shutdown");
   }
   else
   {
-    ROS_INFO_STREAM("received illegal activate in state " << stateToString(state_));
+    ROS_INFO_STREAM("received illegal activate in state " << stateToString(life_cycle_info_.state));
   }
 }
 
@@ -284,8 +284,8 @@ void AMLifeCycle::sendNodeUpdate()
   brain_box_msgs::LifeCycleState msg;
   msg.node_name = ros::this_node::getName();
   msg.process_id = 0;
-  msg.state = (uint8_t)state_;
-  msg.status = (uint8_t)status_;
+  msg.state = (uint8_t)life_cycle_info_.state;
+  msg.status = (uint8_t)life_cycle_info_.status;
   msg.subsystem = "";
   msg.value = "";
   state_pub_.publish(msg);
@@ -295,11 +295,11 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
   updater_.force_update();
 
   std::stringstream ss;
-  ss << AMLifeCycle::stateToString(state_) << "," << AMLifeCycle::statusToString(status_) << ","
+  ss << AMLifeCycle::stateToString(life_cycle_info_.state) << "," << AMLifeCycle::statusToString(life_cycle_info_.status) << ","
      << stats_list_.getStatsStrShort();
 
   double throttle;
-  switch (status_)
+  switch (life_cycle_info_.status)
   {
     case LifeCycleStatus::OK:
       throttle = ok_throttle_s_;

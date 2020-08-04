@@ -48,6 +48,21 @@ TEST(LifeCycleMediator, getAndSetStatus_ignores_LAST_STATUS)
   EXPECT_EQ(LifeCycleStatus::OK, final_status); //expect no change in status
 }
 
+TEST(LifeCycleMediator, getAndSetState_ignores_LAST_STATUS)
+{
+  AMLifeCycleMediator mediator;
+  AMLifeCycleMediator::LifeCycleInfo info;
+  
+  bool success = mediator.setState(LifeCycleState::ACTIVE, info);
+  ASSERT_TRUE(success); //following tests depend on this being true, therefore assert
+
+  success = mediator.setState(LifeCycleState::LAST_STATE, info);
+  LifeCycleState final_status = mediator.getState(info);
+
+  EXPECT_FALSE(success); //expect setStatus to return false;
+  EXPECT_EQ(LifeCycleState::ACTIVE, final_status); //expect no change in status
+}
+
 void EXPECT_LIFE_CYCLE_STATE(LifeCycleState expected_state,bool expected_success)
 {
   AMLifeCycleMediator mediator;

@@ -424,39 +424,6 @@ void AMLifeCycle::setState(const LifeCycleState state)
   }
 }
 
-const std::vector<LifeCycleCommand> AMLifeCycle::getLifeCycleCommands()
-{
-  std::vector<LifeCycleCommand> all;
-  for (int enumIndex = (int)LifeCycleCommand::CREATE; enumIndex <= (int)LifeCycleCommand::LAST_COMMAND; enumIndex++)
-  {
-    LifeCycleCommand command = static_cast<LifeCycleCommand>(enumIndex);
-    all.push_back(command);
-  }
-  return all;
-}
-
-const std::vector<LifeCycleState> AMLifeCycle::getLifeCycleStates()
-{
-  std::vector<LifeCycleState> all;
-  for (int enumIndex = (int)LifeCycleState::INVALID; enumIndex <= (int)LifeCycleState::LAST_STATE; enumIndex++)
-  {
-    LifeCycleState state = static_cast<LifeCycleState>(enumIndex);
-    all.push_back(state);
-  }
-  return all;
-}
-
-const std::vector<LifeCycleStatus> AMLifeCycle::getLifeCycleStatuses()
-{
-  std::vector<LifeCycleStatus> all;
-  for (int enumIndex = (int)LifeCycleStatus::OK; enumIndex <= (int)LifeCycleStatus::LAST_STATUS; enumIndex++)
-  {
-    LifeCycleStatus Status = static_cast<LifeCycleStatus>(enumIndex);
-    all.push_back(Status);
-  }
-  return all;
-}
-
 LifeCycleStatus AMLifeCycle::getStatus() const
 {
   return status_;

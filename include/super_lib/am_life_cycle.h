@@ -67,24 +67,6 @@ public:
   static constexpr std::string_view EMPTY_STRING = "";
 
   /**
-   * @brief Stores all states for LifeCycleState into a vector
-   * @returns vector of LifeCycleStates
-   */
-  static const std::vector<LifeCycleState> getLifeCycleStates();
-
-  /**
-   * @brief Stores all commands for LifeCycleCommand into a vector
-   * @returns vector of LifeCycleCommands
-   */
-  static const std::vector<LifeCycleCommand> getLifeCycleCommands();
-
-  /**
-   * @brief Stores all status' for LifeCycleStatus into a vector
-   * @returns vector of LifeCycleStatus
-   */
-  static const std::vector<LifeCycleStatus> getLifeCycleStatuses();
-
-  /**
    * @brief Converts a LifeCycleState into the proper string representation. 
    * If the LifeCycleState is not a valid one, returns "INVALID"
    * 

@@ -22,7 +22,7 @@ void EXPECT_LIFE_CYCLE_STATUS(LifeCycleStatus expected_status,bool expected_succ
 
 TEST(LifeCycleMediator, getAndSetStatus_ALL)
 {
-  vector<LifeCycleStatus> all = AMLifeCycle::getLifeCycleStatuses();
+  vector<LifeCycleStatus> all = AMLifeCycleMediator::getLifeCycleStatuses();
 
   for (int i = 0; i < all.size(); i++) //exclude ERROR_PROCESSING
   {

@@ -49,7 +49,7 @@ const std::string_view& AMLifeCycleMediator::statusToString(LifeCycleStatus stat
     {
       return str_status_bimap_.right.at(status);
     }
-    return AMLifeCycle::EMPTY_STRING;
+  return AMLifeCycle::EMPTY_STRING;
 }
 
 bool AMLifeCycleMediator::stringToStatus(std::string& status_str, LifeCycleStatus& status)

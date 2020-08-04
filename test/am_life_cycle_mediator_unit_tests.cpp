@@ -98,7 +98,59 @@ TEST(LifeCycleMediator, stateTestStringConversion)
   }
 }
 
-TEST(LifeCycleMediator, statusToString_BadStatusReturnsInvalidString)
+TEST(LifeCycleMediator, statusToString_BadStatusReturnsEmptyString)
 {
-  
+  LifeCycleStatus badStatus = LifeCycleStatus(-3);
+  string str;
+
+  str = AMLifeCycleMediator::statusToString(badStatus);
+  EXPECT_EQ(str, "");
+}
+
+TEST(LifeCycleMediator, stateToString_BadStateReturnsINVALID)
+{
+  LifeCycleState badState = LifeCycleState(-3);
+  string str;
+
+  str = AMLifeCycleMediator::stateToString(badState);
+  EXPECT_EQ(str, "INVALID");
+}
+
+TEST(LifeCycleMediator, commandToString_BadCommandReturnsEmptyString)
+{
+  LifeCycleCommand badCommand = LifeCycleCommand(-3);
+  string str;
+
+  str = AMLifeCycleMediator::commandToString(badCommand);
+  EXPECT_EQ(str, "");
+}
+
+TEST(LifeCycleMediator, stringToStatus_BadStringReturnsFalse)
+{
+  LifeCycleStatus initial_status = LifeCycleStatus::OK;
+  LifeCycleStatus status = initial_status;
+  string bad_string;
+  bool bad_strings_should_return_false = AMLifeCycleMediator::stringToStatus(bad_string, status);
+  EXPECT_FALSE(bad_strings_should_return_false);
+  EXPECT_EQ(status, initial_status) << "Status should be unchanged since the string is bad";
+}
+
+TEST(LifeCycleMediator, stringToCommand_BadStringReturnsFalse)
+{
+  LifeCycleCommand initial_cmd = LifeCycleCommand::ACTIVATE;
+  LifeCycleCommand cmd = initial_cmd;
+  string bad_string;
+  bool bad_strings_should_return_false = AMLifeCycleMediator::stringToCommand(bad_string, cmd);
+  EXPECT_FALSE(bad_strings_should_return_false);
+  EXPECT_EQ(cmd, initial_cmd) << "Command should be unchanged since the string is bad";
+}
+
+TEST(LifeCycleMediator, stringToState_BadStringReturnsFalse)
+{
+  LifeCycleState default_state=LifeCycleState::FINALIZED;
+  LifeCycleState state = default_state;
+  string bad_string;
+  bool bad_strings_should_return_false = AMLifeCycleMediator::stringToState(bad_string,state);
+  EXPECT_FALSE(bad_strings_should_return_false);
+  EXPECT_EQ(state,default_state) << "State should be unchanged since the string is bad";
 }

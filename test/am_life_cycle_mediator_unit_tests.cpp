@@ -13,9 +13,9 @@ void EXPECT_LIFE_CYCLE_STATUS(LifeCycleStatus expected_status,bool expected_succ
   AMLifeCycleMediator::LifeCycleInfo info;
   bool success = mediator.setStatus(expected_status, info);
   LifeCycleStatus actual = mediator.getStatus(info);
-  EXPECT_EQ(actual, expected_status) << mediator.statusToString(expected_status) << " not equal to " 
+  EXPECT_EQ(expected_status, actual) << mediator.statusToString(expected_status) << " not equal to " 
     << mediator.statusToString(actual);
-  EXPECT_EQ(success,expected_success);
+  EXPECT_EQ(expected_success, success);
 }
 
 TEST(LifeCycleMediator, getAndSetStatus_OK)
@@ -54,9 +54,9 @@ void EXPECT_LIFE_CYCLE_STATE(LifeCycleState expected_state,bool expected_success
   AMLifeCycleMediator::LifeCycleInfo info;
   bool success = mediator.setState(expected_state, info);
   LifeCycleState actual = mediator.getState(info);
-  EXPECT_EQ(actual, expected_state) << mediator.stateToString(expected_state) << " not equal to " 
+  EXPECT_EQ(expected_state, actual) << mediator.stateToString(expected_state) << " not equal to " 
     << mediator.stateToString(actual);
-  EXPECT_EQ(success,expected_success);
+  EXPECT_EQ(expected_success, success);
 }
 
 TEST(LifeCycleMediator, getAndSetState_all_except_ERROR_PROCESSING)

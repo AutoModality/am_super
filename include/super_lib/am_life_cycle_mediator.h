@@ -57,6 +57,24 @@ public:
 
     static const std::string_view& stateToString(LifeCycleState state);
     static bool stringToState(std::string& state_str, LifeCycleState& state);
+
+    /**
+     * @brief Stores all states for LifeCycleState into a vector
+     * @returns vector of LifeCycleStates
+     */
+    static const std::vector<LifeCycleState> getLifeCycleStates();
+
+    /**
+     * @brief Stores all commands for LifeCycleCommand into a vector
+     * @returns vector of LifeCycleCommands
+     */
+    static const std::vector<LifeCycleCommand> getLifeCycleCommands();
+
+    /**
+     * @brief Stores all status' for LifeCycleStatus into a vector
+     * @returns vector of LifeCycleStatus
+     */
+    static const std::vector<LifeCycleStatus> getLifeCycleStatuses();
 };
 }
 #endif // AM_LIFE_CYCLE_MEDIATOR_H_

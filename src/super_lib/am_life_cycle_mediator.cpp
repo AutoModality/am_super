@@ -122,5 +122,37 @@ LifeCycleState AMLifeCycleMediator::getState(const LifeCycleInfo& info)
   return info.state;
 }
 
+const std::vector<LifeCycleCommand> AMLifeCycleMediator::getLifeCycleCommands()
+{
+  std::vector<LifeCycleCommand> all;
+  for (int enumIndex = (int)LifeCycleCommand::CREATE; enumIndex <= (int)LifeCycleCommand::LAST_COMMAND; enumIndex++)
+  {
+    LifeCycleCommand command = static_cast<LifeCycleCommand>(enumIndex);
+    all.push_back(command);
+  }
+  return all;
+}
+
+const std::vector<LifeCycleState> AMLifeCycleMediator::getLifeCycleStates()
+{
+  std::vector<LifeCycleState> all;
+  for (int enumIndex = (int)FIRST_STATE; enumIndex <= (int)LAST_STATE; enumIndex++)
+  {
+    LifeCycleState state = static_cast<LifeCycleState>(enumIndex);
+    all.push_back(state);
+  }
+  return all;
+}
+
+const std::vector<LifeCycleStatus> AMLifeCycleMediator::getLifeCycleStatuses()
+{
+  std::vector<LifeCycleStatus> all;
+  for (int enumIndex = (int)FIRST_STATUS; enumIndex <= (int)LAST_STATUS; enumIndex++)
+  {
+    LifeCycleStatus Status = static_cast<LifeCycleStatus>(enumIndex);
+    all.push_back(Status);
+  }
+  return all;
+}
 
 } //namespace am

@@ -47,7 +47,7 @@ void EXPECT_LIFE_CYCLE_STATE(LifeCycleState expected_state,bool expected_success
 
 TEST(LifeCycleMediator, getAndSetState_ALL)
 {
-  vector<LifeCycleState> all = AMLifeCycle::getLifeCycleStates();
+  vector<LifeCycleState> all = AMLifeCycleMediator::getLifeCycleStates();
 
   for (int i = 0; i < all.size(); i++) //exclude ERROR_PROCESSING
   {
@@ -57,7 +57,7 @@ TEST(LifeCycleMediator, getAndSetState_ALL)
 
 TEST(LifeCycleMediator, commandTestStringConversion)
 {
-  vector<LifeCycleCommand> allCommands = AMLifeCycle::getLifeCycleCommands();
+  vector<LifeCycleCommand> allCommands = AMLifeCycleMediator::getLifeCycleCommands();
   string str;
   LifeCycleCommand cmd;
 
@@ -71,7 +71,7 @@ TEST(LifeCycleMediator, commandTestStringConversion)
 
 TEST(LifeCycleMediator, statusTestStringConversion)
 {
-  vector<LifeCycleStatus> allStatus = AMLifeCycle::getLifeCycleStatuses();
+  vector<LifeCycleStatus> allStatus = AMLifeCycleMediator::getLifeCycleStatuses();
   string string_from_status;
   LifeCycleStatus status_from_string;
 
@@ -86,7 +86,7 @@ TEST(LifeCycleMediator, statusTestStringConversion)
 
 TEST(LifeCycleMediator, stateTestStringConversion)
 {
-  vector<LifeCycleState> allStates = AMLifeCycle::getLifeCycleStates();
+  vector<LifeCycleState> allStates = AMLifeCycleMediator::getLifeCycleStates();
   string str;
   LifeCycleState state;
 
@@ -96,4 +96,9 @@ TEST(LifeCycleMediator, stateTestStringConversion)
     EXPECT_TRUE(AMLifeCycleMediator::stringToState(str, state));
     EXPECT_EQ(allStates[i], state);
   }
+}
+
+TEST(LifeCycleMediator, statusToString_BadStatusReturnsInvalidString)
+{
+  
 }

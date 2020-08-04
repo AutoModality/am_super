@@ -334,21 +334,12 @@ const str_state_bimap str_state_bimap_ = boost::assign::list_of< str_state_bimap
 
 const std::string_view& AMLifeCycle::stateToString(LifeCycleState state)
 {
-    if(str_state_bimap_.right.count(state))
-    {
-      return str_state_bimap_.right.at(state);
-    }
-    return STATE_INVALID_STRING;
+  AMLifeCycleMediator::stateToString(state);
 }
 
 bool AMLifeCycle::stringToState(std::string& state_str, LifeCycleState& state)
 {
-  if(str_state_bimap_.left.count(state_str))
-  {
-    state = str_state_bimap_.left.at(state_str);
-    return true;
-  }
-  return false;
+  AMLifeCycleMediator::stringToState(state_str, state);
 }
 
 typedef boost::bimap<std::string_view, am::LifeCycleStatus> str_status_bimap;
@@ -359,21 +350,12 @@ const str_status_bimap str_status_bimap_ = boost::assign::list_of< str_status_bi
 
 const std::string_view& AMLifeCycle::statusToString(LifeCycleStatus status)
 {
-  if(str_status_bimap_.right.count(status))
-    {
-      return str_status_bimap_.right.at(status);
-    }
-    return AMLifeCycle::EMPTY_STRING;
+  AMLifeCycleMediator::statusToString(status);
 }
 
 bool AMLifeCycle::stringToStatus(std::string& status_str, LifeCycleStatus& status)
 {
-  if(str_status_bimap_.left.count(status_str))
-  {
-    status = str_status_bimap_.left.at(status_str);
-    return true;
-  }
-  return false;
+  AMLifeCycleMediator::stringToStatus(status_str, status);
 }
 
 typedef boost::bimap<std::string_view, am::LifeCycleCommand> str_command_bimap;
@@ -388,21 +370,12 @@ const str_command_bimap str_command_bimap_ = boost::assign::list_of< str_command
 
 const std::string_view& AMLifeCycle::commandToString(LifeCycleCommand command)
 {
-  if(str_command_bimap_.right.count(command))
-    {
-      return str_command_bimap_.right.at(command);
-    }
-    return EMPTY_STRING;
+  AMLifeCycleMediator::commandToString(command);
 }
 
 bool AMLifeCycle::stringToCommand(std::string& command_str, LifeCycleCommand& command)
 {
-  if(str_command_bimap_.left.count(command_str))
-  {
-    command = str_command_bimap_.left.at(command_str);
-    return true;
-  }
-  return false;
+  AMLifeCycleMediator::stringToCommand(command_str, command);
 }
 
 LifeCycleState AMLifeCycle::getState() const
@@ -423,6 +396,7 @@ void AMLifeCycle::setState(const LifeCycleState state)
     ROS_ERROR_STREAM("illegal state: " << (int)state);
   }
 }
+
 
 LifeCycleStatus AMLifeCycle::getStatus() const
 {

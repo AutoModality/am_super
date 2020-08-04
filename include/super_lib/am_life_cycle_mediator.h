@@ -10,6 +10,12 @@ namespace am
  */
 class AMLifeCycleMediator
 {
+private:
+    static const LifeCycleStatus FIRST_STATUS = LifeCycleStatus::OK;
+    static const LifeCycleStatus LAST_STATUS = LifeCycleStatus::ERROR;
+
+    static const LifeCycleState FIRST_STATE = LifeCycleState::INVALID;
+    static const LifeCycleState LAST_STATE = LifeCycleState::ERROR_PROCESSING;
 
 public:
     /**

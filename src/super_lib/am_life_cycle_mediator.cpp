@@ -97,7 +97,7 @@ bool AMLifeCycleMediator::stringToState(std::string& state_str, LifeCycleState& 
 
 bool AMLifeCycleMediator::setStatus(const LifeCycleStatus& status, LifeCycleInfo& info)
 {
-  if (status == LifeCycleStatus::LAST_STATUS) 
+  if (status < AMLifeCycleMediator::FIRST_STATUS || status > AMLifeCycleMediator::LAST_STATUS) 
     return false;
 
   info.status = status;
@@ -110,7 +110,7 @@ LifeCycleStatus AMLifeCycleMediator::getStatus(const LifeCycleInfo& info)
 
 bool AMLifeCycleMediator::setState(const LifeCycleState& state, LifeCycleInfo& info)
 {
-  if (state == LifeCycleState::LAST_STATE) 
+  if (state < AMLifeCycleMediator::FIRST_STATE || state > AMLifeCycleMediator::LAST_STATE) 
     return false;
     
   info.state = state;

@@ -5,62 +5,29 @@
 using namespace am;
 using namespace std;
 
-
-
 void EXPECT_LIFE_CYCLE_STATUS(LifeCycleStatus expected_status,bool expected_success)
 {
   AMLifeCycleMediator mediator;
   AMLifeCycleMediator::LifeCycleInfo info;
   bool success = mediator.setStatus(expected_status, info);
-  LifeCycleStatus actual = mediator.getStatus(info);
-  EXPECT_EQ(expected_status, actual) << mediator.statusToString(expected_status) << " not equal to " 
+  ASSERT_EQ(expected_success, success);
+
+  if(success)
+  {
+    LifeCycleStatus actual = mediator.getStatus(info);
+    EXPECT_EQ(expected_status, actual) << mediator.statusToString(expected_status) << " not equal to " 
     << mediator.statusToString(actual);
-  EXPECT_EQ(expected_success, success);
+  }
 }
 
-TEST(LifeCycleMediator, getAndSetStatus_OK)
+TEST(LifeCycleMediator, getAndSetStatus_ALL)
 {
-  EXPECT_LIFE_CYCLE_STATUS(LifeCycleStatus::OK, true);
-}
+  vector<LifeCycleStatus> all = AMLifeCycle::getLifeCycleStatuses();
 
-TEST(LifeCycleMediator, getAndSetStatus_WARN)
-{
-  EXPECT_LIFE_CYCLE_STATUS(LifeCycleStatus::WARN, true);
-}
-
-TEST(LifeCycleMediator, getAndSetStatus_ERROR)
-{
-  EXPECT_LIFE_CYCLE_STATUS(LifeCycleStatus::ERROR, true);
-}
-
-TEST(LifeCycleMediator, getAndSetStatus_ignores_LAST_STATUS)
-{
-  AMLifeCycleMediator mediator;
-  AMLifeCycleMediator::LifeCycleInfo info;
-  
-  bool success = mediator.setStatus(LifeCycleStatus::OK, info);
-  ASSERT_TRUE(success); //following tests depend on this being true, therefore assert
-
-  success = mediator.setStatus(LifeCycleStatus::LAST_STATUS, info);
-  LifeCycleStatus final_status = mediator.getStatus(info);
-
-  EXPECT_FALSE(success); //expect setStatus to return false;
-  EXPECT_EQ(LifeCycleStatus::OK, final_status); //expect no change in status
-}
-
-TEST(LifeCycleMediator, getAndSetState_ignores_LAST_STATUS)
-{
-  AMLifeCycleMediator mediator;
-  AMLifeCycleMediator::LifeCycleInfo info;
-  
-  bool success = mediator.setState(LifeCycleState::ACTIVE, info);
-  ASSERT_TRUE(success); //following tests depend on this being true, therefore assert
-
-  success = mediator.setState(LifeCycleState::LAST_STATE, info);
-  LifeCycleState final_status = mediator.getState(info);
-
-  EXPECT_FALSE(success); //expect setStatus to return false;
-  EXPECT_EQ(LifeCycleState::ACTIVE, final_status); //expect no change in status
+  for (int i = 0; i < all.size(); i++) //exclude ERROR_PROCESSING
+  {
+    EXPECT_LIFE_CYCLE_STATUS(all[i], true);
+  }
 }
 
 void EXPECT_LIFE_CYCLE_STATE(LifeCycleState expected_state,bool expected_success)
@@ -68,25 +35,24 @@ void EXPECT_LIFE_CYCLE_STATE(LifeCycleState expected_state,bool expected_success
   AMLifeCycleMediator mediator;
   AMLifeCycleMediator::LifeCycleInfo info;
   bool success = mediator.setState(expected_state, info);
-  LifeCycleState actual = mediator.getState(info);
-  EXPECT_EQ(expected_state, actual) << mediator.stateToString(expected_state) << " not equal to " 
-    << mediator.stateToString(actual);
   EXPECT_EQ(expected_success, success);
-}
 
-TEST(LifeCycleMediator, getAndSetState_all_except_ERROR_PROCESSING)
-{
-  vector<LifeCycleState> all = AMLifeCycle::getLifeCycleStates();
-
-  for (int i = 0; i < all.size() - 1; i++) //exclude ERROR_PROCESSING
+  if(success)
   {
-    EXPECT_LIFE_CYCLE_STATE(all[i], true);
+    LifeCycleState actual = mediator.getState(info);
+    EXPECT_EQ(expected_state, actual) << mediator.stateToString(expected_state) << " not equal to " 
+    << mediator.stateToString(actual);
   }
 }
 
-TEST(LifeCycleMediator, getAndSetState_ERROR_PROCESSING)
+TEST(LifeCycleMediator, getAndSetState_ALL)
 {
-  EXPECT_LIFE_CYCLE_STATE(LifeCycleState::ERROR_PROCESSING, true);
+  vector<LifeCycleState> all = AMLifeCycle::getLifeCycleStates();
+
+  for (int i = 0; i < all.size(); i++) //exclude ERROR_PROCESSING
+  {
+    EXPECT_LIFE_CYCLE_STATE(all[i], true);
+  }
 }
 
 TEST(LifeCycleMediator, commandTestStringConversion)

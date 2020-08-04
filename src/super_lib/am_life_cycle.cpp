@@ -350,7 +350,7 @@ bool AMLifeCycle::stringToCommand(std::string& command_str, LifeCycleCommand& co
 
 LifeCycleState AMLifeCycle::getState() const
 {
-  return state_;
+  return life_cycle_mediator_.getState(life_cycle_info_);
 }
 
 void AMLifeCycle::setState(const LifeCycleState state)

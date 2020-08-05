@@ -19,6 +19,7 @@
 
 #include <super_lib/am_life_cycle_types.h>
 #include <super_lib/am_life_cycle.h>
+#include <super_lib/am_life_cycle_mediator.h>
 
 #include <vb_util_lib/bag_logger.h>
 #include <vb_util_lib/topics.h>
@@ -63,6 +64,9 @@ private:
 
   /** manage logic for SuperState transitions */
   SuperStateMediator state_mediator_;
+
+  /* manage logic for LifeCycle */
+  AMLifeCycleMediator life_cycle_mediator_;
 
   /** Node behavior management.*/
   SuperNodeMediator node_mediator_;
@@ -269,13 +273,13 @@ private:
       }
       if (nr.state != state)
       {
-        ROS_INFO_STREAM(node_name << " changed state to = " << AMLifeCycle::stateToString(state));
+        ROS_INFO_STREAM(node_name << " changed state to = " << life_cycle_mediator_.stateToString(state));
         nr.state = state;
         nodes_changed = true;
       }
       if (nr.status != status)
       {
-        ROS_INFO_STREAM(node_name << " changed status to = " << AMLifeCycle::statusToString(status));
+        ROS_INFO_STREAM(node_name << " changed status to = " << life_cycle_mediator_.statusToString(status));
         nr.status = status;
         nodes_changed = true;
       }
@@ -290,8 +294,8 @@ private:
     else
     {
       // if we get here, the node is not in the manifest and we've never heard from it before
-      ROS_WARN_STREAM("unknown node " << node_name << " came online. state: " << AMLifeCycle::stateToString(state)
-                                      << ", status: " << AMLifeCycle::statusToString(status));
+      ROS_WARN_STREAM("unknown node " << node_name << " came online. state: " << life_cycle_mediator_.stateToString(state)
+                                      << ", status: " << life_cycle_mediator_.statusToString(status));
       SuperNodeMediator::SuperNodeInfo nr;
       nr.name = node_name;
       nr.pid = pid;
@@ -446,7 +450,7 @@ private:
    */
   void sendLifeCycleCommand(const std::string_view& node_name, const LifeCycleCommand command)
   {
-    ROS_INFO_STREAM("sending command: " << AMLifeCycle::commandToString(command));
+    ROS_INFO_STREAM("sending command: " << life_cycle_mediator_.commandToString(command));
     brain_box_msgs::LifeCycleCommand msg;
     msg.node_name = node_name;
     msg.command = (brain_box_msgs::LifeCycleCommand::_command_type)command;
@@ -496,7 +500,7 @@ private:
     {
       LifeCycleCommand command = transition_instructions.life_cycle_command;
       ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state)
-                      << ": sending " << AMLifeCycle::commandToString(command) << " again");
+                      << ": sending " << life_cycle_mediator_.commandToString(command) << " again");
       sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, command);
     }
   }

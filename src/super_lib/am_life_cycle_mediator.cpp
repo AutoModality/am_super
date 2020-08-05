@@ -125,7 +125,7 @@ LifeCycleState AMLifeCycleMediator::getState(const LifeCycleInfo& info) const
 const std::vector<LifeCycleCommand> AMLifeCycleMediator::getLifeCycleCommands()
 {
   std::vector<LifeCycleCommand> all;
-  for (int enumIndex = (int)LifeCycleCommand::CREATE; enumIndex <= (int)LifeCycleCommand::LAST_COMMAND; enumIndex++)
+  for (int enumIndex = (int)FIRST_COMMAND; enumIndex <= (int)LAST_COMMAND; enumIndex++)
   {
     LifeCycleCommand command = static_cast<LifeCycleCommand>(enumIndex);
     all.push_back(command);

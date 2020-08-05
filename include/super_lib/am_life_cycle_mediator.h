@@ -17,6 +17,9 @@ private:
     static const LifeCycleState FIRST_STATE = LifeCycleState::INVALID;
     static const LifeCycleState LAST_STATE = LifeCycleState::ERROR_PROCESSING;
 
+    static const LifeCycleCommand FIRST_COMMAND = LifeCycleCommand::CREATE;
+    static const LifeCycleCommand LAST_COMMAND = LifeCycleCommand::DESTROY;
+
 public:
     /**
      * Holds information about AMLifeCycle

@@ -22,8 +22,7 @@ enum class LifeCycleState : std::uint8_t
   SHUTTING_DOWN = brain_box_msgs::LifeCycleState::STATE_SHUTTING_DOWN,
   ACTIVATING = brain_box_msgs::LifeCycleState::STATE_ACTIVATING,
   DEACTIVATING = brain_box_msgs::LifeCycleState::STATE_DEACTIVATING,
-  ERROR_PROCESSING = brain_box_msgs::LifeCycleState::STATE_ERROR_PROCESSING,
-  LAST_STATE = brain_box_msgs::LifeCycleState::STATE_LAST
+  ERROR_PROCESSING = brain_box_msgs::LifeCycleState::STATE_ERROR_PROCESSING
 };
 
 /**
@@ -33,8 +32,7 @@ enum class LifeCycleStatus : std::uint8_t
 {
   OK = brain_box_msgs::LifeCycleState::STATUS_OK,
   WARN = brain_box_msgs::LifeCycleState::STATUS_WARN,
-  ERROR = brain_box_msgs::LifeCycleState::STATUS_ERROR,
-  LAST_STATUS = brain_box_msgs::LifeCycleState::STATUS_LAST
+  ERROR = brain_box_msgs::LifeCycleState::STATUS_ERROR
 };
 
 /**

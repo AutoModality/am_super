@@ -19,7 +19,7 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
   ros::param::param<std::string>("~init_state", init_state_str, "ACTIVE");
   ROS_INFO_STREAM("init_state = " << init_state_str);
   LifeCycleState init_state;
-  if (stringToState(init_state_str, init_state))
+  if (life_cycle_mediator_.stringToState(init_state_str, init_state))
   {
     life_cycle_info_.state = init_state;
   }
@@ -61,7 +61,7 @@ AMLifeCycle::~AMLifeCycle()
 
 void AMLifeCycle::lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg)
 {
-  ROS_DEBUG_STREAM_THROTTLE(1.0, commandToString((LifeCycleCommand)msg->command));
+  ROS_DEBUG_STREAM_THROTTLE(1.0, life_cycle_mediator_.commandToString((LifeCycleCommand)msg->command));
 
   if (!msg->node_name.compare(AMLifeCycle::BROADCAST_NODE_NAME) || !msg->node_name.compare(node_name_))
   {
@@ -81,7 +81,7 @@ void AMLifeCycle::lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr m
                    std::bind(&AMLifeCycle::onConfigure, this));
         break;
       case LifeCycleCommand::CREATE:
-        ROS_WARN_STREAM("illegal command " << commandToString(LifeCycleCommand::CREATE));
+        ROS_WARN_STREAM("illegal command " << life_cycle_mediator_.commandToString(LifeCycleCommand::CREATE));
         break;
       case LifeCycleCommand::DEACTIVATE:
         transition("deactivate", LifeCycleState::ACTIVE, LifeCycleState::DEACTIVATING, LifeCycleState::INACTIVE,
@@ -102,7 +102,7 @@ void AMLifeCycle::transition(std::string transition_name, LifeCycleState initial
 {
   if (life_cycle_info_.state == initial_state)
   {
-    ROS_INFO_STREAM(transition_name << ", current state: " << stateToString(life_cycle_info_.state));
+    ROS_INFO_STREAM(transition_name << ", current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
     setState(transition_state);
     on_function();
   }
@@ -112,7 +112,7 @@ void AMLifeCycle::transition(std::string transition_name, LifeCycleState initial
   }
   else
   {
-    ROS_WARN_STREAM("received illegal activate in state " << stateToString(life_cycle_info_.state));
+    ROS_WARN_STREAM("received illegal activate in state " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
   }
 }
 
@@ -173,7 +173,7 @@ void AMLifeCycle::onDeactivate()
 
 void AMLifeCycle::logState()
 {
-    ROS_INFO_STREAM("LifeCycle: " << stateToString(life_cycle_info_.state));
+    ROS_INFO_STREAM("LifeCycle: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
 }
 
 void AMLifeCycle::doDeactivate(bool success)
@@ -185,11 +185,11 @@ void AMLifeCycle::destroy()
 {
   if (life_cycle_info_.state != LifeCycleState::FINALIZED)
   {
-    ROS_INFO_STREAM("received illegal activate in state " << stateToString(life_cycle_info_.state));
+    ROS_INFO_STREAM("received illegal activate in state " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
   }
   else if (life_cycle_info_.state == LifeCycleState::SHUTTING_DOWN || life_cycle_info_.state == LifeCycleState::FINALIZED)
   {
-    ROS_INFO_STREAM("current state: " << stateToString(life_cycle_info_.state));
+    ROS_INFO_STREAM("current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
     onDestroy();
   }
 }
@@ -215,7 +215,7 @@ void AMLifeCycle::error()
   }
   else
   {
-    ROS_INFO_STREAM("current state: " << stateToString(life_cycle_info_.state));
+    ROS_INFO_STREAM("current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
     setState(LifeCycleState::ERROR_PROCESSING);
     onError();
   }
@@ -245,7 +245,7 @@ void AMLifeCycle::shutdown()
 {
   if (life_cycle_info_.state == LifeCycleState::UNCONFIGURED || life_cycle_info_.state == LifeCycleState::INACTIVE || life_cycle_info_.state == LifeCycleState::ACTIVE)
   {
-    ROS_INFO_STREAM("current state: " << stateToString(life_cycle_info_.state));
+    ROS_INFO_STREAM("current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
     setState(LifeCycleState::SHUTTING_DOWN);
     onShutdown();
   }
@@ -255,7 +255,7 @@ void AMLifeCycle::shutdown()
   }
   else
   {
-    ROS_INFO_STREAM("received illegal activate in state " << stateToString(life_cycle_info_.state));
+    ROS_INFO_STREAM("received illegal activate in state " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
   }
 }
 
@@ -295,7 +295,7 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
   updater_.force_update();
 
   std::stringstream ss;
-  ss << AMLifeCycle::stateToString(life_cycle_info_.state) << "," << AMLifeCycle::statusToString(life_cycle_info_.status) << ","
+  ss << life_cycle_mediator_.stateToString(life_cycle_info_.state) << "," << life_cycle_mediator_.statusToString(life_cycle_info_.status) << ","
      << stats_list_.getStatsStrShort();
 
   double throttle;
@@ -318,36 +318,6 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
   sendNodeUpdate();
 }
 
-const std::string_view& AMLifeCycle::stateToString(LifeCycleState state)
-{
-  return AMLifeCycleMediator::stateToString(state);
-}
-
-bool AMLifeCycle::stringToState(std::string& state_str, LifeCycleState& state)
-{
-  return AMLifeCycleMediator::stringToState(state_str, state);
-}
-
-const std::string_view& AMLifeCycle::statusToString(LifeCycleStatus status)
-{
-  return AMLifeCycleMediator::statusToString(status);
-}
-
-bool AMLifeCycle::stringToStatus(std::string& status_str, LifeCycleStatus& status)
-{
-  return AMLifeCycleMediator::stringToStatus(status_str, status);
-}
-
-const std::string_view& AMLifeCycle::commandToString(LifeCycleCommand command)
-{
-  return AMLifeCycleMediator::commandToString(command);
-}
-
-bool AMLifeCycle::stringToCommand(std::string& command_str, LifeCycleCommand& command)
-{
-  return AMLifeCycleMediator::stringToCommand(command_str, command);
-}
-
 LifeCycleState AMLifeCycle::getState() const
 {
   return life_cycle_mediator_.getState(life_cycle_info_);
@@ -359,7 +329,7 @@ void AMLifeCycle::setState(const LifeCycleState state)
 
   if (life_cycle_mediator_.setState(state, life_cycle_info_))
   {
-    ROS_INFO_STREAM("changing state from " << stateToString(initial_state) << " to " << stateToString(state));
+    ROS_INFO_STREAM("changing state from " << life_cycle_mediator_.stateToString(initial_state) << " to " << life_cycle_mediator_.stateToString(state));
     sendNodeUpdate();
   }
   else

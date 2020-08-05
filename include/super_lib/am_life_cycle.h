@@ -9,6 +9,7 @@
 
 #include <super_lib/am_stat_list.h>
 #include <super_lib/am_life_cycle_types.h>
+#include <super_lib/am_life_cycle_mediator.h>
 
 namespace am
 {
@@ -21,6 +22,9 @@ private:
 
   LifeCycleState state_;
   LifeCycleStatus status_;
+  AMLifeCycleMediator life_cycle_mediator_;
+  AMLifeCycleMediator::LifeCycleInfo life_cycle_info_;
+  
   double ok_throttle_s_ = DEFAULT_OK_THROTTLE_S;
   double warn_throttle_s_ = DEFAULT_WARN_THROTTLE_S;
   double error_throttle_s_ = DEFAULT_ERROR_THROTTLE_S;
@@ -61,24 +65,6 @@ public:
   static constexpr std::string_view COMMAND_DESTROY_STRING = "DESTROY";
 
   static constexpr std::string_view EMPTY_STRING = "";
-
-  /**
-   * @brief Stores all states for LifeCycleState into a vector
-   * @returns vector of LifeCycleStates
-   */
-  static const std::vector<LifeCycleState> getLifeCycleStates();
-
-  /**
-   * @brief Stores all commands for LifeCycleCommand into a vector
-   * @returns vector of LifeCycleCommands
-   */
-  static const std::vector<LifeCycleCommand> getLifeCycleCommands();
-
-  /**
-   * @brief Stores all status' for LifeCycleStatus into a vector
-   * @returns vector of LifeCycleStatus
-   */
-  static const std::vector<LifeCycleStatus> getLifeCycleStatuses();
 
   /**
    * @brief Converts a LifeCycleState into the proper string representation. 
@@ -232,7 +218,7 @@ protected:
 
   LifeCycleState getState() const;
   LifeCycleStatus getStatus() const;
-  void setStatus(const LifeCycleStatus status);
+  bool setStatus(const LifeCycleStatus status);
   double getThrottleS() const;
   void setThrottleS(const double throttleS);
 

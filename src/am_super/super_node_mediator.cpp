@@ -201,6 +201,7 @@ void SuperNodeMediator::parseManifest(Supervisor& supervisor, string manifest)
   if (manifest.size())
   {
     // split it based upon commas
+    boost::trim_if(manifest,boost::is_any_of(","));
     boost::split(supervisor.manifest, manifest, boost::is_any_of(","));
   }
 }

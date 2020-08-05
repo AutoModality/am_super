@@ -114,11 +114,12 @@ public:
     // strip spaces from manifest param
     string manifest_param;
     ros::param::param<string>("~manifest", manifest_param, "");
+
     node_mediator_.parseManifest(supervisor_, manifest_param);
     // if a manifest has been specified
     if (!supervisor_.manifest.empty())
     {
-      ROS_INFO_STREAM("configuring nodes from manifest:");
+      ROS_INFO_STREAM("configuring nodes from manifest: " << manifest_param);
       for (string& name : supervisor_.manifest)
       {
         // create a new node in the list for each name in manifest
@@ -143,6 +144,11 @@ public:
         }
       }
     }
+    else
+    {
+      ROS_WARN_STREAM("Manifest is empty.  No nodes will be monitored.");
+    }
+    
     reportSystemState();
 
 #if CUDA_FLAG

@@ -175,16 +175,14 @@ TEST(Node, parseManifest_SpacesStripped)
   ASSERT_EQ(supervisor.manifest, expected);
 }
 
-/**Demonstrates trailing commas are not handled. Not by design, just
- * by discovery so change this test happily if trailing commas become ignored
- */
-TEST(Node, parseManifest_TrailingCommasIsNotIgnored)
+
+TEST(Node, parseManifest_TrailingCommaIsIgnored)
 {
   SuperNodeMediator::Supervisor supervisor;
   superNodeMediator.parseManifest(supervisor, "first,");
-  vector<string> expected{ "first", "" };
-  ASSERT_EQ(supervisor.manifest.size(), 2);
-  ASSERT_EQ(supervisor.manifest, expected);
+  vector<string> expected{ "first"};
+  EXPECT_EQ(supervisor.manifest.size(), 1);
+  EXPECT_EQ(supervisor.manifest, expected);
 }
 
 TEST(Node, parseManifest_Single)

@@ -320,32 +320,32 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
 
 const std::string_view& AMLifeCycle::stateToString(LifeCycleState state)
 {
-  AMLifeCycleMediator::stateToString(state);
+  return AMLifeCycleMediator::stateToString(state);
 }
 
 bool AMLifeCycle::stringToState(std::string& state_str, LifeCycleState& state)
 {
-  AMLifeCycleMediator::stringToState(state_str, state);
+  return AMLifeCycleMediator::stringToState(state_str, state);
 }
 
 const std::string_view& AMLifeCycle::statusToString(LifeCycleStatus status)
 {
-  AMLifeCycleMediator::statusToString(status);
+  return AMLifeCycleMediator::statusToString(status);
 }
 
 bool AMLifeCycle::stringToStatus(std::string& status_str, LifeCycleStatus& status)
 {
-  AMLifeCycleMediator::stringToStatus(status_str, status);
+  return AMLifeCycleMediator::stringToStatus(status_str, status);
 }
 
 const std::string_view& AMLifeCycle::commandToString(LifeCycleCommand command)
 {
-  AMLifeCycleMediator::commandToString(command);
+  return AMLifeCycleMediator::commandToString(command);
 }
 
 bool AMLifeCycle::stringToCommand(std::string& command_str, LifeCycleCommand& command)
 {
-  AMLifeCycleMediator::stringToCommand(command_str, command);
+  return AMLifeCycleMediator::stringToCommand(command_str, command);
 }
 
 LifeCycleState AMLifeCycle::getState() const

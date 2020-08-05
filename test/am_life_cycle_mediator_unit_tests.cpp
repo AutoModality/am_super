@@ -60,11 +60,12 @@ TEST(LifeCycleMediator, commandTestStringConversion)
   vector<LifeCycleCommand> allCommands = AMLifeCycleMediator::getLifeCycleCommands();
   string str;
   LifeCycleCommand cmd;
+  AMLifeCycleMediator mediator;
 
   for(int i = 0; i < allCommands.size(); i++)
   {
-    str = AMLifeCycleMediator::commandToString(allCommands[i]);
-    EXPECT_TRUE(AMLifeCycleMediator::stringToCommand(str, cmd));
+    str = mediator.commandToString(allCommands[i]);
+    EXPECT_TRUE(mediator.stringToCommand(str, cmd));
     EXPECT_EQ(allCommands[i], cmd);
   }
 }
@@ -74,11 +75,12 @@ TEST(LifeCycleMediator, statusTestStringConversion)
   vector<LifeCycleStatus> allStatus = AMLifeCycleMediator::getLifeCycleStatuses();
   string string_from_status;
   LifeCycleStatus status_from_string;
+  AMLifeCycleMediator mediator;
 
   for(LifeCycleStatus expected_status: allStatus)
   {
-    string_from_status = AMLifeCycleMediator::statusToString(expected_status);
-    bool success = AMLifeCycleMediator::stringToStatus(string_from_status, status_from_string);
+    string_from_status = mediator.statusToString(expected_status);
+    bool success = mediator.stringToStatus(string_from_status, status_from_string);
     EXPECT_EQ(status_from_string,expected_status);
     EXPECT_TRUE(success);
   }
@@ -89,11 +91,12 @@ TEST(LifeCycleMediator, stateTestStringConversion)
   vector<LifeCycleState> allStates = AMLifeCycleMediator::getLifeCycleStates();
   string str;
   LifeCycleState state;
+  AMLifeCycleMediator mediator;
 
   for(int i = 0; i < allStates.size(); i++) 
   {
-    str = AMLifeCycleMediator::stateToString(allStates[i]);
-    EXPECT_TRUE(AMLifeCycleMediator::stringToState(str, state));
+    str = mediator.stateToString(allStates[i]);
+    EXPECT_TRUE(mediator.stringToState(str, state));
     EXPECT_EQ(allStates[i], state);
   }
 }
@@ -102,8 +105,9 @@ TEST(LifeCycleMediator, statusToString_BadStatusReturnsEmptyString)
 {
   LifeCycleStatus badStatus = LifeCycleStatus(-3);
   string str;
+  AMLifeCycleMediator mediator;
 
-  str = AMLifeCycleMediator::statusToString(badStatus);
+  str = mediator.statusToString(badStatus);
   EXPECT_EQ(str, "");
 }
 
@@ -111,8 +115,9 @@ TEST(LifeCycleMediator, stateToString_BadStateReturnsINVALID)
 {
   LifeCycleState badState = LifeCycleState(-3);
   string str;
+  AMLifeCycleMediator mediator;
 
-  str = AMLifeCycleMediator::stateToString(badState);
+  str = mediator.stateToString(badState);
   EXPECT_EQ(str, "INVALID");
 }
 
@@ -120,8 +125,9 @@ TEST(LifeCycleMediator, commandToString_BadCommandReturnsEmptyString)
 {
   LifeCycleCommand badCommand = LifeCycleCommand(-3);
   string str;
+  AMLifeCycleMediator mediator;
 
-  str = AMLifeCycleMediator::commandToString(badCommand);
+  str = mediator.commandToString(badCommand);
   EXPECT_EQ(str, "");
 }
 
@@ -130,7 +136,9 @@ TEST(LifeCycleMediator, stringToStatus_BadStringReturnsFalse)
   LifeCycleStatus initial_status = LifeCycleStatus::OK;
   LifeCycleStatus status = initial_status;
   string bad_string;
-  bool bad_strings_should_return_false = AMLifeCycleMediator::stringToStatus(bad_string, status);
+  AMLifeCycleMediator mediator;
+
+  bool bad_strings_should_return_false = mediator.stringToStatus(bad_string, status);
   EXPECT_FALSE(bad_strings_should_return_false);
   EXPECT_EQ(status, initial_status) << "Status should be unchanged since the string is bad";
 }
@@ -139,8 +147,10 @@ TEST(LifeCycleMediator, stringToCommand_BadStringReturnsFalse)
 {
   LifeCycleCommand initial_cmd = LifeCycleCommand::ACTIVATE;
   LifeCycleCommand cmd = initial_cmd;
+  AMLifeCycleMediator mediator;
+
   string bad_string;
-  bool bad_strings_should_return_false = AMLifeCycleMediator::stringToCommand(bad_string, cmd);
+  bool bad_strings_should_return_false = mediator.stringToCommand(bad_string, cmd);
   EXPECT_FALSE(bad_strings_should_return_false);
   EXPECT_EQ(cmd, initial_cmd) << "Command should be unchanged since the string is bad";
 }
@@ -150,7 +160,9 @@ TEST(LifeCycleMediator, stringToState_BadStringReturnsFalse)
   LifeCycleState default_state=LifeCycleState::FINALIZED;
   LifeCycleState state = default_state;
   string bad_string;
-  bool bad_strings_should_return_false = AMLifeCycleMediator::stringToState(bad_string,state);
+  AMLifeCycleMediator mediator;
+
+  bool bad_strings_should_return_false = mediator.stringToState(bad_string,state);
   EXPECT_FALSE(bad_strings_should_return_false);
   EXPECT_EQ(state,default_state) << "State should be unchanged since the string is bad";
 }

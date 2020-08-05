@@ -39,33 +39,6 @@ private:
 public:
   static constexpr std::string_view BROADCAST_NODE_NAME = "";
 
-  /* State string messages for LifeCycle */
-  static constexpr std::string_view STATE_INVALID_STRING = "INVALID";
-  static constexpr std::string_view STATE_UNCONFIGURED_STRING = "UNCONFIGURED";
-  static constexpr std::string_view STATE_INACTIVE_STRING = "INACTIVE";
-  static constexpr std::string_view STATE_ACTIVE_STRING = "ACTIVE";
-  static constexpr std::string_view STATE_FINALIZED_STRING = "FINALIZED";
-  static constexpr std::string_view STATE_CONFIGURING_STRING = "CONFIGURING";
-  static constexpr std::string_view STATE_CLEANING_UP_STRING = "CLEANING_UP";
-  static constexpr std::string_view STATE_ACTIVATING_STRING = "ACTIVATING";
-  static constexpr std::string_view STATE_DEACTIVATING_STRING = "DEACTIVATING";
-  static constexpr std::string_view STATE_ERROR_PROCESSING_STRING = "ERROR_PROCESSING";
-  static constexpr std::string_view STATE_SHUTTING_DOWN = "SHUTTING_DOWN";  
-
-  static constexpr std::string_view STATUS_OK_STRING = "OK";
-  static constexpr std::string_view STATUS_WARN_STRING = "WARN";
-  static constexpr std::string_view STATUS_ERROR_STRING = "ERROR";
-
-  static constexpr std::string_view COMMAND_CREATE_STRING = "CREATE";
-  static constexpr std::string_view COMMAND_CONFIGURE_STRING = "CONFIGURE";
-  static constexpr std::string_view COMMAND_CLEANUP_STRING = "CLEANUP";
-  static constexpr std::string_view COMMAND_ACTIVATE_STRING = "ACTIVATE";
-  static constexpr std::string_view COMMAND_DEACTIVATE_STRING = "DEACTIVATE";
-  static constexpr std::string_view COMMAND_SHUTDOWN_STRING = "SHUTDOWN";
-  static constexpr std::string_view COMMAND_DESTROY_STRING = "DESTROY";
-
-  static constexpr std::string_view EMPTY_STRING = "";
-
   /**
    * @brief Converts a LifeCycleState into the proper string representation. 
    * If the LifeCycleState is not a valid one, returns "INVALID"
@@ -74,7 +47,7 @@ public:
    * 
    * @returns The string that represents the state. "INVALID" if invalid.
    */ 
-  static const std::string_view& stateToString(LifeCycleState state);
+  const std::string_view& stateToString(LifeCycleState state);
 
   /**
    * @brief Reads the string passed in and stores into 'state' the respective
@@ -87,7 +60,7 @@ public:
    * @returns true if the state_str is valid and state was updated
    * @returns false if the state_str is invalid and state was unchanged
    */ 
-  static bool stringToState(std::string& state_str, LifeCycleState& state);
+  bool stringToState(std::string& state_str, LifeCycleState& state);
 
   /**
    * @brief Converts a LifeCycleStatus into its proper string representation. 
@@ -97,7 +70,7 @@ public:
    * 
    * @returns The string that represents the status. "" if invalid.
    */ 
-  static const std::string_view& statusToString(LifeCycleStatus status);
+  const std::string_view& statusToString(LifeCycleStatus status);
   
   /**
    * @brief Reads the string passed in and stores into 'status' the respective
@@ -110,7 +83,7 @@ public:
    * @returns true if the status_str is valid and state was updated
    * @returns false if the status_str is invalid and state was unchanged
    */ 
-  static bool stringToStatus(std::string& status_str, LifeCycleStatus& status);
+  bool stringToStatus(std::string& status_str, LifeCycleStatus& status);
 
   /**
    * @brief Converts a LifeCycleCommand into its proper string representation. 
@@ -120,7 +93,7 @@ public:
    * 
    * @returns The string that represents the command. "" if invalid.
    */ 
-  static const std::string_view& commandToString(LifeCycleCommand command);
+  const std::string_view& commandToString(LifeCycleCommand command);
 
   /**
    * @brief Reads the string passed in and stores into 'command' the respective
@@ -133,7 +106,7 @@ public:
    * @returns true if the command_str is valid and state was updated
    * @returns false if the command_str is invalid and state was unchanged
    */ 
-  static bool stringToCommand(std::string& command_str, LifeCycleCommand& command);
+  bool stringToCommand(std::string& command_str, LifeCycleCommand& command);
 
 protected:
   std::string node_name_;

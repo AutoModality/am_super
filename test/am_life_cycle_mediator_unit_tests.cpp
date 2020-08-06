@@ -266,3 +266,27 @@ TEST(LifeCycleMediator, error)
   EXPECT_EQ_ERROR(LifeCycleState::INVALID, false);
   EXPECT_EQ_ERROR(LifeCycleState::SHUTTING_DOWN, false);
 }
+
+bool EXPECT_EQ_ILLEGAL_DESTROY(const LifeCycleState& state, bool expected)
+{
+  AMLifeCycleMediator::LifeCycleInfo info;
+  info.state = state;
+  EXPECT_EQ(life_cycle_mediator_.illegalDestroy(info), expected);
+}
+
+TEST(LifeCycleMediator, illegalDestroy)
+{
+  EXPECT_EQ_ILLEGAL_DESTROY(LifeCycleState::FINALIZED, false);
+  
+  EXPECT_EQ_ILLEGAL_DESTROY(LifeCycleState::ACTIVATING, true);
+  EXPECT_EQ_ILLEGAL_DESTROY(LifeCycleState::ACTIVE, true);
+  EXPECT_EQ_ILLEGAL_DESTROY(LifeCycleState::CLEANING_UP, true);
+  EXPECT_EQ_ILLEGAL_DESTROY(LifeCycleState::CONFIGURING, true);
+  EXPECT_EQ_ILLEGAL_DESTROY(LifeCycleState::DEACTIVATING, true);
+  EXPECT_EQ_ILLEGAL_DESTROY(LifeCycleState::ERROR_PROCESSING, true);
+  EXPECT_EQ_ILLEGAL_DESTROY(LifeCycleState::INACTIVE, true);
+  EXPECT_EQ_ILLEGAL_DESTROY(LifeCycleState::INVALID, true);
+  EXPECT_EQ_ILLEGAL_DESTROY(LifeCycleState::SHUTTING_DOWN, true);
+  EXPECT_EQ_ILLEGAL_DESTROY(LifeCycleState::UNCONFIGURED, true);
+}
+

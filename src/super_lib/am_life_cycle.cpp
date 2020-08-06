@@ -187,6 +187,7 @@ void AMLifeCycle::destroy()
   {
     ROS_INFO_STREAM("received illegal activate in state " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
   }
+  /* This condition is hit only if state equals FINALIZED. Checking SHUTTING_DOWN is redundant */
   else if (life_cycle_info_.state == LifeCycleState::SHUTTING_DOWN || life_cycle_info_.state == LifeCycleState::FINALIZED)
   {
     ROS_INFO_STREAM("current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));

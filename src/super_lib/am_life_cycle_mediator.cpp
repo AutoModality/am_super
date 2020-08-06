@@ -209,4 +209,9 @@ bool AMLifeCycleMediator::error(const AMLifeCycleMediator::LifeCycleInfo& info)
     info.state == LifeCycleState::UNCONFIGURED;
 }
 
+bool AMLifeCycleMediator::illegalDestroy(const AMLifeCycleMediator::LifeCycleInfo& info)
+{
+  return info.state != LifeCycleState::FINALIZED;
+}
+
 } //namespace am

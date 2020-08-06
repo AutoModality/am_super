@@ -190,5 +190,12 @@ double AMLifeCycleMediator::getThrottle(const AMLifeCycleMediator::LifeCycleInfo
   return throttle;
 }
 
+bool AMLifeCycleMediator::shutdown(const AMLifeCycleMediator::LifeCycleInfo& info)
+{
+  return info.state == LifeCycleState::UNCONFIGURED || 
+    info.state == LifeCycleState::INACTIVE || 
+    info.state == LifeCycleState::ACTIVE;
+}
+
 
 } //namespace am

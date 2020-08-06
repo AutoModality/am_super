@@ -219,6 +219,9 @@ class AMLifeCycleMediator
      * @returns double representing the current throttle
      */ 
     double getThrottle(const AMLifeCycleMediator::LifeCycleInfo& info, const AMLifeCycleMediator::ThrottleInfo& t);
+
+    bool shutdown(const AMLifeCycleMediator::LifeCycleInfo& info);
+
 };
 }
 #endif // AM_LIFE_CYCLE_MEDIATOR_H_

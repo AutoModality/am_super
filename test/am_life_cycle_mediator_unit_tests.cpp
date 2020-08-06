@@ -224,3 +224,4 @@ TEST(LifeCycleMediator, shutdown)
   EXPECT_EQ_SHUTDOWN(LifeCycleState::SHUTTING_DOWN, false);
 }
 
+

@@ -243,7 +243,7 @@ void AMLifeCycle::doError(bool success)
 
 void AMLifeCycle::shutdown()
 {
-  if (life_cycle_info_.state == LifeCycleState::UNCONFIGURED || life_cycle_info_.state == LifeCycleState::INACTIVE || life_cycle_info_.state == LifeCycleState::ACTIVE)
+  if (life_cycle_mediator_.shutdown(life_cycle_info_))
   {
     ROS_INFO_STREAM("current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
     setState(LifeCycleState::SHUTTING_DOWN);

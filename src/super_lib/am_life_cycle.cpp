@@ -183,12 +183,12 @@ void AMLifeCycle::doDeactivate(bool success)
 
 void AMLifeCycle::destroy()
 {
-  if (life_cycle_info_.state != LifeCycleState::FINALIZED)
+  if (life_cycle_mediator_.illegalDestroy(life_cycle_info_))
   {
     ROS_INFO_STREAM("received illegal activate in state " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
   }
   /* This condition is hit only if state equals FINALIZED. Checking SHUTTING_DOWN is redundant */
-  else if (life_cycle_info_.state == LifeCycleState::SHUTTING_DOWN || life_cycle_info_.state == LifeCycleState::FINALIZED)
+  else
   {
     ROS_INFO_STREAM("current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
     onDestroy();

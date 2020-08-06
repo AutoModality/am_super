@@ -208,8 +208,7 @@ void AMLifeCycle::doDestroy(bool success)
 
 void AMLifeCycle::error()
 {
-  if (life_cycle_info_.state == LifeCycleState::ERROR_PROCESSING || life_cycle_info_.state == LifeCycleState::FINALIZED ||
-      life_cycle_info_.state == LifeCycleState::UNCONFIGURED)
+  if (life_cycle_mediator_.error(life_cycle_info_))
   {
     ROS_DEBUG_STREAM("ignoring redundant error");
   }

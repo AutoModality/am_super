@@ -299,7 +299,7 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
      << stats_list_.getStatsStrShort();
 
   double throttle = getThrottle(life_cycle_info_, throttle_info_);
-  ROS_INFO_STREAM_THROTTLE(throttle_info_.ok_throttle_s, "LifeCycle heartbeat: " << ss.str());
+  ROS_INFO_STREAM_THROTTLE(throttle, "LifeCycle heartbeat: " << ss.str());
 
   stats_list_.reset();
 

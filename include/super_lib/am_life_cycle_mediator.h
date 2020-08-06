@@ -220,6 +220,14 @@ class AMLifeCycleMediator
      */ 
     ThrottleInfo getThrottleDefaults();
 
+    /**
+     * @brief 
+     * 
+     * @param 
+     * 
+     * @returns 
+     */ 
+double getThrottle(const AMLifeCycleMediator::LifeCycleInfo& info, const AMLifeCycleMediator::ThrottleInfo& t);
 };
 }
 #endif // AM_LIFE_CYCLE_MEDIATOR_H_

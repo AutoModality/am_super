@@ -22,7 +22,7 @@ private:
   AMLifeCycleMediator life_cycle_mediator_;
   AMLifeCycleMediator::LifeCycleInfo life_cycle_info_;
   AMLifeCycleMediator::ThrottleInfo throttle_info_;
-  
+
   void setState(const LifeCycleState state);
 
   void transition(std::string transition_name, LifeCycleState initial_state, LifeCycleState transition_state,
@@ -119,6 +119,7 @@ protected:
   bool setStatus(const LifeCycleStatus status);
   double getThrottleS() const;
   void setThrottleS(const double throttleS);
+  double getThrottle(const AMLifeCycleMediator::LifeCycleInfo& info, const AMLifeCycleMediator::ThrottleInfo& t);
 
   /**Providing consistency when logging the current state. */
   void logState();

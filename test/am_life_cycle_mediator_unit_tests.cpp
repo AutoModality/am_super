@@ -181,3 +181,22 @@ TEST(LifeCycleMediator, setThrottleS_notDefault)
   ASSERT_EQ(t.ok_throttle_s, notDefault);
   ASSERT_EQ(t.warn_throttle_s, notDefault);
 }
+
+TEST(LifeCycleMediator, getThrottle)
+{
+  double throttle;
+  AMLifeCycleMediator::LifeCycleInfo info;
+  AMLifeCycleMediator::ThrottleInfo default_t = life_cycle_mediator_.getThrottleDefaults();
+
+  info.status = LifeCycleStatus::OK;
+  throttle = life_cycle_mediator_.getThrottle(info, default_t);
+  ASSERT_EQ(throttle, default_t.ok_throttle_s);
+
+  info.status = LifeCycleStatus::WARN;
+  throttle = life_cycle_mediator_.getThrottle(info, default_t);
+  ASSERT_EQ(throttle, default_t.warn_throttle_s);
+
+  info.status = LifeCycleStatus::ERROR;
+  throttle = life_cycle_mediator_.getThrottle(info, default_t);
+  ASSERT_EQ(throttle, default_t.error_throttle_s);
+}

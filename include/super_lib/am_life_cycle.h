@@ -17,8 +17,6 @@ class AMLifeCycle
 {
 private:
 
-  LifeCycleState state_;
-  LifeCycleStatus status_;
   AMLifeCycleMediator life_cycle_mediator_;
   AMLifeCycleMediator::LifeCycleInfo life_cycle_info_;
   AMLifeCycleMediator::ThrottleInfo throttle_info_;

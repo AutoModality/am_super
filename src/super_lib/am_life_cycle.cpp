@@ -249,7 +249,7 @@ void AMLifeCycle::shutdown()
     setState(LifeCycleState::SHUTTING_DOWN);
     onShutdown();
   }
-  else if (life_cycle_info_.state == LifeCycleState::SHUTTING_DOWN || life_cycle_info_.state == LifeCycleState::FINALIZED)
+  else if (life_cycle_mediator_.redundantShutdown(life_cycle_info_))
   {
     ROS_DEBUG_STREAM("ignoring redundant shutdown");
   }

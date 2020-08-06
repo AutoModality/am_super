@@ -200,3 +200,27 @@ TEST(LifeCycleMediator, getThrottle)
   throttle = life_cycle_mediator_.getThrottle(info, default_t);
   EXPECT_EQ(throttle, default_t.error_throttle_s);
 }
+
+bool EXPECT_EQ_SHUTDOWN(const LifeCycleState& state, bool expected)
+{
+  AMLifeCycleMediator::LifeCycleInfo info;
+  info.state = state;
+  EXPECT_EQ(life_cycle_mediator_.shutdown(info), expected);
+}
+
+TEST(LifeCycleMediator, shutdown)
+{
+  EXPECT_EQ_SHUTDOWN(LifeCycleState::UNCONFIGURED, true);
+  EXPECT_EQ_SHUTDOWN(LifeCycleState::INACTIVE, true);
+  EXPECT_EQ_SHUTDOWN(LifeCycleState::ACTIVE, true);
+
+  EXPECT_EQ_SHUTDOWN(LifeCycleState::ACTIVATING, false);
+  EXPECT_EQ_SHUTDOWN(LifeCycleState::CLEANING_UP, false);
+  EXPECT_EQ_SHUTDOWN(LifeCycleState::CONFIGURING, false);
+  EXPECT_EQ_SHUTDOWN(LifeCycleState::DEACTIVATING, false);
+  EXPECT_EQ_SHUTDOWN(LifeCycleState::ERROR_PROCESSING, false);
+  EXPECT_EQ_SHUTDOWN(LifeCycleState::FINALIZED, false);
+  EXPECT_EQ_SHUTDOWN(LifeCycleState::INVALID, false);
+  EXPECT_EQ_SHUTDOWN(LifeCycleState::SHUTTING_DOWN, false);
+}
+

@@ -172,5 +172,16 @@ void AMLifeCycleMediator::setThrottleS(const double& throttleS, ThrottleInfo& th
   }
 }
 
+AMLifeCycleMediator::ThrottleInfo AMLifeCycleMediator::getThrottleDefaults()
+{
+  ThrottleInfo t;
+  
+  t.error_throttle_s = DEFAULT_ERROR_THROTTLE_S;
+  t.ok_throttle_s = DEFAULT_OK_THROTTLE_S;
+  t.warn_throttle_s = DEFAULT_WARN_THROTTLE_S;
+
+  return t;
+}
+
 
 } //namespace am

@@ -211,6 +211,14 @@ class AMLifeCycleMediator
      */ 
     void setThrottleS(const double& throttleS, ThrottleInfo& throttle);
 
+    /**
+     * @brief 
+     * 
+     * @param 
+     * 
+     * @returns 
+     */ 
+    ThrottleInfo getThrottleDefaults();
 
 };
 }

@@ -197,5 +197,10 @@ bool AMLifeCycleMediator::shutdown(const AMLifeCycleMediator::LifeCycleInfo& inf
     info.state == LifeCycleState::ACTIVE;
 }
 
+bool AMLifeCycleMediator::redundantShutdown(const AMLifeCycleMediator::LifeCycleInfo& info)
+{
+  return info.state == LifeCycleState::SHUTTING_DOWN || 
+    info.state == LifeCycleState::FINALIZED;
+}
 
 } //namespace am

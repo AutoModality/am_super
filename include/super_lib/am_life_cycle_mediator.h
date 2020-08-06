@@ -203,31 +203,29 @@ class AMLifeCycleMediator
     static const std::vector<LifeCycleStatus> getLifeCycleStatuses();
 
     /**
-     * @brief 
+     * @brief Sets the throttles to either their default or specified values
      * 
-     * @param 
-     * 
-     * @returns 
+     * @param throttleS   0.0 (default), anything else sets all throttles to number
+     * @param throttle    struct containing throttle variables
      */ 
     void setThrottleS(const double& throttleS, ThrottleInfo& throttle);
 
     /**
-     * @brief 
+     * @brief Returns a struct with the default throttle values set
      * 
-     * @param 
-     * 
-     * @returns 
+     * @returns ThrottleInfo struct with default values set
      */ 
     ThrottleInfo getThrottleDefaults();
 
     /**
-     * @brief 
+     * @brief Grabs the throttle value based on current LifeCycle state
      * 
-     * @param 
+     * @param info  struct storing information about LifeCycle
+     * @param t     struct storing information about throttle
      * 
-     * @returns 
+     * @returns double representing the current throttle
      */ 
-double getThrottle(const AMLifeCycleMediator::LifeCycleInfo& info, const AMLifeCycleMediator::ThrottleInfo& t);
+    double getThrottle(const AMLifeCycleMediator::LifeCycleInfo& info, const AMLifeCycleMediator::ThrottleInfo& t);
 };
 }
 #endif // AM_LIFE_CYCLE_MEDIATOR_H_

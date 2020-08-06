@@ -224,7 +224,7 @@ class AMLifeCycleMediator
 
     bool redundantShutdown(const AMLifeCycleMediator::LifeCycleInfo& info);
 
-
+    bool error(const AMLifeCycleMediator::LifeCycleInfo& info);
 };
 }
 #endif // AM_LIFE_CYCLE_MEDIATOR_H_

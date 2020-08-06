@@ -274,7 +274,7 @@ void AMLifeCycle::doShutdown(bool success)
 void AMLifeCycle::addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw)
 {
   stats_list_.addStatistics(dsw);
-  LifeCycleStatus status = stats_list_.process(warn_throttle_s_, error_throttle_s_);
+  LifeCycleStatus status = stats_list_.process(throttle_info_.warn_throttle_s, throttle_info_.error_throttle_s);
   setStatus(status);
   dsw.summary((uint8_t)status, "update");
 }
@@ -302,16 +302,16 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
   switch (life_cycle_info_.status)
   {
     case LifeCycleStatus::OK:
-      throttle = ok_throttle_s_;
+      throttle = throttle_info_.ok_throttle_s;
       break;
     case LifeCycleStatus::WARN:
-      throttle = warn_throttle_s_;
+      throttle = throttle_info_.warn_throttle_s;
       break;
     case LifeCycleStatus::ERROR:
-      throttle = error_throttle_s_;
+      throttle = throttle_info_.error_throttle_s;
       break;
   }
-  ROS_INFO_STREAM_THROTTLE(ok_throttle_s_, "LifeCycle heartbeat: " << ss.str());
+  ROS_INFO_STREAM_THROTTLE(throttle_info_.ok_throttle_s, "LifeCycle heartbeat: " << ss.str());
 
   stats_list_.reset();
 
@@ -349,23 +349,10 @@ bool AMLifeCycle::setStatus(const LifeCycleStatus status)
   return life_cycle_mediator_.setStatus(status, life_cycle_info_);
 }
 
+//Is this being used?
 void AMLifeCycle::setThrottleS(const double throttleS)
 {
-  if (throttleS == 0.0)
-  {
-    ok_throttle_s_ = DEFAULT_OK_THROTTLE_S;
-    warn_throttle_s_ = DEFAULT_WARN_THROTTLE_S;
-    error_throttle_s_ = DEFAULT_ERROR_THROTTLE_S;
-  }
-  else
-  {
-    ok_throttle_s_ = throttleS;
-    warn_throttle_s_ = throttleS;
-    error_throttle_s_ = throttleS;
-  }
+  return life_cycle_mediator_.setThrottleS(throttleS, throttle_info_);
 }
-
-
-
 };
 

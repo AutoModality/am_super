@@ -58,6 +58,10 @@ class AMLifeCycleMediator
 
     static constexpr std::string_view EMPTY_STRING = "";
 
+    static constexpr double DEFAULT_OK_THROTTLE_S = 10.0;
+    static constexpr double DEFAULT_WARN_THROTTLE_S = 2.0;
+    static constexpr double DEFAULT_ERROR_THROTTLE_S = 1.0;
+
   public:
     AMLifeCycleMediator();
     /**
@@ -65,8 +69,14 @@ class AMLifeCycleMediator
      */
     struct LifeCycleInfo
     {
-        LifeCycleStatus status;
-        LifeCycleState state;
+      LifeCycleStatus status;
+      LifeCycleState state;
+    };
+    struct ThrottleInfo
+    {
+      double ok_throttle_s = DEFAULT_OK_THROTTLE_S;
+      double warn_throttle_s = DEFAULT_WARN_THROTTLE_S;
+      double error_throttle_s = DEFAULT_ERROR_THROTTLE_S;
     };
     /**
      * @brief Sets the current LifeCycleStatus in LifeCycleInfo
@@ -191,6 +201,17 @@ class AMLifeCycleMediator
      * @returns vector of LifeCycleStatus
      */
     static const std::vector<LifeCycleStatus> getLifeCycleStatuses();
+
+    /**
+     * @brief 
+     * 
+     * @param 
+     * 
+     * @returns 
+     */ 
+    void setThrottleS(const double& throttleS, ThrottleInfo& throttle);
+
+
 };
 }
 #endif // AM_LIFE_CYCLE_MEDIATOR_H_

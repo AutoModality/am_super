@@ -16,19 +16,13 @@ namespace am
 class AMLifeCycle
 {
 private:
-  static constexpr double DEFAULT_OK_THROTTLE_S = 10.0;
-  static constexpr double DEFAULT_WARN_THROTTLE_S = 2.0;
-  static constexpr double DEFAULT_ERROR_THROTTLE_S = 1.0;
 
   LifeCycleState state_;
   LifeCycleStatus status_;
   AMLifeCycleMediator life_cycle_mediator_;
   AMLifeCycleMediator::LifeCycleInfo life_cycle_info_;
+  AMLifeCycleMediator::ThrottleInfo throttle_info_;
   
-  double ok_throttle_s_ = DEFAULT_OK_THROTTLE_S;
-  double warn_throttle_s_ = DEFAULT_WARN_THROTTLE_S;
-  double error_throttle_s_ = DEFAULT_ERROR_THROTTLE_S;
-
   void setState(const LifeCycleState state);
 
   void transition(std::string transition_name, LifeCycleState initial_state, LifeCycleState transition_state,

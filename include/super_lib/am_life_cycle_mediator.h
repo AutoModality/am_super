@@ -211,13 +211,6 @@ class AMLifeCycleMediator
     void setThrottleS(const double& throttleS, ThrottleInfo& throttle);
 
     /**
-     * @brief Returns a struct with the default throttle values set
-     * 
-     * @returns ThrottleInfo struct with default values set
-     */ 
-    ThrottleInfo getThrottleDefaults();
-
-    /**
      * @brief Grabs the throttle value based on current LifeCycle state
      * 
      * @param info  struct storing information about LifeCycle

@@ -163,7 +163,7 @@ TEST(LifeCycleMediator, setThrottleS_default)
   AMLifeCycleMediator::ThrottleInfo t;
   double setDefault = 0.0;
 
-  AMLifeCycleMediator::ThrottleInfo default_t = life_cycle_mediator_.getThrottleDefaults();
+  AMLifeCycleMediator::ThrottleInfo default_t;
 
   life_cycle_mediator_.setThrottleS(setDefault, t);
   EXPECT_EQ(t.error_throttle_s, default_t.error_throttle_s);
@@ -186,7 +186,7 @@ TEST(LifeCycleMediator, getThrottle)
 {
   double throttle;
   AMLifeCycleMediator::LifeCycleInfo info;
-  AMLifeCycleMediator::ThrottleInfo default_t = life_cycle_mediator_.getThrottleDefaults();
+  AMLifeCycleMediator::ThrottleInfo default_t;
 
   info.status = LifeCycleStatus::OK;
   throttle = life_cycle_mediator_.getThrottle(info, default_t);

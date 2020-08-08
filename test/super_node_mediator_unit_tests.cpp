@@ -263,3 +263,55 @@ TEST(Node, nodesOnlineCount_ManifestedOnlinedMixed)
   int manifested_online_count = superNodeMediator.manifestedNodesOnlineCount(supervisor);
   ASSERT_EQ(manifested_online_count, 1) << "Only 1 is manifested and online";
 }
+
+
+TEST(Node, manifestedNodesNotOnline_RemovesNonManifestedNotOnline)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  {
+    SuperNodeMediator::SuperNodeInfo manifestedOnlineToBeRemoved;
+    manifestedOnlineToBeRemoved.online = true;
+    manifestedOnlineToBeRemoved.manifested = true;
+    supervisor.nodes.insert({ "manifestedOnlineToBeRemoved", manifestedOnlineToBeRemoved });
+  }
+
+  {
+    SuperNodeMediator::SuperNodeInfo nonManifestedNotOnlineToBeRemoved;
+    nonManifestedNotOnlineToBeRemoved.online = false;
+    nonManifestedNotOnlineToBeRemoved.manifested = false;
+    supervisor.nodes.insert({ "nonManifestedNotOnlineToBeRemoved", nonManifestedNotOnlineToBeRemoved });
+  }
+
+  {
+    SuperNodeMediator::SuperNodeInfo manifestedNotOnlineToBeKept;
+    manifestedNotOnlineToBeKept.online = false;
+    manifestedNotOnlineToBeKept.manifested = true;
+    supervisor.nodes.insert({ "manifestedNotOnlineToBeKept", manifestedNotOnlineToBeKept });
+  }
+
+  {
+    //prove it works for 1
+    map<string,SuperNodeMediator::SuperNodeInfo> results = superNodeMediator.manifestedNodesNotOnline(supervisor);
+    string names=superNodeMediator.manifestedNodesNotOnlineNamesList(supervisor);
+    EXPECT_EQ(results.size(), 1);
+    EXPECT_EQ(results.count("manifestedNotOnlineToBeKept"),1);
+    EXPECT_EQ(names,"manifestedNotOnlineToBeKept");
+  }
+
+  //prove it works for 2
+  {
+    SuperNodeMediator::SuperNodeInfo manifestedNotOnlineToBeKept;
+    manifestedNotOnlineToBeKept.online = false;
+    manifestedNotOnlineToBeKept.manifested = true;
+    supervisor.nodes.insert({ "anotherKeeper", manifestedNotOnlineToBeKept });
+  }
+
+  {
+    map<string,SuperNodeMediator::SuperNodeInfo> results = superNodeMediator.manifestedNodesNotOnline(supervisor);
+    string names=superNodeMediator.manifestedNodesNotOnlineNamesList(supervisor);
+    EXPECT_EQ(results.size(), 2);
+    EXPECT_EQ(results.count("manifestedNotOnlineToBeKept"),1);
+    EXPECT_EQ(results.count("anotherKeeper"),1);
+    EXPECT_EQ(names,"anotherKeeper, manifestedNotOnlineToBeKept") << "order might be unpredictable if this shows up as flaky";
+  }
+}

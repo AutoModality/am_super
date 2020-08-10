@@ -63,6 +63,8 @@ class AMLifeCycleMediator
     static constexpr double DEFAULT_ERROR_THROTTLE_S = 1.0;
 
   public:
+    static constexpr double DEFAULT_THROTTLE_S = 0.0;
+
     AMLifeCycleMediator();
     /**
      * Holds information about AMLifeCycle
@@ -72,6 +74,9 @@ class AMLifeCycleMediator
       LifeCycleStatus status;
       LifeCycleState state;
     };
+    /**
+     * Holds information about throttle values for each status
+     */
     struct ThrottleInfo
     {
       double ok_throttle_s = DEFAULT_OK_THROTTLE_S;
@@ -227,6 +232,7 @@ class AMLifeCycleMediator
     bool error(const AMLifeCycleMediator::LifeCycleInfo& info);
 
     bool illegalDestroy(const AMLifeCycleMediator::LifeCycleInfo& info);
+
 };
 }
 #endif // AM_LIFE_CYCLE_MEDIATOR_H_

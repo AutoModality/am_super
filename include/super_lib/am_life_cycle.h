@@ -16,7 +16,7 @@ namespace am
 class AMLifeCycle
 {
 private:
-
+  /* Variables to help seperate business logic from AMLifeCycle ROS */
   AMLifeCycleMediator life_cycle_mediator_;
   AMLifeCycleMediator::LifeCycleInfo life_cycle_info_;
   AMLifeCycleMediator::ThrottleInfo throttle_info_;
@@ -117,7 +117,7 @@ protected:
   bool setStatus(const LifeCycleStatus status);
   double getThrottleS() const;
   void setThrottleS(const double throttleS);
-  double getThrottle(const AMLifeCycleMediator::LifeCycleInfo& info, const AMLifeCycleMediator::ThrottleInfo& t);
+  double getThrottle();
 
   /**Providing consistency when logging the current state. */
   void logState();

@@ -144,6 +144,12 @@ public:
   /**@return the number of nodes where online=true and manifested=true*/
   int manifestedNodesOnlineCount(Supervisor supervisor);
 
+  /** @return the nodes declared in the manifest, but online = false*/
+  map<string,SuperNodeMediator::SuperNodeInfo> manifestedNodesNotOnline(Supervisor supervisor);
+
+  /** @return a csv string of names of the manifested nodes not online */
+  string manifestedNodesNotOnlineNamesList(Supervisor supervisor);
+
 private:
 };
 }

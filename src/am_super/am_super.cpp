@@ -5,6 +5,7 @@
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/PointCloud2.h>
 
+
 #include <am_super/baby_sitter.h>
 #include <am_super/super_state.h>
 #include <am_super/super_state_mediator.h>
@@ -405,24 +406,13 @@ private:
     {
       // if all manifested nodes aren't running, report as error
       ROS_ERROR_STREAM(ss.str());
+      ROS_ERROR_STREAM("not online: " << node_mediator_.manifestedNodesNotOnlineNamesList(supervisor_));
     }
     else
     {
       // if all manifested nodes are running, report as info
       ROS_INFO_STREAM_THROTTLE(LOG_THROTTLE_S, ss.str());
     }
-
-    //    // report nodes that aren't in correct state to trace log as error
-    //    map<string, SuperNodeInfo>::iterator it;
-    //    for (it = supervisor_.nodes.begin(); it != supervisor_.nodes.end(); it++)
-    //    {
-    //      SuperNodeInfo &nr = (*it).second;
-    //      if (!nr.online)
-    //      {
-    //        ROS_ERROR_STREAM("node not online:" << nr.name);
-    //      }
-    //      else if(state_ == SuperState::BOOTING && nr.state != )
-    //    }
   }
 
   /**

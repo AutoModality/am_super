@@ -72,6 +72,10 @@ class AMLifeCycleMediator
       LifeCycleStatus status;
       LifeCycleState state;
     };
+
+    /**
+     * Holds information about throttle values for each status
+     */
     struct ThrottleInfo
     {
       double ok_throttle_s = DEFAULT_OK_THROTTLE_S;

@@ -16,8 +16,8 @@ namespace am
 class AMLifeCycle
 {
 private:
-
-  AMLifeCycleMediator life_cycle_mediator_;
+  /* Variables to help seperate business logic from AMLifeCycle ROS */
+  AMLifeCycleMediator life_cycle_mediator_; 
   AMLifeCycleMediator::LifeCycleInfo life_cycle_info_;
   AMLifeCycleMediator::ThrottleInfo throttle_info_;
 

@@ -117,7 +117,7 @@ protected:
   bool setStatus(const LifeCycleStatus status);
   double getThrottleS() const;
   void setThrottleS(const double throttleS);
-  double getThrottle(const AMLifeCycleMediator::LifeCycleInfo& info, const AMLifeCycleMediator::ThrottleInfo& t);
+  double getThrottle();
 
   /**Providing consistency when logging the current state. */
   void logState();

@@ -156,4 +156,39 @@ const std::vector<LifeCycleStatus> AMLifeCycleMediator::getLifeCycleStatuses()
   return all;
 }
 
+void AMLifeCycleMediator::setThrottleS(const double& throttleS, ThrottleInfo& throttle)
+{
+  if (throttleS == DEFAULT_THROTTLE_S)
+  {
+    throttle.ok_throttle_s = DEFAULT_OK_THROTTLE_S;
+    throttle.warn_throttle_s = DEFAULT_WARN_THROTTLE_S;
+    throttle.error_throttle_s = DEFAULT_ERROR_THROTTLE_S;
+  }
+  else
+  {
+    throttle.ok_throttle_s = throttleS;
+    throttle.warn_throttle_s = throttleS;
+    throttle.error_throttle_s = throttleS;
+  }
+}
+
+double AMLifeCycleMediator::getThrottle(const AMLifeCycleMediator::LifeCycleInfo& info, const AMLifeCycleMediator::ThrottleInfo& t)
+{
+  double throttle;
+  switch (info.status)
+  {
+    case LifeCycleStatus::OK:
+      throttle = t.ok_throttle_s;
+      break;
+    case LifeCycleStatus::WARN:
+      throttle = t.warn_throttle_s;
+      break;
+    case LifeCycleStatus::ERROR:
+      throttle = t.error_throttle_s;
+      break;
+  }
+  return throttle;
+}
+
+
 } //namespace am

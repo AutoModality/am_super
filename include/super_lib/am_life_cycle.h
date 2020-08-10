@@ -16,18 +16,10 @@ namespace am
 class AMLifeCycle
 {
 private:
-  static constexpr double DEFAULT_OK_THROTTLE_S = 10.0;
-  static constexpr double DEFAULT_WARN_THROTTLE_S = 2.0;
-  static constexpr double DEFAULT_ERROR_THROTTLE_S = 1.0;
-
-  LifeCycleState state_;
-  LifeCycleStatus status_;
-  AMLifeCycleMediator life_cycle_mediator_;
+  /* Variables to help seperate business logic from AMLifeCycle ROS */
+  AMLifeCycleMediator life_cycle_mediator_; 
   AMLifeCycleMediator::LifeCycleInfo life_cycle_info_;
-  
-  double ok_throttle_s_ = DEFAULT_OK_THROTTLE_S;
-  double warn_throttle_s_ = DEFAULT_WARN_THROTTLE_S;
-  double error_throttle_s_ = DEFAULT_ERROR_THROTTLE_S;
+  AMLifeCycleMediator::ThrottleInfo throttle_info_;
 
   void setState(const LifeCycleState state);
 
@@ -125,6 +117,7 @@ protected:
   bool setStatus(const LifeCycleStatus status);
   double getThrottleS() const;
   void setThrottleS(const double throttleS);
+  double getThrottle();
 
   /**Providing consistency when logging the current state. */
   void logState();

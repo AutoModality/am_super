@@ -58,15 +58,31 @@ class AMLifeCycleMediator
 
     static constexpr std::string_view EMPTY_STRING = "";
 
+    static constexpr double DEFAULT_OK_THROTTLE_S = 10.0;
+    static constexpr double DEFAULT_WARN_THROTTLE_S = 2.0;
+    static constexpr double DEFAULT_ERROR_THROTTLE_S = 1.0;
+
   public:
+    static constexpr double DEFAULT_THROTTLE_S = 0.0;
+
     AMLifeCycleMediator();
     /**
      * Holds information about AMLifeCycle
      */
     struct LifeCycleInfo
     {
-        LifeCycleStatus status;
-        LifeCycleState state;
+      LifeCycleStatus status;
+      LifeCycleState state;
+    };
+
+    /**
+     * Holds information about throttle values for each status
+     */
+    struct ThrottleInfo
+    {
+      double ok_throttle_s = DEFAULT_OK_THROTTLE_S;
+      double warn_throttle_s = DEFAULT_WARN_THROTTLE_S;
+      double error_throttle_s = DEFAULT_ERROR_THROTTLE_S;
     };
     /**
      * @brief Sets the current LifeCycleStatus in LifeCycleInfo
@@ -191,6 +207,24 @@ class AMLifeCycleMediator
      * @returns vector of LifeCycleStatus
      */
     static const std::vector<LifeCycleStatus> getLifeCycleStatuses();
+
+    /**
+     * @brief Sets the throttles to either their default or specified values
+     * 
+     * @param throttleS   0.0 (default), anything else sets all throttles to number
+     * @param throttle    struct containing throttle variables
+     */ 
+    void setThrottleS(const double& throttleS, ThrottleInfo& throttle);
+
+    /**
+     * @brief Grabs the throttle value based on current LifeCycle state
+     * 
+     * @param info  struct storing information about LifeCycle
+     * @param t     struct storing information about throttle
+     * 
+     * @returns double representing the current throttle
+     */ 
+    double getThrottle(const AMLifeCycleMediator::LifeCycleInfo& info, const AMLifeCycleMediator::ThrottleInfo& t);
 };
 }
 #endif // AM_LIFE_CYCLE_MEDIATOR_H_

@@ -63,6 +63,8 @@ class AMLifeCycleMediator
     static constexpr double DEFAULT_ERROR_THROTTLE_S = 1.0;
 
   public:
+    static constexpr double DEFAULT_THROTTLE_S = 0.0;
+
     AMLifeCycleMediator();
     /**
      * Holds information about AMLifeCycle

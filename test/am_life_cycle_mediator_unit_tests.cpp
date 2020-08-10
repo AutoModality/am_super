@@ -161,7 +161,7 @@ TEST(LifeCycleMediator, stringToState_BadStringReturnsFalse)
 TEST(LifeCycleMediator, setThrottleS_default)
 {
   AMLifeCycleMediator::ThrottleInfo t;
-  double setDefault = 0.0;
+  double setDefault = AMLifeCycleMediator::DEFAULT_THROTTLE_S;
 
   AMLifeCycleMediator::ThrottleInfo default_t;
 
@@ -174,7 +174,7 @@ TEST(LifeCycleMediator, setThrottleS_default)
 TEST(LifeCycleMediator, setThrottleS_notDefault)
 {
   AMLifeCycleMediator::ThrottleInfo t;
-  double notDefault = 20;
+  double notDefault = 20; //some number thats not 0
 
   life_cycle_mediator_.setThrottleS(notDefault, t);
   EXPECT_EQ(t.error_throttle_s, notDefault);

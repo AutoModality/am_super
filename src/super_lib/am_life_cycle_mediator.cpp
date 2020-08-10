@@ -158,7 +158,7 @@ const std::vector<LifeCycleStatus> AMLifeCycleMediator::getLifeCycleStatuses()
 
 void AMLifeCycleMediator::setThrottleS(const double& throttleS, ThrottleInfo& throttle)
 {
-  if (throttleS == 0.0)
+  if (throttleS == DEFAULT_THROTTLE_S)
   {
     throttle.ok_throttle_s = DEFAULT_OK_THROTTLE_S;
     throttle.warn_throttle_s = DEFAULT_WARN_THROTTLE_S;

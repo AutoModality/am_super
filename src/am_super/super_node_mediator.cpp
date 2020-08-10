@@ -1,5 +1,8 @@
 #include <am_super/super_node_mediator.h>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/range/algorithm/copy.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 namespace am
 {
@@ -217,5 +220,22 @@ int SuperNodeMediator::manifestedNodesOnlineCount(Supervisor supervisor)
   return std::count_if(supervisor.nodes.begin(), supervisor.nodes.end(), [](pair<string, SuperNodeInfo> node_entry) {
     return node_entry.second.online && node_entry.second.manifested;
   });
+}
+
+map<string,SuperNodeMediator::SuperNodeInfo> SuperNodeMediator::manifestedNodesNotOnline(Supervisor supervisor)
+{
+  map<string,SuperNodeMediator::SuperNodeInfo> nodes_not_online;
+  std::copy_if(supervisor.nodes.begin(), supervisor.nodes.end(), std::inserter(nodes_not_online,nodes_not_online.end()), [](pair<string, SuperNodeInfo> node_entry) {
+    return !node_entry.second.online && node_entry.second.manifested;
+  });
+  return nodes_not_online;
+ }
+
+string SuperNodeMediator::manifestedNodesNotOnlineNamesList(Supervisor supervisor)
+{
+    map<string,SuperNodeMediator::SuperNodeInfo> nodes_not_online=manifestedNodesNotOnline(supervisor);
+    vector<string> node_names;
+    boost::copy(nodes_not_online | boost::adaptors::map_keys, std::back_inserter(node_names));
+    return boost::algorithm::join(node_names, ", ");
 }
 }

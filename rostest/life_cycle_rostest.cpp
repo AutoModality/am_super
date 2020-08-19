@@ -19,70 +19,74 @@
 using namespace std;
 using namespace am;
 
-const int TARGET_COUNT = 3;  // number of 'ARMED' responses needed to pass test
-int armed_count = 0;         // current number of received 'ARMED'
+constexpr int TARGET_COUNT = 3;             // number of 'ARMED' responses needed to pass test
+int armed_count = 0;                        // current number of received 'ARMED'
+constexpr string_view CORRECT = "CORRECT";  // represents the correct result in test
+string_view order_status = CORRECT;         // used in test to verify order_status is correct
 
 class LifeCycleNodeTest : public ::testing::Test, am::AMLifeCycle
 {
+  public:
+    LifeCycleNodeTest()
+    {
+      ROS_INFO_STREAM("Constructing Lifecycle Node Test");
+      //see launch file for "init_state" = UNCONFIGURED
+    }
 
+    void onConfigure()
+    {
+      AMLifeCycle::onConfigure();
+      configured=true;
+    }
+    void onActivate()
+    {
+      if(!configured)
+      {
+        order_status = "ERROR: Attempting to activate before being configured";
+      }
+      AMLifeCycle::onActivate();
+      activated=true;
+    }
 
-public:
-  LifeCycleNodeTest()
-  {
-    ROS_INFO_STREAM("Constructing Lifecycle Node Test");
-    //see launch file for "init_state" = UNCONFIGURED
-  }
+    void onCleanup()
+    {
+      AMLifeCycle::onCleanup();
+      cleanedUp=true;
+    }
 
-  void onConfigure(){
-    AMLifeCycle::onConfigure();
-    configured=true;
-  }
-  void onActivate(){
-    AMLifeCycle::onActivate();
-    activated=true;
-  }
+    void onDeactivate()
+    {
+      AMLifeCycle::onDeactivate();
+      deactivated=true;
+    }
 
-  void onCleanup()
-  {
-    AMLifeCycle::onCleanup();
-    cleanedUp=true;
-  }
+    void onDestroy()
+    {
+      AMLifeCycle::onDestroy();
+      destroyed=true;
+    }
 
+    void onError()
+    {
+      AMLifeCycle::onError();
+      errored=true;
+    }
 
-  void onDeactivate()
-  {
-    AMLifeCycle::onDeactivate();
-    deactivated=true;
-  }
+    void onShutdown()
+    {
+      AMLifeCycle::onShutdown();
+      shutdown=true;
+    }
+    
 
-
-  void onDestroy()
-  {
-    AMLifeCycle::onDestroy();
-    destroyed=true;
-  }
-
-  void onError()
-  {
-    AMLifeCycle::onError();
-    errored=true;
-  }
-
-  void onShutdown()
-  {
-   AMLifeCycle::onShutdown();
-   shutdown=true;
-  }
-  
-
-protected:
-  bool configured = false;
-  bool activated = false;
-  bool cleanedUp = false;
-  bool deactivated = false;
-  bool destroyed = false;
-  bool errored = false;
-  bool shutdown = false;
+  protected:
+    bool configured = false;
+    bool activated = false;
+    bool cleanedUp = false;
+    bool deactivated = false;
+    bool destroyed = false;
+    bool errored = false;
+    bool shutdown = false;
 };
 
 
@@ -118,7 +122,9 @@ TEST_F(LifeCycleNodeTest, testState)
     loop_rate.sleep();
   }
 
-  ASSERT_EQ(armed_count, TARGET_COUNT);
+  ASSERT_EQ(armed_count, TARGET_COUNT) << "ERROR: Failed to receive 3 heartbeats";
+  ASSERT_EQ(order_status, CORRECT) << order_status;
+
   EXPECT_TRUE(configured);
   EXPECT_TRUE(activated);
   EXPECT_FALSE(cleanedUp);

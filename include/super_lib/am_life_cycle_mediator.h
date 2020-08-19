@@ -17,51 +17,6 @@ namespace am
  */
 class AMLifeCycleMediator
 {
-  private:
-    static const LifeCycleStatus FIRST_STATUS = LifeCycleStatus::OK;
-    static const LifeCycleStatus LAST_STATUS = LifeCycleStatus::ERROR;
-
-    static const LifeCycleState FIRST_STATE = LifeCycleState::INVALID;
-    static const LifeCycleState LAST_STATE = LifeCycleState::ERROR_PROCESSING;
-
-    static const LifeCycleCommand FIRST_COMMAND = LifeCycleCommand::CREATE;
-    static const LifeCycleCommand LAST_COMMAND = LifeCycleCommand::DESTROY;
-
-    str_command_bimap str_command_bimap_;
-    str_status_bimap str_status_bimap_;
-    str_state_bimap str_state_bimap_;
-
-    /* String messages for mapping */
-    static constexpr std::string_view STATE_INVALID_STRING = "INVALID";
-    static constexpr std::string_view STATE_UNCONFIGURED_STRING = "UNCONFIGURED";
-    static constexpr std::string_view STATE_INACTIVE_STRING = "INACTIVE";
-    static constexpr std::string_view STATE_ACTIVE_STRING = "ACTIVE";
-    static constexpr std::string_view STATE_FINALIZED_STRING = "FINALIZED";
-    static constexpr std::string_view STATE_CONFIGURING_STRING = "CONFIGURING";
-    static constexpr std::string_view STATE_CLEANING_UP_STRING = "CLEANING_UP";
-    static constexpr std::string_view STATE_ACTIVATING_STRING = "ACTIVATING";
-    static constexpr std::string_view STATE_DEACTIVATING_STRING = "DEACTIVATING";
-    static constexpr std::string_view STATE_ERROR_PROCESSING_STRING = "ERROR_PROCESSING";
-    static constexpr std::string_view STATE_SHUTTING_DOWN = "SHUTTING_DOWN";  
-
-    static constexpr std::string_view STATUS_OK_STRING = "OK";
-    static constexpr std::string_view STATUS_WARN_STRING = "WARN";
-    static constexpr std::string_view STATUS_ERROR_STRING = "ERROR";
-
-    static constexpr std::string_view COMMAND_CREATE_STRING = "CREATE";
-    static constexpr std::string_view COMMAND_CONFIGURE_STRING = "CONFIGURE";
-    static constexpr std::string_view COMMAND_CLEANUP_STRING = "CLEANUP";
-    static constexpr std::string_view COMMAND_ACTIVATE_STRING = "ACTIVATE";
-    static constexpr std::string_view COMMAND_DEACTIVATE_STRING = "DEACTIVATE";
-    static constexpr std::string_view COMMAND_SHUTDOWN_STRING = "SHUTDOWN";
-    static constexpr std::string_view COMMAND_DESTROY_STRING = "DESTROY";
-
-    static constexpr std::string_view EMPTY_STRING = "";
-
-    static constexpr double DEFAULT_OK_THROTTLE_S = 10.0;
-    static constexpr double DEFAULT_WARN_THROTTLE_S = 2.0;
-    static constexpr double DEFAULT_ERROR_THROTTLE_S = 1.0;
-
   public:
     static constexpr double DEFAULT_THROTTLE_S = 0.0;
 
@@ -74,7 +29,6 @@ class AMLifeCycleMediator
       LifeCycleStatus status;
       LifeCycleState state;
     };
-
     /**
      * Holds information about throttle values for each status
      */
@@ -225,6 +179,59 @@ class AMLifeCycleMediator
      * @returns double representing the current throttle
      */ 
     double getThrottle(const AMLifeCycleMediator::LifeCycleInfo& info, const AMLifeCycleMediator::ThrottleInfo& t);
+
+    bool shutdown(const AMLifeCycleMediator::LifeCycleInfo& info);
+
+    bool redundantShutdown(const AMLifeCycleMediator::LifeCycleInfo& info);
+
+    bool error(const AMLifeCycleMediator::LifeCycleInfo& info);
+
+    bool illegalDestroy(const AMLifeCycleMediator::LifeCycleInfo& info);
+
+  private:
+    static const LifeCycleStatus FIRST_STATUS = LifeCycleStatus::OK;
+    static const LifeCycleStatus LAST_STATUS = LifeCycleStatus::ERROR;
+
+    static const LifeCycleState FIRST_STATE = LifeCycleState::INVALID;
+    static const LifeCycleState LAST_STATE = LifeCycleState::ERROR_PROCESSING;
+
+    static const LifeCycleCommand FIRST_COMMAND = LifeCycleCommand::CREATE;
+    static const LifeCycleCommand LAST_COMMAND = LifeCycleCommand::DESTROY;
+
+    str_command_bimap str_command_bimap_;
+    str_status_bimap str_status_bimap_;
+    str_state_bimap str_state_bimap_;
+
+    /* String messages for mapping */
+    static constexpr std::string_view STATE_INVALID_STRING = "INVALID";
+    static constexpr std::string_view STATE_UNCONFIGURED_STRING = "UNCONFIGURED";
+    static constexpr std::string_view STATE_INACTIVE_STRING = "INACTIVE";
+    static constexpr std::string_view STATE_ACTIVE_STRING = "ACTIVE";
+    static constexpr std::string_view STATE_FINALIZED_STRING = "FINALIZED";
+    static constexpr std::string_view STATE_CONFIGURING_STRING = "CONFIGURING";
+    static constexpr std::string_view STATE_CLEANING_UP_STRING = "CLEANING_UP";
+    static constexpr std::string_view STATE_ACTIVATING_STRING = "ACTIVATING";
+    static constexpr std::string_view STATE_DEACTIVATING_STRING = "DEACTIVATING";
+    static constexpr std::string_view STATE_ERROR_PROCESSING_STRING = "ERROR_PROCESSING";
+    static constexpr std::string_view STATE_SHUTTING_DOWN = "SHUTTING_DOWN";  
+
+    static constexpr std::string_view STATUS_OK_STRING = "OK";
+    static constexpr std::string_view STATUS_WARN_STRING = "WARN";
+    static constexpr std::string_view STATUS_ERROR_STRING = "ERROR";
+
+    static constexpr std::string_view COMMAND_CREATE_STRING = "CREATE";
+    static constexpr std::string_view COMMAND_CONFIGURE_STRING = "CONFIGURE";
+    static constexpr std::string_view COMMAND_CLEANUP_STRING = "CLEANUP";
+    static constexpr std::string_view COMMAND_ACTIVATE_STRING = "ACTIVATE";
+    static constexpr std::string_view COMMAND_DEACTIVATE_STRING = "DEACTIVATE";
+    static constexpr std::string_view COMMAND_SHUTDOWN_STRING = "SHUTDOWN";
+    static constexpr std::string_view COMMAND_DESTROY_STRING = "DESTROY";
+
+    static constexpr std::string_view EMPTY_STRING = "";
+
+    static constexpr double DEFAULT_OK_THROTTLE_S = 10.0;
+    static constexpr double DEFAULT_WARN_THROTTLE_S = 2.0;
+    static constexpr double DEFAULT_ERROR_THROTTLE_S = 1.0;
 };
 }
 #endif // AM_LIFE_CYCLE_MEDIATOR_H_

@@ -183,11 +183,12 @@ void AMLifeCycle::doDeactivate(bool success)
 
 void AMLifeCycle::destroy()
 {
-  if (life_cycle_info_.state != LifeCycleState::FINALIZED)
+  if (life_cycle_mediator_.illegalDestroy(life_cycle_info_))
   {
     ROS_INFO_STREAM("received illegal activate in state " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
   }
-  else if (life_cycle_info_.state == LifeCycleState::SHUTTING_DOWN || life_cycle_info_.state == LifeCycleState::FINALIZED)
+  /* This condition is hit only if state equals FINALIZED. Checking SHUTTING_DOWN is redundant */
+  else
   {
     ROS_INFO_STREAM("current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
     onDestroy();
@@ -208,8 +209,7 @@ void AMLifeCycle::doDestroy(bool success)
 
 void AMLifeCycle::error()
 {
-  if (life_cycle_info_.state == LifeCycleState::ERROR_PROCESSING || life_cycle_info_.state == LifeCycleState::FINALIZED ||
-      life_cycle_info_.state == LifeCycleState::UNCONFIGURED)
+  if (life_cycle_mediator_.error(life_cycle_info_))
   {
     ROS_DEBUG_STREAM("ignoring redundant error");
   }
@@ -243,13 +243,13 @@ void AMLifeCycle::doError(bool success)
 
 void AMLifeCycle::shutdown()
 {
-  if (life_cycle_info_.state == LifeCycleState::UNCONFIGURED || life_cycle_info_.state == LifeCycleState::INACTIVE || life_cycle_info_.state == LifeCycleState::ACTIVE)
+  if (life_cycle_mediator_.shutdown(life_cycle_info_))
   {
     ROS_INFO_STREAM("current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
     setState(LifeCycleState::SHUTTING_DOWN);
     onShutdown();
   }
-  else if (life_cycle_info_.state == LifeCycleState::SHUTTING_DOWN || life_cycle_info_.state == LifeCycleState::FINALIZED)
+  else if (life_cycle_mediator_.redundantShutdown(life_cycle_info_))
   {
     ROS_DEBUG_STREAM("ignoring redundant shutdown");
   }
@@ -298,8 +298,8 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
   ss << life_cycle_mediator_.stateToString(life_cycle_info_.state) << "," << life_cycle_mediator_.statusToString(life_cycle_info_.status) << ","
      << stats_list_.getStatsStrShort();
 
-  double throttle = getThrottle();
-  ROS_INFO_STREAM_THROTTLE(throttle, "LifeCycle heartbeat: " << ss.str());
+  double throttle_s = getThrottle();
+  ROS_INFO_STREAM_THROTTLE(throttle_s, "LifeCycle heartbeat: " << ss.str());
 
   stats_list_.reset();
 

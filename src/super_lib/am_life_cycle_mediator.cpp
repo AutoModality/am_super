@@ -189,6 +189,29 @@ double AMLifeCycleMediator::getThrottle(const AMLifeCycleMediator::LifeCycleInfo
   }
   return throttle;
 }
+  
+bool AMLifeCycleMediator::shutdown(const AMLifeCycleMediator::LifeCycleInfo& info)
+{
+  return info.state == LifeCycleState::UNCONFIGURED || 
+    info.state == LifeCycleState::INACTIVE || 
+    info.state == LifeCycleState::ACTIVE;
+}
 
+bool AMLifeCycleMediator::redundantShutdown(const AMLifeCycleMediator::LifeCycleInfo& info)
+{
+  return info.state == LifeCycleState::SHUTTING_DOWN || 
+    info.state == LifeCycleState::FINALIZED;
+}
+
+bool AMLifeCycleMediator::error(const AMLifeCycleMediator::LifeCycleInfo& info)
+{
+  return info.state == LifeCycleState::ERROR_PROCESSING || info.state == LifeCycleState::FINALIZED ||
+    info.state == LifeCycleState::UNCONFIGURED;
+}
+
+bool AMLifeCycleMediator::illegalDestroy(const AMLifeCycleMediator::LifeCycleInfo& info)
+{
+  return info.state != LifeCycleState::FINALIZED;
+}
 
 } //namespace am

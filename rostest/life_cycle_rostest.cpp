@@ -19,8 +19,10 @@
 using namespace std;
 using namespace am;
 
-constexpr int TARGET_COUNT = 3;             // number of 'ARMED' responses needed to pass test
-int armed_count = 0;                        // current number of received 'ARMED'
+bool ready = false; //indicates if we received READY from super
+bool arming = false;
+constexpr int CHECK_TIME = 10;
+
 constexpr string_view CORRECT = "CORRECT";  // represents the correct result in test
 string_view order_status = CORRECT;         // used in test to verify order_status is correct
 
@@ -96,15 +98,20 @@ class LifeCycleNodeTest : public ::testing::Test, am::AMLifeCycle
  * @param msg custom message containing state information about am_super
  */
 void callback(const brain_box_msgs::VxState& msg)
-{
-  if (msg.state == brain_box_msgs::VxState::ARMED)
+{ 
+  if (msg.state == brain_box_msgs::VxState::READY)
   {
-    ROS_INFO_STREAM("heartbeat received..");
-    armed_count++;
+    ROS_INFO_STREAM("Ready received.");
+    ready = true;
+  }
+  else if(msg.state == brain_box_msgs::VxState::ARMING)
+  {
+    ROS_INFO_STREAM("Arming received");
+    arming = true;
   }
   else
   {
-    ROS_INFO_STREAM("heartbeat not received, retrying...");
+    ROS_INFO_STREAM("Neither Ready nor ARMING received, retrying..");
   }
 }
 
@@ -115,16 +122,26 @@ TEST_F(LifeCycleNodeTest, testState)
   ros::Subscriber sub = n.subscribe("/vstate/summary", 1000, callback);
   ros::Rate loop_rate(1);  // 1 Hz
 
-  ROS_INFO_STREAM("Checking for heartbeat until 3 received (Ctrl-C to cancel)..\n");
-  while (armed_count < TARGET_COUNT && ros::ok())
+  ROS_INFO_STREAM("Waiting to receive READY from AMSuper (Ctrl-C to cancel)..\n");
+  while (!ready && ros::ok())
   {
     ros::spinOnce();
     loop_rate.sleep();
   }
 
-  ASSERT_EQ(armed_count, TARGET_COUNT) << "ERROR: Failed to receive 3 heartbeats";
-  ASSERT_EQ(order_status, CORRECT) << order_status;
+  ROS_INFO_STREAM("Ensure super remains in READY for atleast 10 seconds:");
 
+  int cnt = 0;
+  while(!arming && cnt < CHECK_TIME && ros::ok())
+  {
+    ros::spinOnce();
+    cnt++;
+    loop_rate.sleep();
+  }
+
+  EXPECT_FALSE(arming) << "ERROR: Super must wait for a trigger to transition to ARMING";
+
+  ASSERT_EQ(order_status, CORRECT) << order_status;
   EXPECT_TRUE(configured);
   EXPECT_TRUE(activated);
   EXPECT_FALSE(cleanedUp);

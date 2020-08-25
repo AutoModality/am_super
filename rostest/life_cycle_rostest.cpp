@@ -115,7 +115,7 @@ void callback(const brain_box_msgs::VxState& msg)
   }
 }
 
-TEST_F(LifeCycleNodeTest, testState)
+TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
 {
   ros::NodeHandle n;
 
@@ -128,6 +128,7 @@ TEST_F(LifeCycleNodeTest, testState)
     ros::spinOnce();
     loop_rate.sleep();
   }
+  ASSERT_TRUE(ready) << "Super did not report a READY state or ros::shutdown() was called";
 
   ROS_INFO_STREAM("Ensure super remains in READY for atleast 10 seconds:");
 
@@ -143,13 +144,12 @@ TEST_F(LifeCycleNodeTest, testState)
 
   ASSERT_EQ(order_status, CORRECT) << order_status;
   EXPECT_TRUE(configured);
-  EXPECT_TRUE(activated);
+  EXPECT_FALSE(activated) << "ERROR: This node should not be activated yet";
   EXPECT_FALSE(cleanedUp);
   EXPECT_FALSE(deactivated);
   EXPECT_FALSE(destroyed);
   EXPECT_FALSE(errored);
   EXPECT_FALSE(shutdown);
-
 }
 
 int main(int argc, char** argv)

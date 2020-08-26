@@ -120,11 +120,8 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
     bool check_result = allManifestedNodesCheck(supervisor, transition.check).first;
     if (check_result == transition.on_check_result)
     {
-      if(transition.to_state != SuperState::ARMING)
-      {
-        transition_instructions.ready_for_transition = true;
-        transition_instructions.new_state = transition.to_state;
-      }
+      transition_instructions.ready_for_transition = true;
+      transition_instructions.new_state = transition.to_state;
     }
     else
     {

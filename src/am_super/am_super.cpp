@@ -413,6 +413,7 @@ private:
       // if all manifested nodes are running, report as info
       ROS_INFO_STREAM_THROTTLE(LOG_THROTTLE_S, ss.str());
     }
+    AMLifeCycle::heartbeatCB(event);
   }
 
   /**

@@ -99,6 +99,7 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   nr.manifested = true;
   nr.state = LifeCycleState::UNCONFIGURED;
   nr.status = LifeCycleStatus::OK;
+  nr.triggered = false;
   return nr;
 }
 
@@ -153,7 +154,7 @@ bool SuperNodeMediator::checkReadyForConfigureState(SuperNodeMediator::SuperNode
 
 bool SuperNodeMediator::checkReadyForActivateState(SuperNodeMediator::SuperNodeInfo& nr)
 {
-  return nr.state == LifeCycleState::INACTIVE || nr.state == LifeCycleState::ACTIVE;
+  return (nr.state == LifeCycleState::INACTIVE || nr.state == LifeCycleState::ACTIVE) && nr.triggered;
 }
 
 bool SuperNodeMediator::checkActivateState(SuperNodeMediator::SuperNodeInfo& nr)

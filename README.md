@@ -16,8 +16,4 @@ Other nodes must communicate with the Supervisor and should do so using the [lib
 
 # Run Tests
 
-```
-catkin_make run_tests
-```
-
 See [test](test) for more.

@@ -35,7 +35,7 @@ public:
     float mem_usage;         // amount of memory node is consuming
     LifeCycleState state;    // https://index.ros.org/p/lifecycle/
     LifeCycleStatus status;  // node lifecycle status
-    bool triggered;          // indicates if this node can transition super from READY -> ARMING
+    bool triggered;
     bool manifested;         // nodes was in manfiest
     bool online;             // node is online
     ros::Time last_contact;  // last time a message was received from the node

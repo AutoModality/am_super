@@ -105,10 +105,11 @@ TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotReadyToActivate)
                           LifeCycleCommand::CONFIGURE);
 }
 
-TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenReadyToActivate)
-{
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::ACTIVE, true, SuperState::ARMING);
-}
+//AM-463 Re-enable when trigger is implemented
+// TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenReadyToActivate)
+// {
+//   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::ACTIVE, true, SuperState::ARMING);
+// }
 
 TEST_F(TransitionReady, transitionReady_ArmingToArmedWhenReadyToActivate)
 {

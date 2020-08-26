@@ -99,7 +99,6 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   nr.manifested = true;
   nr.state = LifeCycleState::UNCONFIGURED;
   nr.status = LifeCycleStatus::OK;
-  nr.triggered = false;
   return nr;
 }
 

@@ -44,6 +44,7 @@ void ASSERT_CHECK(std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check, 
 {
   SuperNodeMediator::SuperNodeInfo info;
   info.state = state;
+  info.triggered = true;
   ASSERT_EQ(check(info), expected) << "For state: " + std::to_string((int)state);
 }
 

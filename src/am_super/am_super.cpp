@@ -39,7 +39,7 @@ namespace am
  *
  *  uses BabySitter instances to generate state and health for nodes that don't publish brain_box_msgs::LifeCycleState
  */
-class AMSuper
+class AMSuper : AMLifeCycle
 {
 private:
   /**

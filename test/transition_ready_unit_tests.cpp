@@ -20,7 +20,6 @@ protected:
     SuperNodeMediator::SuperNodeInfo node;
     node.online = true;
     node.manifested = true;
-    node.triggered = true;
     return node;
   }
 };
@@ -30,7 +29,6 @@ SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
   SuperNodeMediator::SuperNodeInfo node;
   node.online = true;
   node.manifested = true;
-  node.triggered = true;
   return node;
 }
 

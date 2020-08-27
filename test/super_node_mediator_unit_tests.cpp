@@ -40,16 +40,19 @@ TEST(Node, initializeManifestedNode_FieldsAreSetProperly)
   ASSERT_EQ(nodeInfo.status, LifeCycleStatus::OK) << "All is good until reported otherwise";
 }
 
-void ASSERT_CHECK(std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check, LifeCycleState state, bool expected)
+void ASSERT_CHECK(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> check, LifeCycleState state, bool expected,
+  bool operator_is_ready_to_arm = true)
 {
   SuperNodeMediator::SuperNodeInfo info;
+  SuperNodeMediator::Supervisor supervisor;
   info.state = state;
-  ASSERT_EQ(check(info), expected) << "For state: " + std::to_string((int)state);
+  supervisor.operator_is_ready_to_arm = operator_is_ready_to_arm;
+  ASSERT_EQ(check(supervisor, info), expected) << "For state: " + std::to_string((int)state);
 }
 
 TEST(Node, checkReadyForConfigureState_All)
 {
-  std::function<bool(SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkReadyForConfigureState;
+  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkReadyForConfigureState;
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
   ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, true);
   ASSERT_CHECK(function, LifeCycleState::INACTIVE, true);
@@ -62,9 +65,9 @@ TEST(Node, checkReadyForConfigureState_All)
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
 }
 
-TEST(Node, checkReadyForActivateState_All)
+TEST(Node, checkReadyToArm_All)
 {
-  std::function<bool(SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkReadyForActivateState;
+  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkReadyToArm;
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
   ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, false);
   ASSERT_CHECK(function, LifeCycleState::INACTIVE, true);
@@ -75,10 +78,16 @@ TEST(Node, checkReadyForActivateState_All)
   ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);
   ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
+
+  bool expected, operator_is_ready_to_arm; //help with readability
+
+  ASSERT_CHECK(function, LifeCycleState::INACTIVE, expected = false, operator_is_ready_to_arm = false);
+  ASSERT_CHECK(function, LifeCycleState::ACTIVE, expected = false, operator_is_ready_to_arm = false);
 }
+
 TEST(Node, checkActivateState_All)
 {
-  std::function<bool(SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkActivateState;
+  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkActivateState;
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
   ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, false);
   ASSERT_CHECK(function, LifeCycleState::INACTIVE, false);
@@ -86,7 +95,7 @@ TEST(Node, checkActivateState_All)
   ASSERT_CHECK(function, LifeCycleState::FINALIZED, false);
   ASSERT_CHECK(function, LifeCycleState::CONFIGURING, false);
   ASSERT_CHECK(function, LifeCycleState::CLEANING_UP, false);
-  ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);
+  ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);bool expected, operator_is_ready_to_arm;
   ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
 }
@@ -94,7 +103,7 @@ TEST(Node, checkActivateState_All)
 void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result,
                                    string expected_error_code = "")
 {
-  std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check = [check_result](SuperNodeMediator::SuperNodeInfo&) {
+  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> check = [check_result](SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&) {
     return check_result;
   };
   SuperNodeMediator::Supervisor supervisor;

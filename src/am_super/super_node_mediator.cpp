@@ -19,7 +19,7 @@ SuperNodeMediator::SuperNodeMediator()
  */
 struct StateTransition
 {
-  StateTransition(SuperState _to_state, std::function<bool(SuperNodeMediator::SuperNodeInfo&)> _check,
+  StateTransition(SuperState _to_state, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&)> _check,
                   bool _on_check_result, std::map<SuperNodeMediator::SuperFltCtrlState, SuperState> _flt_ctrl_state_map,
                   LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1)
   {
@@ -32,12 +32,14 @@ struct StateTransition
   /**The future Supervisor.systemState if checks pass.*/
   SuperState to_state;
   /**Function that indicates if the transition is allowed (based on node lifecycle)*/
-  std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check;
+  std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&)> check;
 
   /**If the check result matches this value, then transition*/
   bool on_check_result;
 
-  /**State change based on flight controller state */
+  /**State change based on flight controller state 
+   * DEPRECATED - Remove when operator_is_ready_to_arm is complete AM-461 
+   */
   std::map<SuperNodeMediator::SuperFltCtrlState, SuperState> flt_ctrl_state_map;
 
   /**Certain states are waiting on nodes to do their thing.  Sending lifecycle commands to new nodes
@@ -57,7 +59,7 @@ const std::map<SuperState, StateTransition> state_transitions_ = {
   { SuperState::BOOTING, { SuperState::READY, SuperNodeMediator::checkReadyForConfigureState, true, {} } },
   // TODO: this should wait for operator to arm AM-421
   { SuperState::READY,
-    { SuperState::ARMING, SuperNodeMediator::checkReadyForActivateState, true, {}, LifeCycleCommand::CONFIGURE } },
+    { SuperState::ARMING, SuperNodeMediator::checkReadyToArm, true, {}, LifeCycleCommand::CONFIGURE } },
   { SuperState::ARMING,
     { SuperState::ARMED, SuperNodeMediator::checkActivateState, true, {}, LifeCycleCommand::ACTIVATE } },
   { SuperState::ARMED,
@@ -120,11 +122,8 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
     bool check_result = allManifestedNodesCheck(supervisor, transition.check).first;
     if (check_result == transition.on_check_result)
     {
-      if(transition.to_state != SuperState::ARMING)
-      {
-        transition_instructions.ready_for_transition = true;
-        transition_instructions.new_state = transition.to_state;
-      }
+      transition_instructions.ready_for_transition = true;
+      transition_instructions.new_state = transition.to_state;
     }
     else
     {
@@ -148,24 +147,24 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   return transition_instructions;
 }
 
-bool SuperNodeMediator::checkReadyForConfigureState(SuperNodeMediator::SuperNodeInfo& nr)
+bool SuperNodeMediator::checkReadyForConfigureState(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
   return nr.state == LifeCycleState::UNCONFIGURED || nr.state == LifeCycleState::INACTIVE ||
          nr.state == LifeCycleState::ACTIVE;
 }
 
-bool SuperNodeMediator::checkReadyForActivateState(SuperNodeMediator::SuperNodeInfo& nr)
+bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
-  return nr.state == LifeCycleState::INACTIVE || nr.state == LifeCycleState::ACTIVE;
+  return supervisor.operator_is_ready_to_arm && (nr.state == LifeCycleState::INACTIVE || nr.state == LifeCycleState::ACTIVE);
 }
 
-bool SuperNodeMediator::checkActivateState(SuperNodeMediator::SuperNodeInfo& nr)
+bool SuperNodeMediator::checkActivateState(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
   return nr.state == LifeCycleState::ACTIVE;
 }
 
 pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
-    Supervisor supervisor, std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check)
+    Supervisor& supervisor, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&)> check)
 {
   map<string, string> failed_nodes;
 
@@ -181,7 +180,7 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
       {
         error_message = "[U5JB] check failed: node not online: " + node.name;
       }
-      else if (!check(node))
+      else if (!check(supervisor,node))
       {
         string node_state = to_string((int)node.state);  // string(AMLifeCycle::stateToString(node.state));
         error_message = "[2OQ0] check failed: node in wrong state (" + node_state + "): " + node.name;

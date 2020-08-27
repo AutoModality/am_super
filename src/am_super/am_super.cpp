@@ -39,7 +39,7 @@ namespace am
  *
  *  uses BabySitter instances to generate state and health for nodes that don't publish brain_box_msgs::LifeCycleState
  */
-class AMSuper
+class AMSuper : AMLifeCycle
 {
 private:
   /**
@@ -413,6 +413,7 @@ private:
       // if all manifested nodes are running, report as info
       ROS_INFO_STREAM_THROTTLE(LOG_THROTTLE_S, ss.str());
     }
+    AMLifeCycle::heartbeatCB(event);
   }
 
   /**
@@ -464,7 +465,7 @@ private:
    * - all states are UNCONFIGURED or INACTIVE or ACTIVE
    * - all statuses are not error
    */
-  bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::SuperNodeInfo&)> check)
+  bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> check)
   {
     pair<bool, map<string, string>> result = node_mediator_.allManifestedNodesCheck(supervisor_, check);
     bool success = result.first;
@@ -665,6 +666,13 @@ private:
     warn_ms = (int)(1000.0 / hz * 2.0 + 0.5);
     error_ms = (int)(1000.0 / hz * 3.0 + 0.5);
   }
+
+  void onConfigure()
+  {
+    AMLifeCycle::onConfigure();
+    supervisor_.operator_is_ready_to_arm = false;
+  }
+
 };
 };
 

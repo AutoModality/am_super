@@ -47,8 +47,6 @@ private:
    */
   const int LOG_THROTTLE_S = 10;
 
-  bool triggered = false; //indicates if we are allowed to transition from CONFIGURING to INACTIVE
-
   /**
    * the ros node handle
    */
@@ -671,14 +669,7 @@ private:
 
   void onConfigure()
   {
-    if(triggered)
-    {
-      AMLifeCycle::onConfigure();
-    }
-    else
-    {
-      ROS_WARN_STREAM("Unable to CONFIGURE AMSuper until we are triggered by the operator");
-    }
+    AMLifeCycle::onConfigure();
   }
 
 };

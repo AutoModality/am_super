@@ -56,8 +56,13 @@ public:
 
     /**
      * Allows super to manage flight control.
+     * DEPRECATED - Remove this when operator_is_ready is complete AM-461
      */
     SuperFltCtrlState flt_ctrl_state;
+
+    /** Indication that the operator is supervising the robot, has sent the signal to arm the system */
+    bool operator_is_ready_to_arm;
+
   };
 
   /**Standardizes the node name which sometimes starts with `/`.
@@ -103,14 +108,20 @@ public:
    */
   pair<bool, LifeCycleCommand> lifeCycleCommand(SuperState system_state);
 
-  /**@return true if Lifecyle state is ready to be configured */
-  static bool checkReadyForConfigureState(SuperNodeMediator::SuperNodeInfo& nr);
+  /**
+   * FIXME: this should be a private method
+   * @return true if Lifecyle state is ready to be configured */
+  static bool checkReadyForConfigureState(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
 
-  /**@return true if Lifecyle state is ready to be activated */
-  static bool checkReadyForActivateState(SuperNodeMediator::SuperNodeInfo& nr);
+  /**Delegate method used by allManifestedNodesCheck to see if manifested nodes have the state required for arming.
+   * FIXME: this should be a private method
+   * @return true if nodes are inactive, active and the operator is ready to arm  */
+  static bool checkReadyToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
 
-  /**@return true if Lifecyle state equals Activate */
-  static bool checkActivateState(SuperNodeMediator::SuperNodeInfo& nr);
+  /**
+   * FIXME: this should be a private method
+   * @return true if Lifecyle state equals Activate */
+  static bool checkActivateState(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
 
   /** Reads the given manifest string, typically provided by a ROS param,
    * converts it to a vector or node names which will be assigned to the given
@@ -129,14 +140,14 @@ public:
      * - all are online
      * - all states are UNCONFIGURED or INACTIVE or ACTIVE
      * - all statuses are not error
-     *
+     * FIXME: this method should be private
      * @param supervisor with the state of the system to be checked
      * @param check function that will be called with each node registered with Supervisor
      * @return a pair with overall success and a map containing any erroneous node names with message explaining why
      *
      */
-  pair<bool, map<string, string>> allManifestedNodesCheck(Supervisor supervisor,
-                                                          function<bool(SuperNodeMediator::SuperNodeInfo&)> check);
+  pair<bool, map<string, string>> allManifestedNodesCheck(Supervisor& supervisor,
+                                                          function<bool(Supervisor&,SuperNodeMediator::SuperNodeInfo&)> check);
 
   /**@return the number of nodes where online=true*/
   int nodesOnlineCount(Supervisor supervisor);

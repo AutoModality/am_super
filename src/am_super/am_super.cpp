@@ -670,6 +670,7 @@ private:
   void onConfigure()
   {
     AMLifeCycle::onConfigure();
+    supervisor_.operator_is_ready_to_arm = false;
   }
 
 };

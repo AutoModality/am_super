@@ -40,12 +40,13 @@ TEST(Node, initializeManifestedNode_FieldsAreSetProperly)
   ASSERT_EQ(nodeInfo.status, LifeCycleStatus::OK) << "All is good until reported otherwise";
 }
 
-void ASSERT_CHECK(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> check, LifeCycleState state, bool expected, bool armed = true)
+void ASSERT_CHECK(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> check, LifeCycleState state, bool expected,
+  bool operator_is_ready_to_arm = true)
 {
   SuperNodeMediator::SuperNodeInfo info;
   SuperNodeMediator::Supervisor supervisor;
   info.state = state;
-  supervisor.operator_is_ready_to_arm = armed;
+  supervisor.operator_is_ready_to_arm = operator_is_ready_to_arm;
   ASSERT_EQ(check(supervisor, info), expected) << "For state: " + std::to_string((int)state);
 }
 
@@ -77,6 +78,9 @@ TEST(Node, checkReadyToArm_All)
   ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);
   ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
+
+  ASSERT_CHECK(function, LifeCycleState::INACTIVE, false, false);
+  ASSERT_CHECK(function, LifeCycleState::ACTIVE, false, false);
 }
 
 TEST(Node, checkActivateState_All)

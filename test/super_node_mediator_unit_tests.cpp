@@ -79,8 +79,10 @@ TEST(Node, checkReadyToArm_All)
   ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
 
-  ASSERT_CHECK(function, LifeCycleState::INACTIVE, false, false);
-  ASSERT_CHECK(function, LifeCycleState::ACTIVE, false, false);
+  bool expected, operator_is_ready_to_arm; //help with readability
+
+  ASSERT_CHECK(function, LifeCycleState::INACTIVE, expected = false, operator_is_ready_to_arm = false);
+  ASSERT_CHECK(function, LifeCycleState::ACTIVE, expected = false, operator_is_ready_to_arm = false);
 }
 
 TEST(Node, checkActivateState_All)
@@ -93,7 +95,7 @@ TEST(Node, checkActivateState_All)
   ASSERT_CHECK(function, LifeCycleState::FINALIZED, false);
   ASSERT_CHECK(function, LifeCycleState::CONFIGURING, false);
   ASSERT_CHECK(function, LifeCycleState::CLEANING_UP, false);
-  ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);
+  ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);bool expected, operator_is_ready_to_arm;
   ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
 }

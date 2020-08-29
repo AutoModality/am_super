@@ -194,6 +194,15 @@ TEST(Node, parseManifest_TrailingCommaIsIgnored)
   EXPECT_EQ(supervisor.manifest, expected);
 }
 
+TEST(Node, parseManifest_EmptyCommaInMiddleIsIgnored)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  superNodeMediator.parseManifest(supervisor, "first,,second");
+  vector<string> expected{ "first","second"};
+  EXPECT_EQ(supervisor.manifest.size(), 2);
+  EXPECT_EQ(supervisor.manifest, expected);
+}
+
 TEST(Node, parseManifest_Single)
 {
   SuperNodeMediator::Supervisor supervisor;

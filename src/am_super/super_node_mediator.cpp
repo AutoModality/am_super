@@ -202,6 +202,7 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
 void SuperNodeMediator::parseManifest(Supervisor& supervisor, string manifest)
 {
   boost::erase_all(manifest, " ");
+  boost::replace_all(manifest,",,",",");
   // if a manifest has been specified
   if (manifest.size())
   {

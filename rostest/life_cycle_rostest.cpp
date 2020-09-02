@@ -97,7 +97,7 @@ class LifeCycleNodeTest : public ::testing::Test, am::AMLifeCycle
  *
  * @param msg custom message containing state information about am_super
  */
-void callback(const brain_box_msgs::VxState& msg)
+void missionStateCallback(const brain_box_msgs::VxState& msg)
 { 
   if (msg.state == brain_box_msgs::VxState::READY)
   {
@@ -115,11 +115,17 @@ void callback(const brain_box_msgs::VxState& msg)
   }
 }
 
+void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
+{ 
+  ROS_INFO_STREAM("Node lifecycle received from " << msg.node_name);
+}
+
 TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
 {
   ros::NodeHandle n;
 
-  ros::Subscriber sub = n.subscribe("/vstate/summary", 1000, callback);
+  ros::Subscriber missionStateSubscription = n.subscribe("/vstate/summary", 1000, missionStateCallback);
+  ros::Subscriber nodeLifeCycleStateSubscription = n.subscribe("/node_state", 1000, nodeLifeCycleStateCallback);
   ros::Rate loop_rate(1);  // 1 Hz
 
   ROS_INFO_STREAM("Waiting to receive READY from AMSuper (Ctrl-C to cancel)..\n");

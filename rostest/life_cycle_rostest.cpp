@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>             // googletest header file
 #include <brain_box_msgs/VxState.h>  // msg for status
 #include <super_lib/am_life_cycle.h>
+#include <super_lib/am_life_cycle_mediator.h>
 
 using namespace std;
 using namespace am;
@@ -25,6 +26,8 @@ constexpr int CHECK_TIME = 10;
 
 constexpr string_view CORRECT = "CORRECT";  // represents the correct result in test
 string_view order_status = CORRECT;         // used in test to verify order_status is correct
+
+AMLifeCycleMediator life_cycle_mediator_;
 
 class LifeCycleNodeTest : public ::testing::Test, am::AMLifeCycle
 {
@@ -117,7 +120,9 @@ void missionStateCallback(const brain_box_msgs::VxState& msg)
 
 void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
 { 
-  ROS_INFO_STREAM("Node lifecycle received from " << msg.node_name);
+  LifeCycleState state = (LifeCycleState)msg.state;
+  string_view state_string = life_cycle_mediator_.stateToString(state);
+  ROS_INFO_STREAM("Node lifecycle state " << state_string << " received from " << msg.node_name);
 }
 
 TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)

@@ -22,6 +22,8 @@ using namespace am;
 
 bool ready = false; //indicates if we received READY from super
 bool arming = false;
+bool super_inactive = false; //indicates if we received the INACTIVE LC state from super
+
 constexpr int CHECK_TIME = 10;
 
 constexpr string_view CORRECT = "CORRECT";  // represents the correct result in test
@@ -123,6 +125,9 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
   LifeCycleState state = (LifeCycleState)msg.state;
   string_view state_string = life_cycle_mediator_.stateToString(state);
   ROS_INFO_STREAM("Node lifecycle state " << state_string << " received from " << msg.node_name);
+  if(msg.node_name == "/am_super" && state == LifeCycleState::INACTIVE) {
+    super_inactive = true;
+  }
 }
 
 TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
@@ -140,7 +145,7 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
     loop_rate.sleep();
   }
   ASSERT_TRUE(ready) << "Super did not report a READY state or ros::shutdown() was called";
-
+  ASSERT_TRUE(super_inactive) << "Super LifeCycle did not report an INACTIVE state"; 
   ROS_INFO_STREAM("Ensure super remains in READY for atleast 10 seconds:");
 
   int cnt = 0;

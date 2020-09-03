@@ -260,7 +260,7 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
       cnt++;
       loop_rate.sleep();
     }    
-    EXPECT_TRUE(arming) << "Super should now be arming"
+    EXPECT_TRUE(arming) << "Super should now be arming";
   }
 
   //now it must go armed once all the nodes go active
@@ -277,10 +277,6 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
     EXPECT_TRUE(rostest_active) << "/life_cycle_rostest LifeCycle should now be active";
     EXPECT_TRUE(activated) << "This node should now be activated";
   }
-
-
-
-
 }
 
 int main(int argc, char** argv)

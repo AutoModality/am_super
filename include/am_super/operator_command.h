@@ -3,7 +3,6 @@
 
 #include <brain_box_msgs/OperatorCommand.h>
 
-
 /** Commands sent by the human operator to transition SuperStates through the standard flow.
  * https://automodality.atlassian.net/wiki/spaces/AMROS/pages/929234949/AMROS+System+States
  */

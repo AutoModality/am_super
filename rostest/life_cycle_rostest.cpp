@@ -14,6 +14,7 @@
 #include "ros/ros.h"                 // ros header file
 #include <gtest/gtest.h>             // googletest header file
 #include <brain_box_msgs/VxState.h>  // msg for status
+#include <brain_box_msgs/OperatorCommand.h>  // to be armed, launch for state transitions
 #include <super_lib/am_life_cycle.h>
 #include <super_lib/am_life_cycle_mediator.h>
 
@@ -24,7 +25,7 @@ bool ready = false; //indicates if we received READY from super
 bool arming = false;
 bool super_inactive = false; //indicates if we received the INACTIVE LC state from super
 
-constexpr int CHECK_TIME = 10;
+constexpr int CHECK_TIME = 3;
 
 constexpr string_view CORRECT = "CORRECT";  // represents the correct result in test
 string_view order_status = CORRECT;         // used in test to verify order_status is correct
@@ -136,6 +137,8 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
 
   ros::Subscriber missionStateSubscription = n.subscribe("/vstate/summary", 1000, missionStateCallback);
   ros::Subscriber nodeLifeCycleStateSubscription = n.subscribe("/node_state", 1000, nodeLifeCycleStateCallback);
+  //FIXME: reference constant for "/operator/command"
+  ros::Publisher operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>("/operator/command",100);
   ros::Rate loop_rate(1);  // 1 Hz
 
   ROS_INFO_STREAM("Waiting to receive READY from AMSuper (Ctrl-C to cancel)..\n");
@@ -146,14 +149,16 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
   }
   ASSERT_TRUE(ready) << "Super did not report a READY state or ros::shutdown() was called";
   ASSERT_TRUE(super_inactive) << "Super LifeCycle did not report an INACTIVE state"; 
-  ROS_INFO_STREAM("Ensure super remains in READY for atleast 10 seconds:");
+  ROS_INFO_STREAM("Ensure super remains in READY for atleast " << CHECK_TIME << " seconds:");
 
-  int cnt = 0;
-  while(!arming && cnt < CHECK_TIME && ros::ok())
   {
-    ros::spinOnce();
-    cnt++;
-    loop_rate.sleep();
+    int cnt = 0;
+    while(!arming && cnt < CHECK_TIME && ros::ok())
+    {
+      ros::spinOnce();
+      cnt++;
+      loop_rate.sleep();
+    }
   }
 
   EXPECT_FALSE(arming) << "ERROR: Super must wait for a trigger to transition to ARMING";
@@ -166,6 +171,26 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
   EXPECT_FALSE(destroyed);
   EXPECT_FALSE(errored);
   EXPECT_FALSE(shutdown);
+
+  // now, let's arm it
+  {
+    string node_name="/life_cycle_node_test";
+    brain_box_msgs::OperatorCommand armCommand;
+    armCommand.node_name = node_name;
+    armCommand.command = brain_box_msgs::OperatorCommand::ARM;
+    operatorCommandPublisher.publish(armCommand);
+    int cnt = 0;
+    while(!arming && cnt < CHECK_TIME && ros::ok())
+    {
+      ros::spinOnce();
+      cnt++;
+      loop_rate.sleep();
+    }    
+  }
+
+
+
+  ASSERT_TRUE(arming);
 }
 
 int main(int argc, char** argv)

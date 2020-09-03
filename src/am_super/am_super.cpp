@@ -14,6 +14,7 @@
 #include <brain_box_msgs/BlinkMCommand.h>
 #include <brain_box_msgs/LifeCycleState.h>
 #include <brain_box_msgs/LogControl.h>
+#include <brain_box_msgs/OperatorCommand.h>
 #include <brain_box_msgs/StampedAltimeter.h>
 #include <brain_box_msgs/Super2Status.h>
 #include <brain_box_msgs/VxState.h>
@@ -61,6 +62,7 @@ private:
   ros::Publisher led_pub_;
   ros::Subscriber node_state_sub_;
   ros::Subscriber node_status_sub_;
+  ros::Subscriber operator_command_sub_;
   ros::Timer heartbeat_timer_;
 
   /** manage logic for SuperState transitions */
@@ -193,6 +195,8 @@ public:
      */
     node_status_sub_ = nh_.subscribe("/process/status", 100, &AMSuper::statusCB, this);
 
+    operator_command_sub_ = nh_.subscribe("/operator/command", 100, &AMSuper::operatorCommandCB, this);
+
     heartbeat_timer_ = nh_.createTimer(ros::Duration(1.0), &AMSuper::heartbeatCB, this);
   }
 
@@ -246,6 +250,18 @@ private:
     // TODO: topic name should come from vb_util_lib::topics.
     LOG_MSG("/process/status", rmsg, SU_LOG_LEVEL);
   }
+
+  void operatorCommandCB(const ros::MessageEvent<brain_box_msgs::OperatorCommand const>& event)
+  {
+    const brain_box_msgs::OperatorCommand::ConstPtr& rmsg = event.getMessage();
+    
+    ROS_INFO_STREAM(rmsg->node_name << " sent command " << rmsg->command );
+    supervisor_.operator_is_ready_to_arm = true;
+    // TODO: topic name should come from vb_util_lib::topics.
+    LOG_MSG("/operator/command", rmsg, SU_LOG_LEVEL);
+  }
+
+  
 
   /**
    * process state

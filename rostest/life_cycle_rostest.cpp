@@ -176,6 +176,9 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
   ASSERT_TRUE(rostest_unconfigured) << "/life_cycle_rostest LifeCycle did not report an UNCONFIGURED state";
 
   ROS_INFO_STREAM("Waiting to receive READY from AMSuper (Ctrl-C to cancel)..\n");
+
+  ready = super_inactive = rostest_inactive = false;
+
   while ((!ready || !super_inactive || !rostest_inactive) && ros::ok())
   {
     ros::spinOnce();

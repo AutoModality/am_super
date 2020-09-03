@@ -110,15 +110,22 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   TransitionInstructions transition_instructions;
   transition_instructions.ready_for_transition = false;
   transition_instructions.resend_life_cycle_command = false;
+  transition_instructions.waiting_on_operator_to_arm = false;
+
+  //don't do anything after READY until operator sends ARM command
+  if(supervisor.system_state == SuperState::READY && !supervisor.operator_is_ready_to_arm)
+  {
+    transition_instructions.waiting_on_operator_to_arm = true;
+  }
 
   // only check those states registered with state_transitions
-  if (state_transitions_.count(supervisor.system_state))
+  else if (state_transitions_.count(supervisor.system_state))
   {
     StateTransition transition = state_transitions_.at(supervisor.system_state);
 
     // each state has a check method providing the logic that should cause transition (based on manifest nodes
     // lifecycle)
-    // some transitions happen only when check fails (mostly to abort)
+    // some transitions happen only when check fails (mostly to abort
     bool check_result = allManifestedNodesCheck(supervisor, transition.check).first;
     if (check_result == transition.on_check_result)
     {

@@ -22,9 +22,9 @@ using namespace std;
 using namespace am;
 
 /* SuperState - indicates if we received the command from super yet*/
+bool booting = false;
 bool ready = false; 
 bool arming = false;
-bool booting = false;
 bool armed = false;
 constexpr int CHECK_TIME = 3;
 /* LifeCycle - indicates if we received the command yet for a nodde*/
@@ -189,37 +189,44 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
   ros::Publisher operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>("/operator/command",100);
   ros::Rate loop_rate(1);  // 1 Hz
 
-  ROS_INFO_STREAM("Waiting to receive BOOTING from AMSuper (Ctrl-C to cancel)..\n");
-  while ((!booting || !super_unconfigured || !rostest_unconfigured) && ros::ok())
+  // check that we are booting
   {
-    ros::spinOnce();
-    loop_rate.sleep();
+
+    ROS_INFO_STREAM("Waiting to receive BOOTING from AMSuper (Ctrl-C to cancel)..\n");
+    while ((!booting || !super_unconfigured || !rostest_unconfigured) && ros::ok())
+    {
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
+    EXPECT_TRUE(booting) << "/am_super SuperState did not report a BOOTING state";
+    EXPECT_TRUE(super_unconfigured) << "/am_super LifeCycle did not report an UNCONFIGURED state"; 
+    EXPECT_TRUE(rostest_unconfigured) << "/life_cycle_rostest LifeCycle did not report an UNCONFIGURED state";
   }
-  EXPECT_TRUE(booting) << "/am_super SuperState did not report a BOOTING state";
-  EXPECT_TRUE(super_unconfigured) << "/am_super LifeCycle did not report an UNCONFIGURED state"; 
-  EXPECT_TRUE(rostest_unconfigured) << "/life_cycle_rostest LifeCycle did not report an UNCONFIGURED state";
-
-  ROS_INFO_STREAM("Waiting to receive READY from AMSuper (Ctrl-C to cancel)..\n");
-
-  ready = super_inactive = rostest_inactive = false;
-
-  EXPECT_FALSE(arming);
-  while ((!ready || !super_inactive || !rostest_inactive) && ros::ok())
+  // check that we are ready
   {
-    ros::spinOnce();
-    loop_rate.sleep();
+    ROS_INFO_STREAM("Waiting to receive READY from AMSuper (Ctrl-C to cancel)..\n");
+
+    ready = super_inactive = rostest_inactive = false;
+
+    EXPECT_FALSE(arming) << "Super should not be arming yet";
+    while ((!ready || !super_inactive || !rostest_inactive) && ros::ok())
+    {
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
+
+    EXPECT_TRUE(ready) << "/am_super SuperState did not report a READY state";
+    EXPECT_TRUE(super_inactive) << "/am_super LifeCycle did not report an INACTIVE state"; 
+    EXPECT_TRUE(rostest_inactive) << "/life_cycle_rostest LifeCycle did not report an INACTIVE state";
+    EXPECT_FALSE(super_active) << "/am_super LifeCycle did not report an ACTIVE state";
+    EXPECT_FALSE(rostest_active) << "/life_cycle_rostest LifeCycle did not report an ACTIVE state";
   }
 
-  EXPECT_TRUE(ready) << "/am_super SuperState did not report a READY state";
-  EXPECT_TRUE(super_inactive) << "/am_super LifeCycle did not report an INACTIVE state"; 
-  EXPECT_TRUE(rostest_inactive) << "/life_cycle_rostest LifeCycle did not report an INACTIVE state";
-  EXPECT_FALSE(super_active);
-  EXPECT_FALSE(rostest_active);
-  ROS_INFO_STREAM("Ensure super remains in READY for atleast " << CHECK_TIME << " seconds:");
-
+  // check that we are armed
   {
-    EXPECT_FALSE(arming);
-    EXPECT_FALSE(armed);
+    ROS_INFO_STREAM("Ensure super remains in READY for atleast " << CHECK_TIME << " seconds:");
+    EXPECT_FALSE(arming) << "Super should not be arming yet";
+    EXPECT_FALSE(armed) << "Super should not be armed yet";
     int cnt = 0;
     while(!arming && cnt < CHECK_TIME && ros::ok())
     {
@@ -227,18 +234,17 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
       cnt++;
       loop_rate.sleep();
     }
+    EXPECT_FALSE(arming) << "/am_super SuperState must wait for a trigger to transition to ARMING";
+    EXPECT_FALSE(armed) << "/am_super SuperState should not be armed yet";
+    EXPECT_EQ(order_status, CORRECT) << order_status;
+    EXPECT_TRUE(configured) << "This node should be configured";
+    EXPECT_FALSE(activated) << "This node should not be activated yet";
+    EXPECT_FALSE(cleanedUp) << "This node should not have cleaned up yet";
+    EXPECT_FALSE(deactivated) << "This node should not have deactivated yet";
+    EXPECT_FALSE(destroyed) << "This node should not be destroyed yet";
+    EXPECT_FALSE(errored) << "This node should not have an error right now";
+    EXPECT_FALSE(shutdown) << "This node should not have shut down";
   }
-
-  EXPECT_FALSE(arming) << "ERROR: Super must wait for a trigger to transition to ARMING";
-  EXPECT_FALSE(armed);
-  EXPECT_EQ(order_status, CORRECT) << order_status;
-  EXPECT_TRUE(configured);
-  EXPECT_FALSE(activated) << "ERROR: This node should not be activated yet";
-  EXPECT_FALSE(cleanedUp);
-  EXPECT_FALSE(deactivated);
-  EXPECT_FALSE(destroyed);
-  EXPECT_FALSE(errored);
-  EXPECT_FALSE(shutdown);
 
   // now, let's arm it
   {
@@ -254,7 +260,7 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
       cnt++;
       loop_rate.sleep();
     }    
-    EXPECT_TRUE(arming);
+    EXPECT_TRUE(arming) << "Super should now be arming"
   }
 
   //now it must go armed once all the nodes go active
@@ -266,10 +272,10 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
       cnt++;
       loop_rate.sleep();
     }    
-    EXPECT_TRUE(armed);
-    EXPECT_TRUE(activated) << "ERROR: This node should now be";
-    EXPECT_TRUE(super_active);
-    EXPECT_TRUE(rostest_active);
+    EXPECT_TRUE(armed) << "/am_super SuperState should now be armed";
+    EXPECT_TRUE(super_active) << "/am_super LifeCycle should now be active";
+    EXPECT_TRUE(rostest_active) << "/life_cycle_rostest LifeCycle should now be active";
+    EXPECT_TRUE(activated) << "This node should now be activated";
   }
 
 

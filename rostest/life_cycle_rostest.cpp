@@ -25,6 +25,7 @@ using namespace am;
 bool ready = false; 
 bool arming = false;
 bool booting = false;
+bool armed = false;
 constexpr int CHECK_TIME = 3;
 /* LifeCycle - indicates if we received the command yet for a nodde*/
 bool super_unconfigured = false;
@@ -127,6 +128,11 @@ void missionStateCallback(const brain_box_msgs::VxState& msg)
   {
     ROS_INFO_STREAM("ARMING received");
     arming = true;
+  }  
+  else if(msg.state == brain_box_msgs::VxState::ARMED)
+  {
+    ROS_INFO_STREAM("ARMED received");
+    armed = true;
   }
 }
 
@@ -183,6 +189,8 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
 
   ready = super_inactive = rostest_inactive = false;
 
+  EXPECT_FALSE(arming);
+  //FIXME: must add a circuit breaker to avoid infinite loop
   while ((!ready || !super_inactive || !rostest_inactive) && ros::ok())
   {
     ros::spinOnce();
@@ -196,6 +204,8 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
   ROS_INFO_STREAM("Ensure super remains in READY for atleast " << CHECK_TIME << " seconds:");
 
   {
+    EXPECT_FALSE(arming);
+    EXPECT_FALSE(armed);
     int cnt = 0;
     while(!arming && cnt < CHECK_TIME && ros::ok())
     {
@@ -206,7 +216,7 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
   }
 
   EXPECT_FALSE(arming) << "ERROR: Super must wait for a trigger to transition to ARMING";
-
+  EXPECT_FALSE(armed);
   ASSERT_EQ(order_status, CORRECT) << order_status;
   EXPECT_TRUE(configured);
   EXPECT_FALSE(activated) << "ERROR: This node should not be activated yet";
@@ -230,11 +240,23 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
       cnt++;
       loop_rate.sleep();
     }    
+    ASSERT_TRUE(arming);
   }
 
+  //now it must go armed once all the nodes go active
+  {
+    int cnt = 0;
+    while(!armed && cnt < CHECK_TIME && ros::ok())
+    {
+      ros::spinOnce();
+      cnt++;
+      loop_rate.sleep();
+    }    
+    ASSERT_TRUE(armed);
+    EXPECT_TRUE(activated) << "ERROR: This node should now be activated";
 
+  }
 
-  ASSERT_TRUE(arming);
 }
 
 int main(int argc, char** argv)

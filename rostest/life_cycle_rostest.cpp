@@ -20,18 +20,20 @@
 using namespace std;
 using namespace am;
 
-bool ready = false; //indicates if we received READY from super
+/* SuperState - indicates if we received the command from super yet*/
+bool ready = false; 
 bool arming = false;
 bool booting = false;
 
+/* LifeCycle - indicates if we received the command yet for a nodde*/
 bool super_unconfigured = false;
-bool super_inactive = false; //indicates if we received the INACTIVE LC state from super
+bool super_inactive = false; 
 
 bool rostest_unconfigured = false;
 bool rostest_inactive = false;
 
 
-constexpr int CHECK_TIME = 10;
+constexpr int CHECK_TIME = 10; // number of seconds to help control flow
 
 constexpr string_view CORRECT = "CORRECT";  // represents the correct result in test
 string_view order_status = CORRECT;         // used in test to verify order_status is correct

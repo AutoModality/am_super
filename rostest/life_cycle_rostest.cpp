@@ -30,10 +30,11 @@ constexpr int CHECK_TIME = 3;
 /* LifeCycle - indicates if we received the command yet for a nodde*/
 bool super_unconfigured = false;
 bool super_inactive = false; 
+bool super_active = false;
 
 bool rostest_unconfigured = false;
 bool rostest_inactive = false;
-
+bool rostest_active = false;
 
 
 constexpr string_view CORRECT = "CORRECT";  // represents the correct result in test
@@ -143,24 +144,37 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
   ROS_INFO_STREAM("Node lifecycle state " << state_string << " received from " << msg.node_name);
   if(msg.node_name == "/am_super")
   {
-    if(state == LifeCycleState::UNCONFIGURED)
+    switch(state)
     {
-      super_unconfigured = true;
-    }
-    else if(state == LifeCycleState::INACTIVE)
-    {
-      super_inactive = true;
+      case LifeCycleState::UNCONFIGURED:
+        super_unconfigured = true;
+        break;
+      case LifeCycleState::INACTIVE:
+        super_inactive = true;
+        break;
+      case LifeCycleState::ACTIVE:
+        super_active = true;
+        break;
+      default:
+            ROS_WARN_STREAM("State not handled");      
     }
   }
   else
   {
-    if(state == LifeCycleState::UNCONFIGURED)
+     switch(state)
     {
-      rostest_unconfigured = true;
-    }
-    else if(state == LifeCycleState::INACTIVE)
-    {
-      rostest_inactive = true;
+      case LifeCycleState::UNCONFIGURED:
+        rostest_unconfigured = true;
+        break;
+      case LifeCycleState::INACTIVE:
+        rostest_inactive = true;
+        break;
+      case LifeCycleState::ACTIVE:
+        rostest_active = true;
+        break;
+      default:
+            ROS_WARN_STREAM("State not handled");
+
     }
   }
 }
@@ -181,26 +195,26 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
     ros::spinOnce();
     loop_rate.sleep();
   }
-  ASSERT_TRUE(booting) << "/am_super SuperState did not report a BOOTING state";
-  ASSERT_TRUE(super_unconfigured) << "/am_super LifeCycle did not report an UNCONFIGURED state"; 
-  ASSERT_TRUE(rostest_unconfigured) << "/life_cycle_rostest LifeCycle did not report an UNCONFIGURED state";
+  EXPECT_TRUE(booting) << "/am_super SuperState did not report a BOOTING state";
+  EXPECT_TRUE(super_unconfigured) << "/am_super LifeCycle did not report an UNCONFIGURED state"; 
+  EXPECT_TRUE(rostest_unconfigured) << "/life_cycle_rostest LifeCycle did not report an UNCONFIGURED state";
 
   ROS_INFO_STREAM("Waiting to receive READY from AMSuper (Ctrl-C to cancel)..\n");
 
   ready = super_inactive = rostest_inactive = false;
 
   EXPECT_FALSE(arming);
-  //FIXME: must add a circuit breaker to avoid infinite loop
   while ((!ready || !super_inactive || !rostest_inactive) && ros::ok())
   {
     ros::spinOnce();
     loop_rate.sleep();
   }
 
-  ASSERT_TRUE(ready) << "/am_super SuperState did not report a READY state";
-  ASSERT_TRUE(super_inactive) << "/am_super LifeCycle did not report an INACTIVE state"; 
-  ASSERT_TRUE(rostest_inactive) << "/life_cycle_rostest LifeCycle did not report an INACTIVE state";
-
+  EXPECT_TRUE(ready) << "/am_super SuperState did not report a READY state";
+  EXPECT_TRUE(super_inactive) << "/am_super LifeCycle did not report an INACTIVE state"; 
+  EXPECT_TRUE(rostest_inactive) << "/life_cycle_rostest LifeCycle did not report an INACTIVE state";
+  EXPECT_FALSE(super_active);
+  EXPECT_FALSE(rostest_active);
   ROS_INFO_STREAM("Ensure super remains in READY for atleast " << CHECK_TIME << " seconds:");
 
   {
@@ -217,7 +231,7 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
 
   EXPECT_FALSE(arming) << "ERROR: Super must wait for a trigger to transition to ARMING";
   EXPECT_FALSE(armed);
-  ASSERT_EQ(order_status, CORRECT) << order_status;
+  EXPECT_EQ(order_status, CORRECT) << order_status;
   EXPECT_TRUE(configured);
   EXPECT_FALSE(activated) << "ERROR: This node should not be activated yet";
   EXPECT_FALSE(cleanedUp);
@@ -240,7 +254,7 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
       cnt++;
       loop_rate.sleep();
     }    
-    ASSERT_TRUE(arming);
+    EXPECT_TRUE(arming);
   }
 
   //now it must go armed once all the nodes go active
@@ -252,10 +266,14 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
       cnt++;
       loop_rate.sleep();
     }    
-    ASSERT_TRUE(armed);
-    EXPECT_TRUE(activated) << "ERROR: This node should now be activated";
-
+    EXPECT_TRUE(armed);
+    EXPECT_TRUE(activated) << "ERROR: This node should now be";
+    EXPECT_TRUE(super_active);
+    EXPECT_TRUE(rostest_active);
   }
+
+
+
 
 }
 

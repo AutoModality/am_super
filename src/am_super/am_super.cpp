@@ -516,6 +516,10 @@ private:
                       << ": sending " << life_cycle_mediator_.commandToString(command) << " again");
       sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, command);
     }
+    else if (transition_instructions.waiting_on_operator_to_arm)
+    {
+      ROS_INFO_STREAM("Waiting for Operator to send ARM..");
+    }
   }
 
   /**

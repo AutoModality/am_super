@@ -21,11 +21,19 @@
 using namespace std;
 using namespace am;
 
-bool ready = false; //indicates if we received READY from super
+/* SuperState - indicates if we received the command from super yet*/
+bool ready = false; 
 bool arming = false;
-bool super_inactive = false; //indicates if we received the INACTIVE LC state from super
-
+bool booting = false;
 constexpr int CHECK_TIME = 3;
+/* LifeCycle - indicates if we received the command yet for a nodde*/
+bool super_unconfigured = false;
+bool super_inactive = false; 
+
+bool rostest_unconfigured = false;
+bool rostest_inactive = false;
+
+
 
 constexpr string_view CORRECT = "CORRECT";  // represents the correct result in test
 string_view order_status = CORRECT;         // used in test to verify order_status is correct
@@ -105,19 +113,20 @@ class LifeCycleNodeTest : public ::testing::Test, am::AMLifeCycle
  */
 void missionStateCallback(const brain_box_msgs::VxState& msg)
 { 
-  if (msg.state == brain_box_msgs::VxState::READY)
+  if(msg.state == brain_box_msgs::VxState::BOOTING)
   {
-    ROS_INFO_STREAM("Ready received.");
+    ROS_INFO_STREAM("BOOTING received");
+    booting = true;
+  }
+  else if (msg.state == brain_box_msgs::VxState::READY)
+  {
+    ROS_INFO_STREAM("READY received");
     ready = true;
   }
   else if(msg.state == brain_box_msgs::VxState::ARMING)
   {
-    ROS_INFO_STREAM("Arming received");
+    ROS_INFO_STREAM("ARMING received");
     arming = true;
-  }
-  else
-  {
-    ROS_INFO_STREAM("Neither Ready nor ARMING received, retrying..");
   }
 }
 
@@ -126,8 +135,27 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
   LifeCycleState state = (LifeCycleState)msg.state;
   string_view state_string = life_cycle_mediator_.stateToString(state);
   ROS_INFO_STREAM("Node lifecycle state " << state_string << " received from " << msg.node_name);
-  if(msg.node_name == "/am_super" && state == LifeCycleState::INACTIVE) {
-    super_inactive = true;
+  if(msg.node_name == "/am_super")
+  {
+    if(state == LifeCycleState::UNCONFIGURED)
+    {
+      super_unconfigured = true;
+    }
+    else if(state == LifeCycleState::INACTIVE)
+    {
+      super_inactive = true;
+    }
+  }
+  else
+  {
+    if(state == LifeCycleState::UNCONFIGURED)
+    {
+      rostest_unconfigured = true;
+    }
+    else if(state == LifeCycleState::INACTIVE)
+    {
+      rostest_inactive = true;
+    }
   }
 }
 
@@ -141,14 +169,30 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
   ros::Publisher operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>("/operator/command",100);
   ros::Rate loop_rate(1);  // 1 Hz
 
-  ROS_INFO_STREAM("Waiting to receive READY from AMSuper (Ctrl-C to cancel)..\n");
-  while (!ready && ros::ok())
+  ROS_INFO_STREAM("Waiting to receive BOOTING from AMSuper (Ctrl-C to cancel)..\n");
+  while ((!booting || !super_unconfigured || !rostest_unconfigured) && ros::ok())
   {
     ros::spinOnce();
     loop_rate.sleep();
   }
-  ASSERT_TRUE(ready) << "Super did not report a READY state or ros::shutdown() was called";
-  ASSERT_TRUE(super_inactive) << "Super LifeCycle did not report an INACTIVE state"; 
+  ASSERT_TRUE(booting) << "/am_super SuperState did not report a BOOTING state";
+  ASSERT_TRUE(super_unconfigured) << "/am_super LifeCycle did not report an UNCONFIGURED state"; 
+  ASSERT_TRUE(rostest_unconfigured) << "/life_cycle_rostest LifeCycle did not report an UNCONFIGURED state";
+
+  ROS_INFO_STREAM("Waiting to receive READY from AMSuper (Ctrl-C to cancel)..\n");
+
+  ready = super_inactive = rostest_inactive = false;
+
+  while ((!ready || !super_inactive || !rostest_inactive) && ros::ok())
+  {
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
+
+  ASSERT_TRUE(ready) << "/am_super SuperState did not report a READY state";
+  ASSERT_TRUE(super_inactive) << "/am_super LifeCycle did not report an INACTIVE state"; 
+  ASSERT_TRUE(rostest_inactive) << "/life_cycle_rostest LifeCycle did not report an INACTIVE state";
+
   ROS_INFO_STREAM("Ensure super remains in READY for atleast " << CHECK_TIME << " seconds:");
 
   {

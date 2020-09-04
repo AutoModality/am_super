@@ -99,7 +99,7 @@ TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenNotReadyToConfigu
 }
 
 /**Not ready to transition from Ready so send another configure command */
-TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotReadyToActivate)
+TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotReadyToActivateAndOperatorIsArmed)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INVALID,
                           (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,

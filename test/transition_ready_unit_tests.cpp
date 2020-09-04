@@ -45,11 +45,12 @@ LifeCycleCommand no_command = (LifeCycleCommand)-1;
 void ASSERT_TRANSITION_READY(SuperNodeMediator superNodeMediator, SuperState from, LifeCycleState node_state,
                              SuperNodeMediator::SuperFltCtrlState flt_ctrl_state, bool expected_ready,
                              SuperState expected_state, bool expected_resend_life_cycle_command,
-                             LifeCycleCommand life_cycle_command)
+                             LifeCycleCommand life_cycle_command, bool operator_is_ready_to_arm = true, bool expected_waiting = false)
 {
   SuperNodeMediator::Supervisor supervisor;
   supervisor.system_state = from;
   supervisor.flt_ctrl_state = flt_ctrl_state;
+  supervisor.operator_is_ready_to_arm = operator_is_ready_to_arm;
   {
     SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();
     node.state = node_state;
@@ -98,17 +99,32 @@ TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenNotReadyToConfigu
 }
 
 /**Not ready to transition from Ready so send another configure command */
-TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotReadyToActivate)
+TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotReadyToActivateAndOperatorIsArmed)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INVALID,
                           (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,
                           LifeCycleCommand::CONFIGURE);
 }
 
-//AM-463 Re-enable when trigger is implemented
-TEST_F(TransitionReady, DISABLED_transitionReady_ReadyToArmingWhenReadyToActivate)
+TEST_F(TransitionReady, transitionReady_ReadyNoTranstitionWhenNotReadyToActivateAndOperatorIsNotArmed)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::ACTIVE, true, SuperState::ARMING);
+  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INVALID, 
+                          (SuperNodeMediator::SuperFltCtrlState)NULL, false, SuperState::READY,
+                           false, (LifeCycleCommand)NULL, false, true);
+}
+
+TEST_F(TransitionReady, transitionReady_ReadyNoTranstitionWhenReadyToActivateAndOperatorIsNotArmed)
+{
+  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INACTIVE, 
+                          (SuperNodeMediator::SuperFltCtrlState)NULL, false, SuperState::READY,
+                           false, (LifeCycleCommand)NULL, false, true);
+}
+
+TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenReadyToActivateAndOperatorIsArmed)
+{
+  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INACTIVE, 
+                          (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::ARMING,
+                           false, (LifeCycleCommand)NULL, true, false);
 }
 
 TEST_F(TransitionReady, transitionReady_ArmingToArmedWhenReadyToActivate)

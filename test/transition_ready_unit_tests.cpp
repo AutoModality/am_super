@@ -45,11 +45,12 @@ LifeCycleCommand no_command = (LifeCycleCommand)-1;
 void ASSERT_TRANSITION_READY(SuperNodeMediator superNodeMediator, SuperState from, LifeCycleState node_state,
                              SuperNodeMediator::SuperFltCtrlState flt_ctrl_state, bool expected_ready,
                              SuperState expected_state, bool expected_resend_life_cycle_command,
-                             LifeCycleCommand life_cycle_command)
+                             LifeCycleCommand life_cycle_command, bool operator_is_ready_to_arm = true, bool expected_waiting = false)
 {
   SuperNodeMediator::Supervisor supervisor;
   supervisor.system_state = from;
   supervisor.flt_ctrl_state = flt_ctrl_state;
+  supervisor.operator_is_ready_to_arm = operator_is_ready_to_arm;
   {
     SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();
     node.state = node_state;
@@ -101,7 +102,7 @@ TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenNotReadyToConfigu
 TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotReadyToActivate)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INVALID,
-                          (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, false,
+                          (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,
                           LifeCycleCommand::CONFIGURE);
 }
 

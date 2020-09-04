@@ -110,9 +110,16 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   TransitionInstructions transition_instructions;
   transition_instructions.ready_for_transition = false;
   transition_instructions.resend_life_cycle_command = false;
+  transition_instructions.waiting_on_operator_to_arm = false;
+
+  // don't do anything after READY until operator sends ARM command
+  if(supervisor.system_state == SuperState::READY && !supervisor.operator_is_ready_to_arm)
+  {
+    transition_instructions.waiting_on_operator_to_arm = true;
+  }
 
   // only check those states registered with state_transitions
-  if (state_transitions_.count(supervisor.system_state))
+  else if (state_transitions_.count(supervisor.system_state))
   {
     StateTransition transition = state_transitions_.at(supervisor.system_state);
 

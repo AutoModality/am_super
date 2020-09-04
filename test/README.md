@@ -56,10 +56,13 @@ catkin_ws/build/am_super/test_results/am_super
 
 ## Running Ros Tests Only
 
+```
+rostest am_super life_cycle_rostest.launch --text
+```
+
 For focus on the ROS Tests, you can run the `rostest` command directly, similar output to `roslaunch`:
 
 ```
-rostest am_super life_cycle_rostest.launch 
 ... logging to /home/developer/.ros/log/rostest-0bbd7f928be4-3823.log
 [ROSUNIT] Outputting test results to /home/developer/.ros/test_results/am_super/rostest-rostest_life_cycle_rostest.xml
 [ INFO] [1598449033.571462621] /am_super /am_super:AMSuper: 

@@ -9,6 +9,7 @@
 enum class OperatorCommand : std::uint8_t
 {
   ARM = brain_box_msgs::OperatorCommand::ARM,
+  CANCEL = brain_box_msgs::OperatorCommand::CANCEL,
   LAUNCH = brain_box_msgs::OperatorCommand::LAUNCH,
   PAUSE= brain_box_msgs::OperatorCommand::PAUSE,
   RESUME=brain_box_msgs::OperatorCommand::RESUME,

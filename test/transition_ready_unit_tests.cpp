@@ -101,7 +101,7 @@ TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenNotReadyToConfigu
 TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotReadyToActivate)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INVALID,
-                          (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,
+                          (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, false,
                           LifeCycleCommand::CONFIGURE);
 }
 

@@ -152,7 +152,7 @@ bool SuperNodeMediator::checkReadyForConfigureState(SuperNodeMediator::Superviso
 
 bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
-  return supervisor.operator_is_ready_to_arm && (nr.state == LifeCycleState::INACTIVE || nr.state == LifeCycleState::ACTIVE);
+  return supervisor.operator_is_ready_to_arm && nr.state == LifeCycleState::ACTIVE;
 }
 
 bool SuperNodeMediator::checkActivateState(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)

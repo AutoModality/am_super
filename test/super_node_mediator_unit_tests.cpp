@@ -70,7 +70,7 @@ TEST(Node, checkReadyToArm_All)
   std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkReadyToArm;
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
   ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, false);
-  ASSERT_CHECK(function, LifeCycleState::INACTIVE, true);
+  ASSERT_CHECK(function, LifeCycleState::INACTIVE, false);
   ASSERT_CHECK(function, LifeCycleState::ACTIVE, true);
   ASSERT_CHECK(function, LifeCycleState::FINALIZED, false);
   ASSERT_CHECK(function, LifeCycleState::CONFIGURING, false);

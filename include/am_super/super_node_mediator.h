@@ -90,9 +90,6 @@ public:
     /** if True, then command should be sent.  if ready_for_transition=true, then this is false*/
     bool resend_life_cycle_command;
 
-    /** if True, transition should not happen and we are waiting for operator to send command*/
-    bool waiting_on_operator_to_arm;
-
     /** The command that notifies nodes to continue processing so the state can transition*/
     LifeCycleCommand life_cycle_command;
   };

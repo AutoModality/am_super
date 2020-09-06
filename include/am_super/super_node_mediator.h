@@ -62,6 +62,7 @@ public:
 
     /** Indication that the operator is supervising the robot, has sent the signal to arm the system */
     bool operator_is_ready_to_arm;
+    bool operator_is_ready_to_launch;
 
   };
 
@@ -123,6 +124,8 @@ public:
    * FIXME: this should be a private method
    * @return true if Lifecyle state equals Activate */
   static bool checkActivateState(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+
+  static bool checkArmedToAutoState(SuperNodeMediator::Supervisor& supervisor, SuperNodeMediator::SuperNodeInfo& nr);
 
   /** Reads the given manifest string, typically provided by a ROS param,
    * converts it to a vector or node names which will be assigned to the given

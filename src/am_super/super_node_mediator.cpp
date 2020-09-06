@@ -63,10 +63,7 @@ const std::map<SuperState, StateTransition> state_transitions_ = {
   { SuperState::ARMING,
     { SuperState::ARMED, SuperNodeMediator::checkActivateState, true, {}, LifeCycleCommand::ACTIVATE } },
   { SuperState::ARMED,
-    { SuperState::ABORT,
-      SuperNodeMediator::checkActivateState,
-      false,
-      { { SuperNodeMediator::SuperFltCtrlState::AUTO, SuperState::AUTO } } } },
+    { SuperState::AUTO, SuperNodeMediator::checkArmedToAutoState, true, {}, LifeCycleCommand::ACTIVATE } },
   { SuperState::AUTO,
     { SuperState::ABORT,
       SuperNodeMediator::checkActivateState,
@@ -161,6 +158,11 @@ bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& superviso
 bool SuperNodeMediator::checkActivateState(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
   return nr.state == LifeCycleState::ACTIVE;
+}
+
+bool SuperNodeMediator::checkArmedToAutoState(SuperNodeMediator::Supervisor& supervisor, SuperNodeMediator::SuperNodeInfo& nr)
+{
+  return supervisor.operator_is_ready_to_launch && nr.state == LifeCycleState::ACTIVE;
 }
 
 pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(

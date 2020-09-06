@@ -256,7 +256,11 @@ private:
     const brain_box_msgs::OperatorCommand::ConstPtr& rmsg = event.getMessage();
     
     ROS_INFO_STREAM(rmsg->node_name << " sent command " << rmsg->command );
-    supervisor_.operator_is_ready_to_arm = true;
+    switch(rmsg->command)
+    {
+      case brain_box_msgs::OperatorCommand::ARM:
+        supervisor_.operator_is_ready_to_arm = true;
+    }
     // TODO: topic name should come from vb_util_lib::topics.
     LOG_MSG("/operator/command", rmsg, SU_LOG_LEVEL);
   }

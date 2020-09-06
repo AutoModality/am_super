@@ -63,10 +63,7 @@ const std::map<SuperState, StateTransition> state_transitions_ = {
   { SuperState::ARMING,
     { SuperState::ARMED, SuperNodeMediator::checkActivateState, true, {}, LifeCycleCommand::ACTIVATE } },
   { SuperState::ARMED,
-    { SuperState::ABORT,
-      SuperNodeMediator::checkActivateState,
-      false,
-      { { SuperNodeMediator::SuperFltCtrlState::AUTO, SuperState::AUTO } } } },
+    { SuperState::AUTO, SuperNodeMediator::checkArmedToAuto, true, {}, LifeCycleCommand::ACTIVATE } },
   { SuperState::AUTO,
     { SuperState::ABORT,
       SuperNodeMediator::checkActivateState,
@@ -110,16 +107,9 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   TransitionInstructions transition_instructions;
   transition_instructions.ready_for_transition = false;
   transition_instructions.resend_life_cycle_command = false;
-  transition_instructions.waiting_on_operator_to_arm = false;
-
-  // don't do anything after READY until operator sends ARM command
-  if(supervisor.system_state == SuperState::READY && !supervisor.operator_is_ready_to_arm)
-  {
-    transition_instructions.waiting_on_operator_to_arm = true;
-  }
 
   // only check those states registered with state_transitions
-  else if (state_transitions_.count(supervisor.system_state))
+  if (state_transitions_.count(supervisor.system_state))
   {
     StateTransition transition = state_transitions_.at(supervisor.system_state);
 
@@ -168,6 +158,11 @@ bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& superviso
 bool SuperNodeMediator::checkActivateState(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
   return nr.state == LifeCycleState::ACTIVE;
+}
+
+bool SuperNodeMediator::checkArmedToAuto(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
+{
+  return supervisor.operator_is_ready_to_launch && nr.state == LifeCycleState::ACTIVE;
 }
 
 pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(

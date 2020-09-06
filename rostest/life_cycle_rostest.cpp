@@ -36,6 +36,7 @@ bool rostest_unconfigured = false;
 bool rostest_inactive = false;
 bool rostest_active = false;
 
+constexpr string_view THIS_NODE_NAME = "/life_cycle_rostest";
 
 constexpr string_view CORRECT = "CORRECT";  // represents the correct result in test
 string_view order_status = CORRECT;         // used in test to verify order_status is correct
@@ -248,7 +249,7 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
 
   // now, let's arm it
   {
-    string node_name="/life_cycle_node_test";
+    string_view node_name = THIS_NODE_NAME;
     brain_box_msgs::OperatorCommand armCommand;
     armCommand.node_name = node_name;
     armCommand.command = brain_box_msgs::OperatorCommand::ARM;
@@ -276,6 +277,21 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
     EXPECT_TRUE(super_active) << "/am_super LifeCycle should now be active";
     EXPECT_TRUE(rostest_active) << "/life_cycle_rostest LifeCycle should now be active";
     EXPECT_TRUE(activated) << "This node should now be activated";
+  }
+  // now let's launch it
+  {
+    string_view node_name = THIS_NODE_NAME;
+    brain_box_msgs::OperatorCommand armCommand;
+    armCommand.node_name = node_name;
+    armCommand.command = brain_box_msgs::OperatorCommand::LAUNCH;
+    operatorCommandPublisher.publish(armCommand);
+    int cnt = 0;
+    while(cnt < CHECK_TIME && ros::ok())
+    {
+      ros::spinOnce();
+      cnt++;
+      loop_rate.sleep();
+    }    
   }
 }
 

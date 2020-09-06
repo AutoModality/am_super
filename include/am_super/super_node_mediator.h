@@ -62,7 +62,6 @@ public:
 
     /** Indication that the operator is supervising the robot, has sent the signal to arm the system */
     bool operator_is_ready_to_arm;
-    bool operator_is_ready_to_launch;
 
   };
 
@@ -90,6 +89,9 @@ public:
     SuperState new_state;
     /** if True, then command should be sent.  if ready_for_transition=true, then this is false*/
     bool resend_life_cycle_command;
+
+    /** if True, transition should not happen and we are waiting for operator to send command*/
+    bool waiting_on_operator_to_arm;
 
     /** The command that notifies nodes to continue processing so the state can transition*/
     LifeCycleCommand life_cycle_command;
@@ -124,8 +126,6 @@ public:
    * FIXME: this should be a private method
    * @return true if Lifecyle state equals Activate */
   static bool checkActivateState(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
-
-  static bool checkArmedToAutoState(SuperNodeMediator::Supervisor& supervisor, SuperNodeMediator::SuperNodeInfo& nr);
 
   /** Reads the given manifest string, typically provided by a ROS param,
    * converts it to a vector or node names which will be assigned to the given

@@ -110,12 +110,10 @@ TEST_F(TransitionReady, transitionReady_ReadyNoTranstitionWhenNotReadyToActivate
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INVALID, 
                           (SuperNodeMediator::SuperFltCtrlState)NULL, false, SuperState::READY,
-                           true, LifeCycleCommand::CONFIGURE, false, true);
+                           false, (LifeCycleCommand)NULL, false, true);
 }
 
-/* Disabled until we can distinguish between the checkReadyToArm failing because LifeCycleNodes aren't activated,
-or because operator is not armed. Maybe separate the logic in the check method? */
-TEST_F(TransitionReady, DISABLED_transitionReady_ReadyNoTranstitionWhenReadyToActivateAndOperatorIsNotArmed)
+TEST_F(TransitionReady, transitionReady_ReadyNoTranstitionWhenReadyToActivateAndOperatorIsNotArmed)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INACTIVE, 
                           (SuperNodeMediator::SuperFltCtrlState)NULL, false, SuperState::READY,
@@ -124,7 +122,7 @@ TEST_F(TransitionReady, DISABLED_transitionReady_ReadyNoTranstitionWhenReadyToAc
 
 TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenReadyToActivateAndOperatorIsArmed)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::ACTIVE, 
+  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INACTIVE, 
                           (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::ARMING,
                            false, (LifeCycleCommand)NULL, true, false);
 }
@@ -141,14 +139,12 @@ TEST_F(TransitionReady, transitionReady_ArmingNoTransitionWhenNotReadyToActivate
                           LifeCycleCommand::ACTIVATE);
 }
 
-/* Disabled until we can handle multiple transitions from one SuperState */
-TEST_F(TransitionReady, DISABLED_transitionReady_ArmedToAbortWhenDectivated)
+TEST_F(TransitionReady, transitionReady_ArmedToAbortWhenDectivated)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMED, LifeCycleState::INACTIVE, true, SuperState::ABORT);
 }
 
-/* Disabld until we can handle multiple transitions from one SuperState */
-TEST_F(TransitionReady, DISABLED_transitionReady_ArmedNoTransitionRemainingActivated)
+TEST_F(TransitionReady, transitionReady_ArmedNoTransitionRemainingActivated)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMED, LifeCycleState::ACTIVE, false);
 }

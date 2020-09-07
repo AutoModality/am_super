@@ -26,6 +26,7 @@ bool booting = false;
 bool ready = false; 
 bool arming = false;
 bool armed = false;
+bool in_auto = false;
 constexpr int CHECK_TIME = 3;
 /* LifeCycle - indicates if we received the command yet for a nodde*/
 bool super_unconfigured = false;
@@ -116,25 +117,27 @@ class LifeCycleNodeTest : public ::testing::Test, am::AMLifeCycle
  */
 void missionStateCallback(const brain_box_msgs::VxState& msg)
 { 
-  if(msg.state == brain_box_msgs::VxState::BOOTING)
+  switch(msg.state)
   {
-    ROS_INFO_STREAM("BOOTING received");
-    booting = true;
-  }
-  else if (msg.state == brain_box_msgs::VxState::READY)
-  {
-    ROS_INFO_STREAM("READY received");
-    ready = true;
-  }
-  else if(msg.state == brain_box_msgs::VxState::ARMING)
-  {
-    ROS_INFO_STREAM("ARMING received");
-    arming = true;
-  }  
-  else if(msg.state == brain_box_msgs::VxState::ARMED)
-  {
-    ROS_INFO_STREAM("ARMED received");
-    armed = true;
+    case brain_box_msgs::VxState::BOOTING:
+      ROS_INFO_STREAM("BOOTING received");
+      booting = true;
+      break;
+    case brain_box_msgs::VxState::READY:
+      ROS_INFO_STREAM("READY received");
+      ready = true;
+      break;
+    case brain_box_msgs::VxState::ARMING:
+      ROS_INFO_STREAM("ARMING received");
+      arming = true;
+      break;
+    case brain_box_msgs::VxState::ARMED:
+      ROS_INFO_STREAM("ARMED received");
+      armed = true;
+      break;
+    case brain_box_msgs::VxState::AUTO:
+      ROS_INFO_STREAM("AUTO received");
+      in_auto = true;
   }
 }
 
@@ -155,9 +158,6 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
         break;
       case LifeCycleState::ACTIVE:
         super_active = true;
-        break;
-      default:
-            ROS_WARN_STREAM("State not handled");      
     }
   }
   else
@@ -172,10 +172,6 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
         break;
       case LifeCycleState::ACTIVE:
         rostest_active = true;
-        break;
-      default:
-            ROS_WARN_STREAM("State not handled");
-
     }
   }
 }
@@ -285,13 +281,15 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
     armCommand.node_name = node_name;
     armCommand.command = brain_box_msgs::OperatorCommand::LAUNCH;
     operatorCommandPublisher.publish(armCommand);
+    
     int cnt = 0;
-    while(cnt < CHECK_TIME && ros::ok())
+    while(!in_auto && cnt < CHECK_TIME && ros::ok())
     {
       ros::spinOnce();
       cnt++;
       loop_rate.sleep();
     }    
+    EXPECT_TRUE(in_auto) << "/am_super SuperState should now be in AUTO";
   }
 }
 

@@ -124,6 +124,9 @@ public:
    * @return true if Lifecyle state equals Activate */
   static bool checkActivateState(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
 
+  /**
+   * FIXME: this should be a private method
+   * @return true if nodes are active and the operator is ready to launch */
   static bool checkArmedToAuto(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
 
 

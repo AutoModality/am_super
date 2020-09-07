@@ -106,14 +106,15 @@ TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotReadyToActivateA
                           LifeCycleCommand::CONFIGURE);
 }
 
-TEST_F(TransitionReady, transitionReady_ReadyNoTranstitionWhenNotReadyToActivateAndOperatorIsNotArmed)
+/* Enable when we separate logic of Operator from Transition check methods */
+TEST_F(TransitionReady, DISABLED_transitionReady_ReadyNoTranstitionWhenNotReadyToActivateAndOperatorIsNotArmed)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INVALID, 
                           (SuperNodeMediator::SuperFltCtrlState)NULL, false, SuperState::READY,
                            false, (LifeCycleCommand)NULL, false, true);
 }
-
-TEST_F(TransitionReady, transitionReady_ReadyNoTranstitionWhenReadyToActivateAndOperatorIsNotArmed)
+/* Enable when we separate logic of Operator from Transition check methods */
+TEST_F(TransitionReady, DISABLED_transitionReady_ReadyNoTranstitionWhenReadyToActivateAndOperatorIsNotArmed)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INACTIVE, 
                           (SuperNodeMediator::SuperFltCtrlState)NULL, false, SuperState::READY,
@@ -138,13 +139,13 @@ TEST_F(TransitionReady, transitionReady_ArmingNoTransitionWhenNotReadyToActivate
                           (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,
                           LifeCycleCommand::ACTIVATE);
 }
-
-TEST_F(TransitionReady, transitionReady_ArmedToAbortWhenDectivated)
+/* Enable when we implement multimap for SuperState to StateTransition*/
+TEST_F(TransitionReady, DISABLED_transitionReady_ArmedToAbortWhenDectivated)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMED, LifeCycleState::INACTIVE, true, SuperState::ABORT);
 }
-
-TEST_F(TransitionReady, transitionReady_ArmedNoTransitionRemainingActivated)
+/* Enable when we implement multimap for SuperState to StateTransition*/
+TEST_F(TransitionReady, DISABLED_transitionReady_ArmedNoTransitionRemainingActivated)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMED, LifeCycleState::ACTIVE, false);
 }

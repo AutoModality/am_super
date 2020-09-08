@@ -190,30 +190,28 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
   {
 
     ROS_INFO_STREAM("Waiting to receive BOOTING from AMSuper (Ctrl-C to cancel)..\n");
-    while ((!booting || !super_unconfigured || !rostest_unconfigured) && ros::ok())
+    while ((!booting || !rostest_unconfigured) && ros::ok())
     {
       ros::spinOnce();
       loop_rate.sleep();
     }
     EXPECT_TRUE(booting) << "/am_super SuperState did not report a BOOTING state";
-    EXPECT_TRUE(super_unconfigured) << "/am_super LifeCycle did not report an UNCONFIGURED state"; 
     EXPECT_TRUE(rostest_unconfigured) << "/life_cycle_rostest LifeCycle did not report an UNCONFIGURED state";
   }
   // check that we are ready
   {
     ROS_INFO_STREAM("Waiting to receive READY from AMSuper (Ctrl-C to cancel)..\n");
 
-    ready = super_inactive = rostest_inactive = false;
+    ready = rostest_inactive = false;
 
     EXPECT_FALSE(arming) << "Super should not be arming yet";
-    while ((!ready || !super_inactive || !rostest_inactive) && ros::ok())
+    while ((!ready || !rostest_inactive) && ros::ok())
     {
       ros::spinOnce();
       loop_rate.sleep();
     }
 
     EXPECT_TRUE(ready) << "/am_super SuperState did not report a READY state";
-    EXPECT_TRUE(super_inactive) << "/am_super LifeCycle did not report an INACTIVE state"; 
     EXPECT_TRUE(rostest_inactive) << "/life_cycle_rostest LifeCycle did not report an INACTIVE state";
     EXPECT_FALSE(super_active) << "/am_super LifeCycle did not report an ACTIVE state";
     EXPECT_FALSE(rostest_active) << "/life_cycle_rostest LifeCycle did not report an ACTIVE state";

@@ -56,7 +56,7 @@ struct StateTransition
 
 /** keyed by the current system state, if the check method passes then the new state will be the given.*/
 const std::map<SuperState, StateTransition> state_transitions_ = {
-  { SuperState::BOOTING, { SuperState::READY, SuperNodeMediator::checkReadyForConfigureState, true, {} } },
+  { SuperState::BOOTING, { SuperState::READY, SuperNodeMediator::checkReadyForConfigureState, true, {}, LifeCycleCommand::CONFIGURE } },
   // TODO: this should wait for operator to arm AM-421
   { SuperState::READY,
     { SuperState::ARMING, SuperNodeMediator::checkReadyToArm, true, {}, LifeCycleCommand::CONFIGURE } },
@@ -146,8 +146,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
 
 bool SuperNodeMediator::checkReadyForConfigureState(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
-  return nr.state == LifeCycleState::UNCONFIGURED || nr.state == LifeCycleState::INACTIVE ||
-         nr.state == LifeCycleState::ACTIVE;
+  return nr.state == LifeCycleState::INACTIVE;
 }
 
 bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)

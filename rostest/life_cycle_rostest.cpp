@@ -26,6 +26,7 @@ bool booting = false;
 bool ready = false; 
 bool arming = false;
 bool armed = false;
+bool in_auto = false;
 constexpr int CHECK_TIME = 3;
 /* LifeCycle - indicates if we received the command yet for a nodde*/
 bool super_unconfigured = false;
@@ -36,6 +37,7 @@ bool rostest_unconfigured = false;
 bool rostest_inactive = false;
 bool rostest_active = false;
 
+constexpr string_view THIS_NODE_NAME = "/life_cycle_rostest";
 
 constexpr string_view CORRECT = "CORRECT";  // represents the correct result in test
 string_view order_status = CORRECT;         // used in test to verify order_status is correct
@@ -115,25 +117,27 @@ class LifeCycleNodeTest : public ::testing::Test, am::AMLifeCycle
  */
 void missionStateCallback(const brain_box_msgs::VxState& msg)
 { 
-  if(msg.state == brain_box_msgs::VxState::BOOTING)
+  switch(msg.state)
   {
-    ROS_INFO_STREAM("BOOTING received");
-    booting = true;
-  }
-  else if (msg.state == brain_box_msgs::VxState::READY)
-  {
-    ROS_INFO_STREAM("READY received");
-    ready = true;
-  }
-  else if(msg.state == brain_box_msgs::VxState::ARMING)
-  {
-    ROS_INFO_STREAM("ARMING received");
-    arming = true;
-  }  
-  else if(msg.state == brain_box_msgs::VxState::ARMED)
-  {
-    ROS_INFO_STREAM("ARMED received");
-    armed = true;
+    case brain_box_msgs::VxState::BOOTING:
+      ROS_INFO_STREAM("BOOTING received");
+      booting = true;
+      break;
+    case brain_box_msgs::VxState::READY:
+      ROS_INFO_STREAM("READY received");
+      ready = true;
+      break;
+    case brain_box_msgs::VxState::ARMING:
+      ROS_INFO_STREAM("ARMING received");
+      arming = true;
+      break;
+    case brain_box_msgs::VxState::ARMED:
+      ROS_INFO_STREAM("ARMED received");
+      armed = true;
+      break;
+    case brain_box_msgs::VxState::AUTO:
+      ROS_INFO_STREAM("AUTO received");
+      in_auto = true;
   }
 }
 
@@ -154,9 +158,6 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
         break;
       case LifeCycleState::ACTIVE:
         super_active = true;
-        break;
-      default:
-            ROS_WARN_STREAM("State not handled");      
     }
   }
   else
@@ -171,10 +172,6 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
         break;
       case LifeCycleState::ACTIVE:
         rostest_active = true;
-        break;
-      default:
-            ROS_WARN_STREAM("State not handled");
-
     }
   }
 }
@@ -248,7 +245,7 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
 
   // now, let's arm it
   {
-    string node_name="/life_cycle_node_test";
+    string_view node_name = THIS_NODE_NAME;
     brain_box_msgs::OperatorCommand armCommand;
     armCommand.node_name = node_name;
     armCommand.command = brain_box_msgs::OperatorCommand::ARM;
@@ -276,6 +273,23 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
     EXPECT_TRUE(super_active) << "/am_super LifeCycle should now be active";
     EXPECT_TRUE(rostest_active) << "/life_cycle_rostest LifeCycle should now be active";
     EXPECT_TRUE(activated) << "This node should now be activated";
+  }
+  // now let's launch it
+  {
+    string_view node_name = THIS_NODE_NAME;
+    brain_box_msgs::OperatorCommand armCommand;
+    armCommand.node_name = node_name;
+    armCommand.command = brain_box_msgs::OperatorCommand::LAUNCH;
+    operatorCommandPublisher.publish(armCommand);
+    
+    int cnt = 0;
+    while(!in_auto && cnt < CHECK_TIME && ros::ok())
+    {
+      ros::spinOnce();
+      cnt++;
+      loop_rate.sleep();
+    }    
+    EXPECT_TRUE(in_auto) << "/am_super SuperState should now be in AUTO";
   }
 }
 

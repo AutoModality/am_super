@@ -256,13 +256,18 @@ private:
     const brain_box_msgs::OperatorCommand::ConstPtr& rmsg = event.getMessage();
     
     ROS_INFO_STREAM(rmsg->node_name << " sent command " << rmsg->command );
-    supervisor_.operator_is_ready_to_arm = true;
+    switch(rmsg->command)
+    {
+      case brain_box_msgs::OperatorCommand::ARM:
+        supervisor_.operator_is_ready_to_arm = true;
+        break;
+      case brain_box_msgs::OperatorCommand::LAUNCH:
+        supervisor_.operator_is_ready_to_launch = true;
+        break;
+    }
     // TODO: topic name should come from vb_util_lib::topics.
     LOG_MSG("/operator/command", rmsg, SU_LOG_LEVEL);
   }
-
-  
-
   /**
    * process state
    * @param node_name_in
@@ -516,10 +521,6 @@ private:
                       << ": sending " << life_cycle_mediator_.commandToString(command) << " again");
       sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, command);
     }
-    else if (transition_instructions.waiting_on_operator_to_arm)
-    {
-      ROS_INFO_STREAM("Waiting for Operator to send ARM..");
-    }
   }
 
   /**
@@ -691,6 +692,7 @@ private:
   {
     AMLifeCycle::onConfigure();
     supervisor_.operator_is_ready_to_arm = false;
+    supervisor_.operator_is_ready_to_launch = false;
   }
 
 };

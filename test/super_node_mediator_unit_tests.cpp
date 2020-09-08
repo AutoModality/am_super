@@ -54,9 +54,9 @@ TEST(Node, checkReadyForConfigureState_All)
 {
   std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkReadyForConfigureState;
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
-  ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, true);
+  ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, false);
   ASSERT_CHECK(function, LifeCycleState::INACTIVE, true);
-  ASSERT_CHECK(function, LifeCycleState::ACTIVE, true);
+  ASSERT_CHECK(function, LifeCycleState::ACTIVE, false);
   ASSERT_CHECK(function, LifeCycleState::FINALIZED, false);
   ASSERT_CHECK(function, LifeCycleState::CONFIGURING, false);
   ASSERT_CHECK(function, LifeCycleState::CLEANING_UP, false);

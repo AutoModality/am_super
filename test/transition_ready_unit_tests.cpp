@@ -92,13 +92,13 @@ void ASSERT_TRANSITION_READY(SuperNodeMediator superNodeMediator, SuperState fro
 
 TEST_F(TransitionReady, transitionReady_BootingToReadyWhenReadyToConfigure)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::BOOTING, LifeCycleState::UNCONFIGURED, true,
+  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::BOOTING, LifeCycleState::INACTIVE, true,
                           SuperState::READY);
 }
 
 TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenNotReadyToConfigure)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::BOOTING, LifeCycleState::INVALID, false, (SuperState)NULL);
+  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::BOOTING, LifeCycleState::INVALID, (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true, LifeCycleCommand::CONFIGURE);
 }
 
 /**Not ready to transition from Ready so send another configure command */

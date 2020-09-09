@@ -190,13 +190,13 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
   {
 
     ROS_INFO_STREAM("Waiting to receive BOOTING from AMSuper (Ctrl-C to cancel)..\n");
-    while ((!booting || !rostest_unconfigured) && ros::ok())
+    while ((!booting || !rostest_inactive) && ros::ok())
     {
       ros::spinOnce();
       loop_rate.sleep();
     }
     EXPECT_TRUE(booting) << "/am_super SuperState did not report a BOOTING state";
-    EXPECT_TRUE(rostest_unconfigured) << "/life_cycle_rostest LifeCycle did not report an UNCONFIGURED state";
+    EXPECT_TRUE(rostest_inactive) << "/life_cycle_rostest LifeCycle did not report an INACTIVE state";
   }
   // check that we are ready
   {

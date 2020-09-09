@@ -62,7 +62,12 @@ public:
 
     /** Indication that the operator is supervising the robot, has sent the signal to arm the system */
     bool operator_is_ready_to_arm;
+
+    /** Indication that the operator wants the system to start the session. */
     bool operator_is_ready_to_launch;
+    
+    /** True indicates the session controller has signaled the end of the session (flight, etc). */
+    bool session_completed;
   };
 
   /**Standardizes the node name which sometimes starts with `/`.
@@ -110,24 +115,29 @@ public:
   pair<bool, LifeCycleCommand> lifeCycleCommand(SuperState system_state);
 
   /**
-   * FIXME: this should be a private method
-   * @return true if Lifecyle state is ready to be configured */
-  static bool checkReadyForConfigureState(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
-
-  /**Delegate method used by allManifestedNodesCheck to see if manifested nodes have the state required for arming.
-   * FIXME: this should be a private method
-   * @return true if nodes are inactive, active and the operator is ready to arm  */
+  * FIXME: this should be a private method
+   * @return true if Lifecyle state is inactive (already configured)*/
   static bool checkReadyToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
 
-  /**
+  /** 
    * FIXME: this should be a private method
-   * @return true if Lifecyle state equals Activate */
-  static bool checkActivateState(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+   * @return true if the operator sent the signal to arm the system  */
+  static bool checkOperatorSignaledToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
 
   /**
    * FIXME: this should be a private method
-   * @return true if nodes are active and the operator is ready to launch */
-  static bool checkArmedToAuto(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+   * @return true if Lifecyle state equals ACTIVE */
+  static bool checkArmed(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+
+  /**
+   * FIXME: this should be a private method
+   * @return true if the operator is ready to launch */
+  static bool checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+
+  /**
+   * FIXME: this should be a private method
+   * @return true if the session controller signaled the end of the session (flight, etc) */
+  static bool checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
 
 
   /** Reads the given manifest string, typically provided by a ROS param,

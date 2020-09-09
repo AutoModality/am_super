@@ -25,6 +25,7 @@ struct StateTransition
     to_state = _to_state;
     check = _check;
     life_cycle_command = _life_cycle_command;
+    on_check_result = true; //TODO: remove this; we are assuming the check method should always return true now
   }
   /**The future Supervisor.systemState if checks pass.*/
   SuperState to_state;

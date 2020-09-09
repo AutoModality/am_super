@@ -1,7 +1,7 @@
 <launch>
     <node pkg="am_super" type="am_super" name="am_super" output="screen">
         <rosparam command="load" file="$(dirname)/life_cycle_rostest.yaml"/>
-        <param name="init_state" value="UNCONFIGURED"/>
+        <param name="init_state" value="ACTIVE"/>
     </node>
     <test test-name="life_cycle_rostest" pkg="am_super" type="life_cycle_rostest" time-limit="40">
         <param name="init_state" value="UNCONFIGURED"/>

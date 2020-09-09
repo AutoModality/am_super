@@ -29,8 +29,8 @@ bool armed = false;
 bool in_auto = false;
 constexpr int CHECK_TIME = 3;
 /* LifeCycle - indicates if we received the command yet for a nodde*/
-bool super_unconfigured = false;
-bool super_inactive = false; 
+//bool super_unconfigured = false;
+//bool super_inactive = false; 
 bool super_active = false;
 
 bool rostest_unconfigured = false;
@@ -151,10 +151,10 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
     switch(state)
     {
       case LifeCycleState::UNCONFIGURED:
-        super_unconfigured = true;
+  //      super_unconfigured = true;
         break;
       case LifeCycleState::INACTIVE:
-        super_inactive = true;
+  //      super_inactive = true;
         break;
       case LifeCycleState::ACTIVE:
         super_active = true;

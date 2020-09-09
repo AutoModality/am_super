@@ -16,7 +16,9 @@ namespace am
 AMLifeCycle::AMLifeCycle() : nh_("~")
 {
   std::string init_state_str;
-  ros::param::param<std::string>("~init_state", init_state_str, "ACTIVE");
+  //FIXME: This string should come from the enum
+  std::string default_state = "UNCONFIGURED";
+  ros::param::param<std::string>("~init_state", init_state_str, default_state);
   ROS_INFO_STREAM("init_state = " << init_state_str);
   LifeCycleState init_state;
   if (life_cycle_mediator_.stringToState(init_state_str, init_state))

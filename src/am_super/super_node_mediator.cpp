@@ -62,8 +62,8 @@ const std::map<SuperState, StateTransition> state_transitions_ = {
   { SuperState::ARMED,
     { SuperState::AUTO, SuperNodeMediator::checkOperatorSignaledToLaunch } },
   { SuperState::AUTO,
-    { SuperState::COMPLETING, SuperNodeMediator::checkSessionCompleted } },
-  { SuperState::COMPLETING,
+    { SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted } },
+  { SuperState::DISARMING,
     { SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE }  },
 };
 

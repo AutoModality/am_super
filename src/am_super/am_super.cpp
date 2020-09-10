@@ -693,6 +693,8 @@ private:
     AMLifeCycle::onConfigure();
     supervisor_.operator_is_ready_to_arm = false;
     supervisor_.operator_is_ready_to_launch = false;
+    //FIXME: am_super node name must be a constant
+    sendLifeCycleCommand("am_super",LifeCycleCommand::ACTIVATE);
   }
 
 };

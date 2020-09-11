@@ -307,10 +307,10 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
     brain_box_msgs::OperatorCommand launchCommand;
     launchCommand.node_name = THIS_NODE_NAME;
     launchCommand.command = brain_box_msgs::OperatorCommand::LAUNCH;
-    operatorCommandPublisher.publish(launchCommand);
     
     while(!in_auto && ros::ok())
     {
+      operatorCommandPublisher.publish(launchCommand);
       ros::spinOnce();
       loop_rate.sleep();
     }    

@@ -158,5 +158,4 @@ TEST(State, allSuperStates_IncludesAll)
   ASSERT_EQ(all.at((int)SuperState::SHUTDOWN), SuperState::SHUTDOWN);
   ASSERT_EQ(all.front(), SuperState::OFF);
   ASSERT_EQ(all.back(), SuperState::SHUTDOWN);
-  ASSERT_EQ(all.back(), SuperState::LAST_STATE);
 }

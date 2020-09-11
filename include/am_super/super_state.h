@@ -11,13 +11,12 @@ enum class SuperState : std::uint8_t
   ARMING = brain_box_msgs::VxState::ARMING,
   ARMED = brain_box_msgs::VxState::ARMED,
   AUTO = brain_box_msgs::VxState::AUTO,
-  DISARMING = brain_box_msgs::VxState::HOLD, //FIXME: this needs its own message
+  DISARMING = brain_box_msgs::VxState::DISARMING,
   SEMI_AUTO = brain_box_msgs::VxState::SEMI_AUTO,
   HOLD = brain_box_msgs::VxState::HOLD,
   ABORT = brain_box_msgs::VxState::ABORT,
   MANUAL = brain_box_msgs::VxState::MANUAL,
   SHUTDOWN = brain_box_msgs::VxState::SHUTDOWN,
-  LAST_STATE = brain_box_msgs::VxState::LAST_STATE
 };
 
 #endif

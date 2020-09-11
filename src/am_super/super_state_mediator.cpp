@@ -72,7 +72,7 @@ bool SuperStateMediator::allowsTransition(SuperState from, SuperState to)
 std::vector<SuperState> SuperStateMediator::allSuperStates()
 {
   std::vector<SuperState> all;
-  for (int enumIndex = (int)SuperState::OFF; enumIndex <= (int)SuperState::LAST_STATE; enumIndex++)
+  for (int enumIndex = (int)FIRST_SUPER_STATE; enumIndex <= (int)LAST_SUPER_STATE; enumIndex++)
   {
     SuperState state = static_cast<SuperState>(enumIndex);
     all.push_back(state);

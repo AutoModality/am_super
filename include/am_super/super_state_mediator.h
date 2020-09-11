@@ -36,6 +36,9 @@ public:
   std::string_view stateToString(SuperState state);
 
 private:
+    static const SuperState FIRST_SUPER_STATE = SuperState::OFF;
+    static const SuperState LAST_SUPER_STATE = SuperState::SHUTDOWN;
+
 };
 }
 

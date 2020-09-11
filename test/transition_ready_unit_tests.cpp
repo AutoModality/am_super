@@ -96,49 +96,43 @@ TEST_F(TransitionReady, transitionReady_BootingToReadyWhenAllNodesInactive)
                           SuperState::READY);
 }
 
-TEST_F(TransitionReady, DISABLED_transitionReady_BootingNoTransitionWhenNotAllNodesInactives)
+TEST_F(TransitionReady, transitionReady_BootingToReadyWhenAllNodesActive)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::BOOTING, LifeCycleState::INVALID, false, (SuperState)NULL);
+  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::BOOTING, LifeCycleState::ACTIVE, true,
+                          SuperState::READY);
+}
+
+TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenNodesNotInactiveOrActive)
+{
+  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::BOOTING, LifeCycleState::UNCONFIGURED, 
+                        (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,
+                        LifeCycleCommand::CONFIGURE);
 }
 
 /**Not ready to transition from Ready so send another configure command */
-TEST_F(TransitionReady, DISABLED_transitionReady_ReadyNoTransitionWhenNotReadyToActivateAndOperatorIsArmed)
+TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotArmed)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INVALID,
-                          (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,
-                          LifeCycleCommand::CONFIGURE);
+  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, (LifeCycleState)NULL,
+                          (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, false,
+                          LifeCycleCommand::CONFIGURE, false);
 }
 
-/* Enable when we separate logic of Operator from Transition check methods */
-TEST_F(TransitionReady, DISABLED_transitionReady_ReadyNoTranstitionWhenNotReadyToActivateAndOperatorIsNotArmed)
+TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenArmed)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INVALID, 
-                          (SuperNodeMediator::SuperFltCtrlState)NULL, false, SuperState::READY,
-                           false, (LifeCycleCommand)NULL, false, true);
-}
-/* Enable when we separate logic of Operator from Transition check methods */
-TEST_F(TransitionReady, DISABLED_transitionReady_ReadyNoTranstitionWhenReadyToActivateAndOperatorIsNotArmed)
-{
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INACTIVE, 
-                          (SuperNodeMediator::SuperFltCtrlState)NULL, false, SuperState::READY,
-                           false, (LifeCycleCommand)NULL, false, true);
+  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, (LifeCycleState)NULL,
+                          (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::ARMING, false,
+                          LifeCycleCommand::CONFIGURE, true);
 }
 
-TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenReadyToActivateAndOperatorIsArmed)
-{
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, LifeCycleState::INACTIVE, 
-                          (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::ARMING,
-                           false, (LifeCycleCommand)NULL, true, false);
-}
 
-TEST_F(TransitionReady, transitionReady_ArmingToArmedWhenReadyToActivate)
+TEST_F(TransitionReady, transitionReady_ArmingToArmedWhenNodesActive)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMING, LifeCycleState::ACTIVE, true, SuperState::ARMED);
 }
 
-TEST_F(TransitionReady, transitionReady_ArmingNoTransitionWhenNotReadyToActivate)
+TEST_F(TransitionReady, transitionReady_ArmingNoTransitionWhenNodesNotActive)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMING, LifeCycleState::INVALID,
+  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMING, LifeCycleState::INACTIVE,
                           (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,
                           LifeCycleCommand::ACTIVATE);
 }

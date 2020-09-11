@@ -261,7 +261,8 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
       loop_rate.sleep();
     }
     ASSERT_TRUE(super_active) << "Super should activate itself after configuring.";
-    ASSERT_TRUE(super_activating) << " Super is active, but never was activating";
+    //not a guaranteed message, so we can't assert it arrived
+    //ASSERT_TRUE(super_activating) << " Super is active, but never was activating";
   }
 
   

@@ -204,7 +204,7 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
   
 }
 
-TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
+TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
 {
   ros::NodeHandle n;
 

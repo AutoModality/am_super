@@ -27,7 +27,6 @@ bool ready = false;
 bool arming = false;
 bool armed = false;
 bool in_auto = false;
-constexpr int CHECK_TIME = 3;
 /* LifeCycle - indicates if we received the command yet for a nodde*/
 bool super_unconfigured = false;
 bool super_configuring = false;
@@ -272,16 +271,13 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
 
   // now, let's arm it with the operator command
   {
-    string_view node_name = THIS_NODE_NAME;
     brain_box_msgs::OperatorCommand armCommand;
-    armCommand.node_name = node_name;
+    armCommand.node_name = THIS_NODE_NAME;
     armCommand.command = brain_box_msgs::OperatorCommand::ARM;
-    operatorCommandPublisher.publish(armCommand);
-    int cnt = 0;
-    while(!arming && cnt < CHECK_TIME && ros::ok())
+    while(!arming && ros::ok())
     {
+      operatorCommandPublisher.publish(armCommand);
       ros::spinOnce();
-      cnt++;
       loop_rate.sleep();
     }    
     ASSERT_TRUE(arming) << "Super should now be arming";
@@ -289,11 +285,9 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
 
   //now it must go armed once all the nodes go active
   {
-    int cnt = 0;
-    while(!armed && cnt < CHECK_TIME && ros::ok())
+    while(!armed && ros::ok())
     {
       ros::spinOnce();
-      cnt++;
       loop_rate.sleep();
     }    
     ASSERT_TRUE(armed) << "/am_super SuperState should now be armed";
@@ -310,21 +304,19 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
 
   // now let's launch it with the operator command
   {
-    string_view node_name = THIS_NODE_NAME;
-    brain_box_msgs::OperatorCommand armCommand;
-    armCommand.node_name = node_name;
-    armCommand.command = brain_box_msgs::OperatorCommand::LAUNCH;
-    operatorCommandPublisher.publish(armCommand);
+    brain_box_msgs::OperatorCommand launchCommand;
+    launchCommand.node_name = THIS_NODE_NAME;
+    launchCommand.command = brain_box_msgs::OperatorCommand::LAUNCH;
+    operatorCommandPublisher.publish(launchCommand);
     
-    int cnt = 0;
-    while(!in_auto && cnt < CHECK_TIME && ros::ok())
+    while(!in_auto && ros::ok())
     {
       ros::spinOnce();
-      cnt++;
       loop_rate.sleep();
     }    
     ASSERT_TRUE(in_auto) << "/am_super SuperState should now be in AUTO";
   }
+
 }
 
 int main(int argc, char** argv)

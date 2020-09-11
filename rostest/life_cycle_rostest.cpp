@@ -39,6 +39,7 @@ bool rostest_unconfigured = false;
 bool rostest_configuring = false;
 bool rostest_inactive = false;
 bool rostest_active = false;
+bool rostest_activating = false;
 
 constexpr string_view THIS_NODE_NAME = "/life_cycle_rostest";
 
@@ -189,6 +190,9 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
       case LifeCycleState::ACTIVE:
         rostest_active = true;
         break;
+      case LifeCycleState::ACTIVATING:
+        rostest_activating = true;
+        break;
       default:
         ROS_WARN_STREAM(state_string << " unhandled for " << msg.node_name);
     }
@@ -258,6 +262,7 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
       loop_rate.sleep();
     }
     ASSERT_TRUE(super_active) << "Super should activate itself after configuring.";
+    ASSERT_TRUE(super_activating) << " Super is active, but never was activating";
   }
 
   
@@ -320,6 +325,7 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
     ASSERT_TRUE(armed) << "/am_super SuperState should now be armed";
     ASSERT_TRUE(super_active) << "/am_super LifeCycle should still be active";
     ASSERT_TRUE(rostest_active) << "/life_cycle_rostest LifeCycle should now be active";
+    ASSERT_TRUE(rostest_activating) << " Rostest is active, but never was activating";
     ASSERT_TRUE(activated) << "This node should now be activated";
     ASSERT_FALSE(cleanedUp) << "This node should not have cleaned up yet";
     ASSERT_FALSE(deactivated) << "This node should not have deactivated yet";

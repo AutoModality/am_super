@@ -374,7 +374,7 @@ private:
    *
    * times out nodes that haven't been heard from recently. reports on status to bag and trace logs.
    */
-  void heartbeatCB(const ros::TimerEvent& event)
+  void heartbeatCB(const ros::TimerEvent& event) override
   {
 #if CUDA_FLAG
     gpu_info_->display();
@@ -682,14 +682,25 @@ private:
     error_ms = (int)(1000.0 / hz * 3.0 + 0.5);
   }
 
-  void onConfigure()
+  void onConfigure() override
   {
-    AMLifeCycle::onConfigure();
     supervisor_.operator_is_ready_to_arm = false;
     supervisor_.operator_is_ready_to_launch = false;
-    //sendLifeCycleCommand(SUPER_NODE_NAME,LifeCycleCommand::ACTIVATE);
+    AMLifeCycle::onConfigure();
   }
 
+  void onActivate() override
+  {
+    supervisor_.session_completed = false;
+    AMLifeCycle::onActivate();
+  }
+  void onDeactivate() override
+  {
+    supervisor_.operator_is_ready_to_arm = false;
+    supervisor_.operator_is_ready_to_launch = false;
+    supervisor_.session_completed = true;
+    AMLifeCycle::onDeactivate();
+  }
 };
 };
 

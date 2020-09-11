@@ -253,23 +253,7 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
 
   //super must become active first
   {
-    while (!super_inactive && ros::ok())
-    {
-      ROS_INFO_STREAM("Waiting for super to become inactive...");
-      ros::spinOnce();
-      loop_rate.sleep();
-    }
-    ROS_INFO_STREAM("Super is inactive ");
-    ASSERT_TRUE(super_inactive) << "/am_super LifeCycle did not report an INACTIVE state"; 
-
-    
-    //not a great test since super may already be active
-    //want to ensure that we aren't ready until super is active
-    if(!super_active)
-    {
-      ASSERT_FALSE(ready);
-    }
-    
+    //super inactive is not guaranteed and we don't have any repeat messaging
     while ((!super_active) && ros::ok())
     {
       ROS_INFO_STREAM("Waiting for super to become active...");

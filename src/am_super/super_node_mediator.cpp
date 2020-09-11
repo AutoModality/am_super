@@ -20,14 +20,12 @@ SuperNodeMediator::SuperNodeMediator()
 struct StateTransition
 {
   StateTransition(SuperState _to_state, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&)> _check,
-                  bool _on_check_result, std::map<SuperNodeMediator::SuperFltCtrlState, SuperState> _flt_ctrl_state_map,
                   LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1)
   {
     to_state = _to_state;
     check = _check;
-    on_check_result = _on_check_result;
-    flt_ctrl_state_map = _flt_ctrl_state_map;
     life_cycle_command = _life_cycle_command;
+    on_check_result = true; //TODO: remove this; we are assuming the check method should always return true now
   }
   /**The future Supervisor.systemState if checks pass.*/
   SuperState to_state;
@@ -56,24 +54,17 @@ struct StateTransition
 
 /** keyed by the current system state, if the check method passes then the new state will be the given.*/
 const std::map<SuperState, StateTransition> state_transitions_ = {
-  { SuperState::BOOTING, { SuperState::READY, SuperNodeMediator::checkReadyForConfigureState, true, {} } },
-  // TODO: this should wait for operator to arm AM-421
+  { SuperState::BOOTING, { SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::CONFIGURE } },
   { SuperState::READY,
-    { SuperState::ARMING, SuperNodeMediator::checkReadyToArm, true, {}, LifeCycleCommand::CONFIGURE } },
+    { SuperState::ARMING, SuperNodeMediator::checkOperatorSignaledToArm } /* no lifecycle command since waiting on operator */ }, 
   { SuperState::ARMING,
-    { SuperState::ARMED, SuperNodeMediator::checkActivateState, true, {}, LifeCycleCommand::ACTIVATE } },
+    { SuperState::ARMED, SuperNodeMediator::checkArmed, LifeCycleCommand::ACTIVATE } },
   { SuperState::ARMED,
-    { SuperState::AUTO, SuperNodeMediator::checkArmedToAuto, true, {}, LifeCycleCommand::ACTIVATE } },
+    { SuperState::AUTO, SuperNodeMediator::checkOperatorSignaledToLaunch } },
   { SuperState::AUTO,
-    { SuperState::ABORT,
-      SuperNodeMediator::checkActivateState,
-      false,
-      { { SuperNodeMediator::SuperFltCtrlState::HOLD, SuperState::SEMI_AUTO } } } },
-  { SuperState::SEMI_AUTO,
-    { SuperState::ABORT,
-      SuperNodeMediator::checkActivateState,
-      false,
-      { { SuperNodeMediator::SuperFltCtrlState::AUTO, SuperState::AUTO } } } },
+    { SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted } },
+  { SuperState::DISARMING,
+    { SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE }  },
 };
 
 std::string SuperNodeMediator::nodeNameStripped(std::string node_name)
@@ -116,14 +107,20 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
     // each state has a check method providing the logic that should cause transition (based on manifest nodes
     // lifecycle)
     // some transitions happen only when check fails (mostly to abort)
-    bool check_result = allManifestedNodesCheck(supervisor, transition.check).first;
-    if (check_result == transition.on_check_result)
+    pair<bool,map<string,string>> check_results = allManifestedNodesCheck(supervisor, transition.check);
+
+    if (check_results.first)
     {
       transition_instructions.ready_for_transition = true;
       transition_instructions.new_state = transition.to_state;
     }
     else
     {
+      
+      vector<string> failed_nodes;
+      boost::copy(check_results.second | boost::adaptors::map_keys, std::back_inserter(failed_nodes));
+      transition_instructions.failed_nodes = failed_nodes;
+      
       // no transition based on state alone.
       // maybe set the state by the filght controller
       if (transition.flt_ctrl_state_map.count(supervisor.flt_ctrl_state))
@@ -144,25 +141,29 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   return transition_instructions;
 }
 
-bool SuperNodeMediator::checkReadyForConfigureState(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
-{
-  return nr.state == LifeCycleState::UNCONFIGURED || nr.state == LifeCycleState::INACTIVE ||
-         nr.state == LifeCycleState::ACTIVE;
-}
-
 bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
-  return supervisor.operator_is_ready_to_arm && (nr.state == LifeCycleState::INACTIVE || nr.state == LifeCycleState::ACTIVE);
+  return  nr.state == LifeCycleState::INACTIVE || nr.state == LifeCycleState::ACTIVE;
 }
 
-bool SuperNodeMediator::checkActivateState(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
+bool SuperNodeMediator::checkOperatorSignaledToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
+{
+  return supervisor.operator_is_ready_to_arm;
+}
+
+bool SuperNodeMediator::checkArmed(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
   return nr.state == LifeCycleState::ACTIVE;
 }
 
-bool SuperNodeMediator::checkArmedToAuto(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
+bool SuperNodeMediator::checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
-  return supervisor.operator_is_ready_to_launch && nr.state == LifeCycleState::ACTIVE;
+  return supervisor.operator_is_ready_to_launch;
+}
+
+bool SuperNodeMediator::checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
+{
+  return supervisor.session_completed;
 }
 
 pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(

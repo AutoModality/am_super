@@ -91,6 +91,7 @@ private:
   // babysitters
   //
   const std::string NODE_BS_ALTIMETER = "can_node";  // TODO: replace with system global const
+  const std::string SUPER_NODE_NAME = "am_super";  
   typedef brain_box_msgs::StampedAltimeter altimeter_bs_msg_type;
   am::BabySitter<altimeter_bs_msg_type>* altimeter_bs_;
   const std::string ALTIMETER_BS_TOPIC = "/sensor/distance/agl_lw";  // TODO: replace with system global const
@@ -123,6 +124,10 @@ public:
     ros::param::param<string>("~manifest", manifest_param, "");
 
     node_mediator_.parseManifest(supervisor_, manifest_param);
+
+    //Add super to manifest
+    supervisor_.manifest.push_back(SUPER_NODE_NAME);
+
     // if a manifest has been specified
     if (!supervisor_.manifest.empty())
     {
@@ -468,7 +473,7 @@ private:
    */
   void sendLifeCycleCommand(const std::string_view& node_name, const LifeCycleCommand command)
   {
-    ROS_INFO_STREAM("sending command: " << life_cycle_mediator_.commandToString(command));
+    ROS_INFO_STREAM("sending command: " << life_cycle_mediator_.commandToString(command) << " to " << node_name << " lifecycle");
     brain_box_msgs::LifeCycleCommand msg;
     msg.node_name = node_name;
     msg.command = (brain_box_msgs::LifeCycleCommand::_command_type)command;
@@ -508,6 +513,11 @@ private:
    */
   void checkForSystemStateTransition()
   {
+    if(getState() == LifeCycleState::INACTIVE) //if super lifecycle is currently inactive
+    {
+      sendLifeCycleCommand(SUPER_NODE_NAME, LifeCycleCommand::ACTIVATE);
+      return;
+    }
     // ask the mediator to check with the supervisor
     SuperNodeMediator::TransitionInstructions transition_instructions = node_mediator_.transitionReady(supervisor_);
     if (transition_instructions.ready_for_transition)
@@ -519,7 +529,10 @@ private:
       LifeCycleCommand command = transition_instructions.life_cycle_command;
       ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state)
                       << ": sending " << life_cycle_mediator_.commandToString(command) << " again");
-      sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, command);
+      for(string failed_node_name : transition_instructions.failed_nodes)
+      {
+        sendLifeCycleCommand(failed_node_name, command);
+      }
     }
   }
 
@@ -544,25 +557,6 @@ private:
     }
     else
     {
-      // send lifecycle updates for selected state transitions
-      switch (supervisor_.system_state)
-      {
-        case SuperState::BOOTING:
-          if(state == SuperState::READY)
-          {
-            ROS_INFO_STREAM("sending CONFIGURE to all nodes");
-            sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::CONFIGURE);
-          }
-          break;
-        case SuperState::READY:
-          if(state == SuperState::ARMING)
-          {
-            ROS_INFO_STREAM("sending ACTIVATE to all nodes");
-            sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, LifeCycleCommand::ACTIVATE);
-          }
-          break;
-          //all others do not send command
-      }
 
       // persist given state as the new current state
       supervisor_.system_state = state;
@@ -693,6 +687,7 @@ private:
     AMLifeCycle::onConfigure();
     supervisor_.operator_is_ready_to_arm = false;
     supervisor_.operator_is_ready_to_launch = false;
+    //sendLifeCycleCommand(SUPER_NODE_NAME,LifeCycleCommand::ACTIVATE);
   }
 
 };

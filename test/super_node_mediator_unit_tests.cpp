@@ -41,28 +41,14 @@ TEST(Node, initializeManifestedNode_FieldsAreSetProperly)
 }
 
 void ASSERT_CHECK(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> check, LifeCycleState state, bool expected,
-  bool operator_is_ready_to_arm = true)
+  bool operator_is_ready_to_arm = true, bool operator_is_ready_to_launch = true)
 {
   SuperNodeMediator::SuperNodeInfo info;
   SuperNodeMediator::Supervisor supervisor;
   info.state = state;
   supervisor.operator_is_ready_to_arm = operator_is_ready_to_arm;
+  supervisor.operator_is_ready_to_launch = operator_is_ready_to_launch;
   ASSERT_EQ(check(supervisor, info), expected) << "For state: " + std::to_string((int)state);
-}
-
-TEST(Node, checkReadyForConfigureState_All)
-{
-  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkReadyForConfigureState;
-  ASSERT_CHECK(function, LifeCycleState::INVALID, false);
-  ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, true);
-  ASSERT_CHECK(function, LifeCycleState::INACTIVE, true);
-  ASSERT_CHECK(function, LifeCycleState::ACTIVE, true);
-  ASSERT_CHECK(function, LifeCycleState::FINALIZED, false);
-  ASSERT_CHECK(function, LifeCycleState::CONFIGURING, false);
-  ASSERT_CHECK(function, LifeCycleState::CLEANING_UP, false);
-  ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);
-  ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
-  ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
 }
 
 TEST(Node, checkReadyToArm_All)
@@ -78,16 +64,19 @@ TEST(Node, checkReadyToArm_All)
   ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);
   ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
-
-  bool expected, operator_is_ready_to_arm; //help with readability
-
-  ASSERT_CHECK(function, LifeCycleState::INACTIVE, expected = false, operator_is_ready_to_arm = false);
-  ASSERT_CHECK(function, LifeCycleState::ACTIVE, expected = false, operator_is_ready_to_arm = false);
 }
 
-TEST(Node, checkActivateState_All)
+TEST(Node, checkOperatorSignaledToArm)
 {
-  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkActivateState;
+  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkOperatorSignaledToArm;
+
+  ASSERT_CHECK(function, (LifeCycleState)NULL, false, false);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, true, true);
+}
+
+TEST(Node, checkArmed_All)
+{
+  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkArmed;
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
   ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, false);
   ASSERT_CHECK(function, LifeCycleState::INACTIVE, false);
@@ -95,9 +84,17 @@ TEST(Node, checkActivateState_All)
   ASSERT_CHECK(function, LifeCycleState::FINALIZED, false);
   ASSERT_CHECK(function, LifeCycleState::CONFIGURING, false);
   ASSERT_CHECK(function, LifeCycleState::CLEANING_UP, false);
-  ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);bool expected, operator_is_ready_to_arm;
+  ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);
   ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
+}
+
+TEST(Node, checkOperatorSignaledToLaunch)
+{
+  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkOperatorSignaledToLaunch;
+
+  ASSERT_CHECK(function, (LifeCycleState)NULL, false, true, false);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, true, true, true);
 }
 
 void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result,

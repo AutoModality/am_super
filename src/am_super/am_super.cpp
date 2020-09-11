@@ -473,7 +473,7 @@ private:
    */
   void sendLifeCycleCommand(const std::string_view& node_name, const LifeCycleCommand command)
   {
-    ROS_INFO_STREAM("sending command: " << life_cycle_mediator_.commandToString(command));
+    ROS_INFO_STREAM("sending command: " << life_cycle_mediator_.commandToString(command) << " to " << node_name << " lifecycle");
     brain_box_msgs::LifeCycleCommand msg;
     msg.node_name = node_name;
     msg.command = (brain_box_msgs::LifeCycleCommand::_command_type)command;
@@ -513,6 +513,11 @@ private:
    */
   void checkForSystemStateTransition()
   {
+    if(getState() == LifeCycleState::INACTIVE) //if super lifecycle is currently inactive
+    {
+      sendLifeCycleCommand(SUPER_NODE_NAME, LifeCycleCommand::ACTIVATE);
+      return;
+    }
     // ask the mediator to check with the supervisor
     SuperNodeMediator::TransitionInstructions transition_instructions = node_mediator_.transitionReady(supervisor_);
     if (transition_instructions.ready_for_transition)
@@ -524,7 +529,7 @@ private:
       LifeCycleCommand command = transition_instructions.life_cycle_command;
       ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state)
                       << ": sending " << life_cycle_mediator_.commandToString(command) << " again");
-      for(string failed_node_name:transition_instructions.failed_nodes)
+      for(string failed_node_name : transition_instructions.failed_nodes)
       {
         sendLifeCycleCommand(failed_node_name, command);
       }
@@ -682,7 +687,7 @@ private:
     AMLifeCycle::onConfigure();
     supervisor_.operator_is_ready_to_arm = false;
     supervisor_.operator_is_ready_to_launch = false;
-    sendLifeCycleCommand(SUPER_NODE_NAME,LifeCycleCommand::ACTIVATE);
+    //sendLifeCycleCommand(SUPER_NODE_NAME,LifeCycleCommand::ACTIVATE);
   }
 
 };

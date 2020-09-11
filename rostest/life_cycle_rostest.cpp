@@ -216,37 +216,13 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
 
   // check that we are booting
   {
-
-
     ROS_INFO_STREAM("Waiting to receive BOOTING from AMSuper (Ctrl-C to cancel)..\n");
     while (!booting && ros::ok() )
     {
       ros::spinOnce();
       loop_rate.sleep();
     }
-
-
-// unconfigured is failing intermittently on different systems.
-// https://github.com/AutoModality/am_super/runs/1099961040?check_suite_focus=true
-// the delivery of this state is apparently not reliable
-
-    // ASSERT_TRUE(booting) << "/am_super SuperState did not report a BOOTING state";
-    // while (!super_unconfigured && ros::ok() )
-    // {
-    //   ros::spinOnce();
-    //   loop_rate.sleep();
-    // }    
-    
-    
-    //ASSERT_TRUE(super_unconfigured) << "/am_super LifeCycle did not report an UNCONFIGURED state"; 
-    /*
-    while (!rostest_unconfigured && ros::ok() )
-    {
-      ros::spinOnce();
-      loop_rate.sleep();
-    }
-    ASSERT_TRUE(rostest_unconfigured) << "/life_cycle_rostest LifeCycle did not report an UNCONFIGURED state";
-    */
+    ASSERT_TRUE(booting);
   }
 
   ROS_INFO_STREAM("BOOTING received ");
@@ -256,13 +232,11 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
     //super inactive is not guaranteed and we don't have any repeat messaging
     while ((!super_active) && ros::ok())
     {
-      ROS_INFO_STREAM("Waiting for super to become active...");
       ros::spinOnce();
       loop_rate.sleep();
     }
     ASSERT_TRUE(super_active) << "Super should activate itself after configuring.";
-    //not a guaranteed message, so we can't assert it arrived
-    //ASSERT_TRUE(super_activating) << " Super is active, but never was activating";
+    //super_inactive is not a guaranteed message, so we can't assert it arrived
   }
 
   

@@ -33,6 +33,7 @@ bool super_unconfigured = false;
 bool super_configuring = false;
 bool super_inactive = false; 
 bool super_active = false;
+bool super_activating = false;
 
 bool rostest_unconfigured = false;
 bool rostest_configuring = false;
@@ -165,6 +166,9 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
       case LifeCycleState::ACTIVE:
         super_active = true;
         break;
+      case LifeCycleState::ACTIVATING:
+        super_activating = true;
+        break;
       default:
         ROS_WARN_STREAM(state_string << " unhandled for " << msg.node_name);
     }
@@ -201,7 +205,7 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
   ros::NodeHandle n;
 
   ros::Subscriber missionStateSubscription = n.subscribe("/vstate/summary", 1000, missionStateCallback);
-  ros::Subscriber nodeLifeCycleStateSubscription = n.subscribe("/node_state", 1000, nodeLifeCycleStateCallback);
+  ros::Subscriber nodeLifeCycleStateSubscription = n.subscribe("/node_state", 100, nodeLifeCycleStateCallback);
   //FIXME: reference constant for "/operator/command"
   ros::Publisher operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>("/operator/command",100);
   ros::Rate loop_rate(1);  // 1 Hz

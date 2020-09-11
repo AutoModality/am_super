@@ -97,6 +97,9 @@ public:
 
     /** The command that notifies nodes to continue processing so the state can transition*/
     LifeCycleCommand life_cycle_command;
+
+    /** List of node names that should receive the life_cycle_command */
+    std::vector<string> failed_nodes;
   };
 
   /**Provides the next state when the system is in a specific state provided by the Supervisor.

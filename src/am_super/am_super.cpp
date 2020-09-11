@@ -91,6 +91,7 @@ private:
   // babysitters
   //
   const std::string NODE_BS_ALTIMETER = "can_node";  // TODO: replace with system global const
+  const std::string SUPER_NODE_NAME = "am_super";  
   typedef brain_box_msgs::StampedAltimeter altimeter_bs_msg_type;
   am::BabySitter<altimeter_bs_msg_type>* altimeter_bs_;
   const std::string ALTIMETER_BS_TOPIC = "/sensor/distance/agl_lw";  // TODO: replace with system global const
@@ -123,6 +124,8 @@ public:
     ros::param::param<string>("~manifest", manifest_param, "");
 
     node_mediator_.parseManifest(supervisor_, manifest_param);
+    supervisor_.manifest.push_back(SUPER_NODE_NAME);
+
     // if a manifest has been specified
     if (!supervisor_.manifest.empty())
     {
@@ -519,7 +522,10 @@ private:
       LifeCycleCommand command = transition_instructions.life_cycle_command;
       ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state)
                       << ": sending " << life_cycle_mediator_.commandToString(command) << " again");
-      sendLifeCycleCommand(AMLifeCycle::BROADCAST_NODE_NAME, command);
+      for(string failed_node_name:transition_instructions.failed_nodes)
+      {
+        sendLifeCycleCommand(failed_node_name, command);
+      }
     }
   }
 
@@ -675,7 +681,7 @@ private:
     supervisor_.operator_is_ready_to_arm = false;
     supervisor_.operator_is_ready_to_launch = false;
     //FIXME: am_super node name must be a constant
-    sendLifeCycleCommand("am_super",LifeCycleCommand::ACTIVATE);
+    sendLifeCycleCommand(SUPER_NODE_NAME,LifeCycleCommand::ACTIVATE);
   }
 
 };

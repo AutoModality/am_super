@@ -107,14 +107,20 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
     // each state has a check method providing the logic that should cause transition (based on manifest nodes
     // lifecycle)
     // some transitions happen only when check fails (mostly to abort)
-    bool check_result = allManifestedNodesCheck(supervisor, transition.check).first;
-    if (check_result == transition.on_check_result)
+    pair<bool,map<string,string>> check_results = allManifestedNodesCheck(supervisor, transition.check);
+
+    if (check_results.first)
     {
       transition_instructions.ready_for_transition = true;
       transition_instructions.new_state = transition.to_state;
     }
     else
     {
+      
+      vector<string> failed_nodes;
+      boost::copy(check_results.second | boost::adaptors::map_keys, std::back_inserter(failed_nodes));
+      transition_instructions.failed_nodes = failed_nodes;
+      
       // no transition based on state alone.
       // maybe set the state by the filght controller
       if (transition.flt_ctrl_state_map.count(supervisor.flt_ctrl_state))
@@ -137,7 +143,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
 
 bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
-  return  nr.state == LifeCycleState::INACTIVE;
+  return  nr.state == LifeCycleState::INACTIVE || nr.state == LifeCycleState::ACTIVE;
 }
 
 bool SuperNodeMediator::checkOperatorSignaledToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)

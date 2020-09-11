@@ -114,7 +114,7 @@ void AMLifeCycle::transition(std::string transition_name, LifeCycleState initial
   }
   else
   {
-    ROS_WARN_STREAM("received illegal " << transition_name  << " in state " << life_cycle_mediator_.stateToString(initial_state));
+    ROS_WARN_STREAM("received illegal " << transition_name  << " in state " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
   }
 }
 

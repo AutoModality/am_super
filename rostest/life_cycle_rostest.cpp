@@ -233,12 +233,12 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
     }    
     
     ASSERT_TRUE(super_unconfigured) << "/am_super LifeCycle did not report an UNCONFIGURED state"; 
-    // while (!rostest_unconfigured && ros::ok() )
-    // {
-    //   ros::spinOnce();
-    //   loop_rate.sleep();
-    // }
-    // ASSERT_TRUE(rostest_unconfigured) << "/life_cycle_rostest LifeCycle did not report an UNCONFIGURED state";
+    while (!rostest_unconfigured && ros::ok() )
+    {
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
+    ASSERT_TRUE(rostest_unconfigured) << "/life_cycle_rostest LifeCycle did not report an UNCONFIGURED state";
   }
 
   ROS_INFO_STREAM("BOOTING received ");

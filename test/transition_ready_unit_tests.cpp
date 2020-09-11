@@ -159,7 +159,7 @@ TEST_F(TransitionReady, DISABLED_transitionReady_AutoToAbortWhenDeactivated)
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::AUTO, LifeCycleState::INACTIVE, true, SuperState::ABORT);
 }
 
-TEST_F(TransitionReady, transitionReady_ArmedNoTransitionWhenRemainingActive)
+TEST_F(TransitionReady, DISABLED_transitionReady_ArmedNoTransitionWhenRemainingActive)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::AUTO, LifeCycleState::ACTIVE, false);
 }

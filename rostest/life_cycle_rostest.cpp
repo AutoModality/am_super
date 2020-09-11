@@ -209,7 +209,7 @@ TEST_F(LifeCycleNodeTest, testState_SuperRemainsInREADY)
   ros::NodeHandle n;
 
   ros::Subscriber missionStateSubscription = n.subscribe("/vstate/summary", 1000, missionStateCallback);
-  ros::Subscriber nodeLifeCycleStateSubscription = n.subscribe("/node_state", 100, nodeLifeCycleStateCallback);
+  ros::Subscriber nodeLifeCycleStateSubscription = n.subscribe("/node_state", 1000, nodeLifeCycleStateCallback);
   //FIXME: reference constant for "/operator/command"
   ros::Publisher operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>("/operator/command",100);
   ros::Rate loop_rate(1);  // 1 Hz

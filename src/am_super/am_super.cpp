@@ -124,6 +124,8 @@ public:
     ros::param::param<string>("~manifest", manifest_param, "");
 
     node_mediator_.parseManifest(supervisor_, manifest_param);
+
+    //Add super to manifest
     supervisor_.manifest.push_back(SUPER_NODE_NAME);
 
     // if a manifest has been specified
@@ -680,7 +682,6 @@ private:
     AMLifeCycle::onConfigure();
     supervisor_.operator_is_ready_to_arm = false;
     supervisor_.operator_is_ready_to_launch = false;
-    //FIXME: am_super node name must be a constant
     sendLifeCycleCommand(SUPER_NODE_NAME,LifeCycleCommand::ACTIVATE);
   }
 

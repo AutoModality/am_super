@@ -691,19 +691,7 @@ private:
     supervisor_.operator_is_ready_to_launch = false;
     AMLifeCycle::onConfigure();
   }
-
-  void onActivate() override
-  {
-    supervisor_.session_completed = false;
-    AMLifeCycle::onActivate();
-  }
-  void onDeactivate() override
-  {
-    supervisor_.operator_is_ready_to_arm = false;
-    supervisor_.operator_is_ready_to_launch = false;
-    supervisor_.session_completed = true;
-    AMLifeCycle::onDeactivate();
-  }
+  
 };
 };
 

@@ -43,7 +43,7 @@ namespace am
 class AMSuper : AMLifeCycle
 {
 private:
-  /**
+  /** 
    * heartbeat log output period
    */
   const int LOG_THROTTLE_S = 10;

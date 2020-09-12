@@ -480,6 +480,30 @@ private:
     lifecycle_pub_.publish(msg);
   }
 
+  /**
+   * check if all manifested nodes are ready for configuration
+   * @param state
+   * @param status
+   * @return true if all manifested nodes are ready to become active
+   *
+   * This means:
+   * - all are online
+   * - all states are UNCONFIGURED or INACTIVE or ACTIVE
+   * - all statuses are not error
+   */
+  bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> check)
+  {
+    pair<bool, map<string, string>> result = node_mediator_.allManifestedNodesCheck(supervisor_, check);
+    bool success = result.first;
+    if (!success)
+    {
+      for (const auto & [ node_name, error_message ] : result.second)
+      {
+        ROS_WARN_STREAM(error_message);
+      }
+    }
+    return success;
+  }
 
   /**
    * check for state transition based upon current state and values of member fields.

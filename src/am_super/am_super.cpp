@@ -528,9 +528,11 @@ private:
       else if (transition_instructions.resend_life_cycle_command)
       {
         LifeCycleCommand command = transition_instructions.life_cycle_command;
+        std::string failed_nodes_string = boost::algorithm::join(transition_instructions.failed_nodes, ", ");
         ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state)
                         << ": sending " << life_cycle_mediator_.commandToString(command) << " to "
-                        << transition_instructions.failed_nodes.size() << " nodes.");
+                        << failed_nodes_string);
+
         for(string failed_node_name : transition_instructions.failed_nodes)
         {
           sendLifeCycleCommand(failed_node_name, command);

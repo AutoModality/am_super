@@ -92,7 +92,7 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   return nr;
 }
 
-SuperNodeMediator::TransitionInstructions SuperNodeMediator:: (Supervisor supervisor)
+SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Supervisor supervisor)
 {
   // required default state is junk and should not be consulted since not ready
   TransitionInstructions transition_instructions;

@@ -41,13 +41,12 @@ TEST(Node, initializeManifestedNode_FieldsAreSetProperly)
 }
 
 void ASSERT_CHECK(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> check, LifeCycleState state, bool expected,
-  bool operator_is_ready_to_arm = true, bool operator_is_ready_to_launch = true)
+  OperatorCommand operator_command = OperatorCommand::ARM)
 {
   SuperNodeMediator::SuperNodeInfo info;
   SuperNodeMediator::Supervisor supervisor;
   info.state = state;
-  supervisor.operator_is_ready_to_arm = operator_is_ready_to_arm;
-  supervisor.operator_is_ready_to_launch = operator_is_ready_to_launch;
+  supervisor.last_op_command_received = operator_command;
   ASSERT_EQ(check(supervisor, info), expected) << "For state: " + std::to_string((int)state);
 }
 
@@ -64,14 +63,6 @@ TEST(Node, checkReadyToArm_All)
   ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);
   ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
-}
-
-TEST(Node, checkOperatorSignaledToArm)
-{
-  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkOperatorSignaledToArm;
-
-  ASSERT_CHECK(function, (LifeCycleState)NULL, false, false);
-  ASSERT_CHECK(function, (LifeCycleState)NULL, true, true);
 }
 
 TEST(Node, checkArmed_All)
@@ -93,8 +84,16 @@ TEST(Node, checkOperatorSignaledToLaunch)
 {
   std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkOperatorSignaledToLaunch;
 
-  ASSERT_CHECK(function, (LifeCycleState)NULL, false, true, false);
-  ASSERT_CHECK(function, (LifeCycleState)NULL, true, true, true);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, false, OperatorCommand::ARM);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, true, OperatorCommand::LAUNCH);
+}
+
+TEST(Node, checkOperatorSignaledToArm)
+{
+  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkOperatorSignaledToArm;
+
+  ASSERT_CHECK(function, (LifeCycleState)NULL, false, OperatorCommand::LAUNCH);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, true, OperatorCommand::ARM);
 }
 
 void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result,

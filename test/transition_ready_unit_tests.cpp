@@ -45,14 +45,12 @@ LifeCycleCommand no_command = (LifeCycleCommand)-1;
 void ASSERT_TRANSITION_READY(SuperNodeMediator superNodeMediator, SuperState from, LifeCycleState node_state,
                              SuperNodeMediator::SuperFltCtrlState flt_ctrl_state, bool expected_ready,
                              SuperState expected_state, bool expected_resend_life_cycle_command,
-                             LifeCycleCommand life_cycle_command, bool operator_is_ready_to_arm = true, 
-                             bool operator_is_ready_to_launch = true)
+                             LifeCycleCommand life_cycle_command, OperatorCommand last_op_command_received)
 {
   SuperNodeMediator::Supervisor supervisor;
   supervisor.system_state = from;
   supervisor.flt_ctrl_state = flt_ctrl_state;
-  supervisor.operator_is_ready_to_arm = operator_is_ready_to_arm;
-  supervisor.operator_is_ready_to_launch = operator_is_ready_to_launch;
+  supervisor.last_op_command_received = last_op_command_received;
 
   {
     SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();
@@ -79,7 +77,7 @@ void ASSERT_TRANSITION_READY(SuperNodeMediator superNodeMediator, SuperState fro
                              SuperState expected_state)
 {
   ASSERT_TRANSITION_READY(superNodeMediator, from, node_state, flt_ctrl_state, expected_ready, expected_state, false,
-                          (LifeCycleCommand)NULL);
+                          (LifeCycleCommand)NULL, OperatorCommand::ARM);
 }
 
 /**For the simplest cases without flight controller or lifecycle commands*/
@@ -106,7 +104,7 @@ TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenNodesNotInactiveO
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::BOOTING, LifeCycleState::UNCONFIGURED, 
                         (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,
-                        LifeCycleCommand::CONFIGURE);
+                        LifeCycleCommand::CONFIGURE, OperatorCommand::ARM);
 }
 
 /**Not ready to transition from Ready so send another configure command */
@@ -114,14 +112,14 @@ TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotArmed)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, (LifeCycleState)NULL,
                           (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, false,
-                          LifeCycleCommand::CONFIGURE, false);
+                          LifeCycleCommand::CONFIGURE, OperatorCommand::ABORT);
 }
 
 TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenArmed)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, (LifeCycleState)NULL,
                           (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::ARMING, false,
-                          LifeCycleCommand::CONFIGURE, true);
+                          LifeCycleCommand::CONFIGURE, OperatorCommand::ARM);
 }
 
 
@@ -134,7 +132,7 @@ TEST_F(TransitionReady, transitionReady_ArmingNoTransitionWhenNodesNotActive)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMING, LifeCycleState::INACTIVE,
                           (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,
-                          LifeCycleCommand::ACTIVATE);
+                          LifeCycleCommand::ACTIVATE, OperatorCommand::ARM);
 }
 /* Enable when we implement multimap for SuperState to StateTransition*/
 TEST_F(TransitionReady, DISABLED_transitionReady_ArmedToAbortWhenDectivated)
@@ -151,7 +149,7 @@ TEST_F(TransitionReady, transitionReady_ArmedToAutoWhenReadyToLaunchAndOperatorI
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMED, LifeCycleState::ACTIVE, 
                           (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::AUTO, 
-                          false, (LifeCycleCommand)NULL, true, true);
+                          false, (LifeCycleCommand)NULL, OperatorCommand::LAUNCH);
 }
 
 TEST_F(TransitionReady, DISABLED_transitionReady_AutoToAbortWhenDeactivated)

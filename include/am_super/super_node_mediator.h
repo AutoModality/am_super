@@ -3,12 +3,16 @@
 #ifndef AM_SUPER_INCLUDE_AM_SUPER_NODE_MEDIATOR_H_
 #define AM_SUPER_INCLUDE_AM_SUPER_NODE_MEDIATOR_H_
 #include <ros/ros.h>
-#include <brain_box_msgs/LifeCycleState.h>
+
 #include <super_lib/am_life_cycle_types.h>
 #include <super_lib/am_life_cycle.h>
+#include <super_lib/am_life_cycle_mediator.h>
+
 #include <am_super/super_state.h>
 #include <am_super/super_state_mediator.h>
-#include <super_lib/am_life_cycle_mediator.h>
+#include <am_super/operator_command.h>
+
+
 
 using namespace std;
 namespace am
@@ -63,10 +67,7 @@ public:
     SuperFltCtrlState flt_ctrl_state;
 
     /** Indication that the operator is supervising the robot, has sent the signal to arm the system */
-    bool operator_is_ready_to_arm;
-
-    /** Indication that the operator wants the system to start the session. */
-    bool operator_is_ready_to_launch;
+    OperatorCommand last_op_command_received;
     
     /** True indicates the session controller has signaled the end of the session (flight, etc). */
     bool session_completed;

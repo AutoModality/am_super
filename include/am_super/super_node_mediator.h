@@ -7,6 +7,8 @@
 #include <super_lib/am_life_cycle_types.h>
 #include <super_lib/am_life_cycle.h>
 #include <am_super/super_state.h>
+#include <am_super/super_state_mediator.h>
+#include <super_lib/am_life_cycle_mediator.h>
 
 using namespace std;
 namespace am
@@ -182,6 +184,8 @@ public:
   string manifestedNodesNotOnlineNamesList(Supervisor supervisor);
 
 private:
+  SuperStateMediator super_state_mediator;
+  AMLifeCycleMediator life_cycle_mediator;
 };
 }
 

@@ -164,7 +164,7 @@ TEST_F(TransitionReady, DISABLED_transitionReady_ArmedNoTransitionWhenRemainingA
 
 //======================= FLIGHT Controller States =====================================
 
-TEST_F(TransitionReady, transitionReady_ArmedToAutoWhenFlightControllerIsAuto)
+TEST_F(TransitionReady, DISABLED_transitionReady_ArmedToAutoWhenFlightControllerIsAuto)
 {
   ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMED, LifeCycleState::ACTIVE,
                           SuperNodeMediator::SuperFltCtrlState::AUTO, true, SuperState::AUTO);

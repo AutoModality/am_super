@@ -184,8 +184,8 @@ public:
   string manifestedNodesNotOnlineNamesList(Supervisor supervisor);
 
 private:
-  SuperStateMediator super_state_mediator;
-  AMLifeCycleMediator life_cycle_mediator;
+  // SuperStateMediator super_state_mediator;
+  // AMLifeCycleMediator life_cycle_mediator;
 };
 }
 

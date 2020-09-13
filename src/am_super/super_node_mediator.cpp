@@ -185,7 +185,7 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
       }
       else if (!check(supervisor,node))
       {
-        string_view node_state = life_cycle_mediator.stateToString(node.state);
+        string_view node_state = "FIXME!!!"; // life_cycle_mediator.stateToString(node.state);
         error_message = "[2OQ0] check failed: node in wrong state " + node.name + ": " + string(node_state);
       }
       else if (node.status == LifeCycleStatus::ERROR)

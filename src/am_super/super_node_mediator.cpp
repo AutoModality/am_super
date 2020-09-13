@@ -148,7 +148,7 @@ bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& superviso
 
 bool SuperNodeMediator::checkOperatorSignaledToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
-  return supervisor.operator_is_ready_to_arm;
+  return supervisor.last_op_command_received == OperatorCommand::ARM;
 }
 
 bool SuperNodeMediator::checkArmed(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
@@ -158,7 +158,7 @@ bool SuperNodeMediator::checkArmed(SuperNodeMediator::Supervisor& supervisor,Sup
 
 bool SuperNodeMediator::checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
-  return supervisor.operator_is_ready_to_launch;
+  return supervisor.last_op_command_received == OperatorCommand::LAUNCH;
 }
 
 bool SuperNodeMediator::checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)

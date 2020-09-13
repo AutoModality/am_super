@@ -264,10 +264,10 @@ private:
     switch(rmsg->command)
     {
       case brain_box_msgs::OperatorCommand::ARM:
-        supervisor_.operator_is_ready_to_arm = true;
+        supervisor_.last_op_command_received = OperatorCommand::ARM;
         break;
       case brain_box_msgs::OperatorCommand::LAUNCH:
-        supervisor_.operator_is_ready_to_launch = true;
+        supervisor_.last_op_command_received = OperatorCommand::LAUNCH;
         break;
     }
     // TODO: topic name should come from vb_util_lib::topics.
@@ -685,13 +685,6 @@ private:
   {
     warn_ms = (int)(1000.0 / hz * 2.0 + 0.5);
     error_ms = (int)(1000.0 / hz * 3.0 + 0.5);
-  }
-
-  void onConfigure() override
-  {
-    supervisor_.operator_is_ready_to_arm = false;
-    supervisor_.operator_is_ready_to_launch = false;
-    AMLifeCycle::onConfigure();
   }
   
 };

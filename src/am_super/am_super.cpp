@@ -566,6 +566,11 @@ private:
       // persist given state as the new current state
       supervisor_.system_state = state;
 
+      if(supervisor_.system_state == SuperState::AUTO) //session just started when we enter AUTO mode
+      {
+        supervisor_.session_completed = false;
+      }
+
       reportSystemState();
 
       sendLEDMessage();

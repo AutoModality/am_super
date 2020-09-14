@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>             // googletest header file
 #include <brain_box_msgs/VxState.h>  // msg for status
 #include <brain_box_msgs/OperatorCommand.h>  // to be armed, launch for state transitions
+#include <brain_box_msgs/ControllerState.h>
 #include <super_lib/am_life_cycle.h>
 #include <super_lib/am_life_cycle_mediator.h>
 
@@ -27,6 +28,7 @@ bool ready = false;
 bool arming = false;
 bool armed = false;
 bool in_auto = false;
+bool disarming = false;
 /* LifeCycle - indicates if we received the command yet for a nodde*/
 bool super_unconfigured = false;
 bool super_configuring = false;
@@ -141,6 +143,10 @@ void missionStateCallback(const brain_box_msgs::VxState& msg)
     case brain_box_msgs::VxState::AUTO:
       ROS_INFO_STREAM("AUTO received");
       in_auto = true;
+      break;
+    case brain_box_msgs::VxState::DISARMING:
+      ROS_INFO_STREAM("DISARMING received");
+      disarming = true;
   }
 }
 
@@ -207,10 +213,11 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
 {
   ros::NodeHandle n;
 
+  //FIXME: All these topic names should be constants somewhere to be referenced
   ros::Subscriber missionStateSubscription = n.subscribe("/vstate/summary", 1000, missionStateCallback);
   ros::Subscriber nodeLifeCycleStateSubscription = n.subscribe("/node_state", 1000, nodeLifeCycleStateCallback);
-  //FIXME: reference constant for "/operator/command"
   ros::Publisher operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>("/operator/command",100);
+  ros::Publisher controllerStatePublisher = n.advertise<brain_box_msgs::ControllerState>("/controller/state", 100);
   ros::Rate loop_rate(1);  // 1 Hz
 
   // check that we are booting
@@ -316,6 +323,31 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
     }    
     ASSERT_TRUE(in_auto) << "/am_super SuperState should now be in AUTO";
   }
+
+  /* assume flight is done once in AUTO, controller state COMPLETED will
+  be published and super transitons AUTO --> DISARMING */
+  {
+    brain_box_msgs::ControllerState controllerState;
+    controllerState.node_name = THIS_NODE_NAME;
+    controllerState.state = brain_box_msgs::ControllerState::COMPLETED;
+
+    while(!disarming && ros::ok())
+    {
+      controllerStatePublisher.publish(controllerState);
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
+    ASSERT_TRUE(disarming);
+
+    int i = 0;
+    while(i < 5)
+    {
+      ros::spinOnce();
+      loop_rate.sleep();
+      i++;
+    }
+  }
+
 
 }
 

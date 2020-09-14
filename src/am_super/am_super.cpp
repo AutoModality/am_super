@@ -18,6 +18,9 @@
 #include <brain_box_msgs/StampedAltimeter.h>
 #include <brain_box_msgs/Super2Status.h>
 #include <brain_box_msgs/VxState.h>
+#include <brain_box_msgs/ControllerState.h>
+
+#include <am_super/controller_state.h>
 
 #include <super_lib/am_life_cycle_types.h>
 #include <super_lib/am_life_cycle.h>
@@ -63,6 +66,7 @@ private:
   ros::Subscriber node_state_sub_;
   ros::Subscriber node_status_sub_;
   ros::Subscriber operator_command_sub_;
+  ros::Subscriber controller_state_sub;
   ros::Timer heartbeat_timer_;
 
   /** manage logic for SuperState transitions */
@@ -191,6 +195,7 @@ public:
     BagLogger::instance()->startLogging("SU", SU_LOG_LEVEL);
 
     // subs should always come at the end
+    
     /**
      * node status via LifeCycle
      */
@@ -200,7 +205,12 @@ public:
      */
     node_status_sub_ = nh_.subscribe("/process/status", 100, &AMSuper::statusCB, this);
 
+    /**
+     * commands from operator
+     */
     operator_command_sub_ = nh_.subscribe("/operator/command", 100, &AMSuper::operatorCommandCB, this);
+
+    controller_state_sub = nh_.subscribe("/controller/state", 100, &AMSuper::controllerStateCB, this);
 
     heartbeat_timer_ = nh_.createTimer(ros::Duration(1.0), &AMSuper::heartbeatCB, this);
   }
@@ -254,6 +264,19 @@ private:
 
     // TODO: topic name should come from vb_util_lib::topics.
     LOG_MSG("/process/status", rmsg, SU_LOG_LEVEL);
+  }
+
+  void controllerStateCB(const ros::MessageEvent<brain_box_msgs::ControllerState const>& event)
+  {
+    const brain_box_msgs::ControllerState::ConstPtr& rmsg = event.getMessage();
+
+    switch(rmsg->state)
+    {
+      case brain_box_msgs::ControllerState::COMPLETED:
+        ROS_INFO_STREAM("Controler node: " << rmsg->node_name << " state is COMPLETED");
+        supervisor_.session_completed = true;
+        break;
+    }
   }
 
   void operatorCommandCB(const ros::MessageEvent<brain_box_msgs::OperatorCommand const>& event)
@@ -565,6 +588,11 @@ private:
 
       // persist given state as the new current state
       supervisor_.system_state = state;
+
+      if(supervisor_.system_state == SuperState::AUTO) //session just started when we enter AUTO mode
+      {
+        supervisor_.session_completed = false;
+      }
 
       reportSystemState();
 

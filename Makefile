@@ -1,7 +1,18 @@
 SHELL := /bin/bash
 
+BUILD_COMMAND := source /opt/ros/melodic/setup.bash && cd catkin_ws && catkin build -j8
+
+# Test only if on AMD, not ARM, which is already too slow and underpowered and redundant
+ARCH := $(shell arch)
+ifeq ($(ARCH),x86_64)
+BUILD_COMMAND := $(BUILD_COMMAND) && catkin build -j8 --catkin-make-args run_tests
+endif
+
 default:
-	source /opt/ros/melodic/setup.bash && cd catkin_ws && catkin build -j8 --no-status && catkin build -j8 --no-status --catkin-make-args run_tests
+	
+	$(BUILD_COMMAND)
+default:
+	source /opt/ros/melodic/setup.bash && cd catkin_ws && catkin build -j8 --no-status 
 
 	rm -f catkin_ws/install/lib/pkgconfig/catkin_tools_prebuild.pc
 

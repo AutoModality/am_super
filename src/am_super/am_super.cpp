@@ -191,6 +191,7 @@ public:
     BagLogger::instance()->startLogging("SU", SU_LOG_LEVEL);
 
     // subs should always come at the end
+    
     /**
      * node status via LifeCycle
      */
@@ -200,6 +201,9 @@ public:
      */
     node_status_sub_ = nh_.subscribe("/process/status", 100, &AMSuper::statusCB, this);
 
+    /**
+     * commands from operator
+     */
     operator_command_sub_ = nh_.subscribe("/operator/command", 100, &AMSuper::operatorCommandCB, this);
 
     heartbeat_timer_ = nh_.createTimer(ros::Duration(1.0), &AMSuper::heartbeatCB, this);

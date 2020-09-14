@@ -269,9 +269,11 @@ private:
   void controllerStateCB(const ros::MessageEvent<brain_box_msgs::ControllerState const>& event)
   {
     const brain_box_msgs::ControllerState::ConstPtr& rmsg = event.getMessage();
+
     switch(rmsg->state)
     {
       case brain_box_msgs::ControllerState::COMPLETED:
+        ROS_INFO_STREAM("Controler node: " << rmsg->node_name << " state is COMPLETED");
         supervisor_.session_completed = true;
         break;
     }

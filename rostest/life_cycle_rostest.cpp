@@ -338,14 +338,6 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
       loop_rate.sleep();
     }
     ASSERT_TRUE(disarming);
-
-    int i = 0;
-    while(i < 5)
-    {
-      ros::spinOnce();
-      loop_rate.sleep();
-      i++;
-    }
   }
 
 

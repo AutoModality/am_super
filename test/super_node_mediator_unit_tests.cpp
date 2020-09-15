@@ -39,7 +39,7 @@ TEST(Node, nodeNameIsSuper_ShouldEqualAmSuperWithSlash)
 }
 TEST(Node, nodeNameIsSuper_ShouldNotEqualMissingA)
 {
-  ASSERT_TRUE(SuperNodeMediator::nodeNameIsSuper("m_super"));
+  ASSERT_FALSE(SuperNodeMediator::nodeNameIsSuper("m_super"));
 }
 
 TEST(Node, nodeNameStripped_SuperAddedToManifest)

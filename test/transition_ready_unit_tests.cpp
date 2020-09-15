@@ -94,10 +94,11 @@ TEST_F(TransitionReady, transitionReady_BootingToReadyWhenAllNodesInactive)
                           SuperState::READY);
 }
 
-TEST_F(TransitionReady, transitionReady_BootingToReadyWhenAllNodesActive)
+TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenAllNodesAreActive)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::BOOTING, LifeCycleState::ACTIVE, true,
-                          SuperState::READY);
+  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::BOOTING, LifeCycleState::ACTIVE,
+                        (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,
+                        LifeCycleCommand::CONFIGURE);
 }
 
 TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenNodesNotInactiveOrActive)

@@ -56,7 +56,7 @@ TEST(Node, checkReadyToArm_All)
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
   ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, false);
   ASSERT_CHECK(function, LifeCycleState::INACTIVE, true);
-  ASSERT_CHECK(function, LifeCycleState::ACTIVE, true);
+  ASSERT_CHECK(function, LifeCycleState::ACTIVE, false); //assuming the node isn't super
   ASSERT_CHECK(function, LifeCycleState::FINALIZED, false);
   ASSERT_CHECK(function, LifeCycleState::CONFIGURING, false);
   ASSERT_CHECK(function, LifeCycleState::CLEANING_UP, false);

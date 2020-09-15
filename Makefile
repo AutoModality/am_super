@@ -11,9 +11,6 @@ endif
 default:
 	
 	$(BUILD_COMMAND)
-default:
-	source /opt/ros/melodic/setup.bash && cd catkin_ws && catkin build -j8 --no-status 
-
 	rm -f catkin_ws/install/lib/pkgconfig/catkin_tools_prebuild.pc
 
 

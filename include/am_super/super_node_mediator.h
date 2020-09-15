@@ -23,10 +23,10 @@ class SuperNodeMediator
 private:
   // SuperStateMediator super_state_mediator;
   // AMLifeCycleMediator life_cycle_mediator;
-  const std::string SUPER_NODE_NAME = "am_super"; 
 
 public:
   SuperNodeMediator();
+  static const std::string SUPER_NODE_NAME; 
 
   /**
    * Instructions Super receives from flight controller.
@@ -83,7 +83,13 @@ public:
    * @param node_name orginal name with characgters
    * @return node name stripped of characters.
    */
-  std::string nodeNameStripped(std::string node_name);
+  static std::string nodeNameStripped(std::string node_name);
+
+  /** The only place authorized to validate a node is super.  It will call nodeNameStripped just in case.*/
+  static bool nodeNameIsSuper(std::string node_name);
+
+  /** Appends super node to the manifest to participate as a lifecycle node */
+  void addSuperToManifest(SuperNodeMediator::Supervisor& supervisor);
 
   /**Nodes declared in manifest are created with default
    * state so the system can seek them out.
@@ -91,9 +97,6 @@ public:
    * @return node info with given name and default information
    */
   SuperNodeMediator::SuperNodeInfo initializeManifestedNode(std::string node_name);
-
-  /** The only place authorized to validate a node is super.*/
-  bool nodeNameIsSuper(std:string node_name);
 
   /**Provided by transitionReady method used by the node to trnasition states and send signals according
    * the properties within.

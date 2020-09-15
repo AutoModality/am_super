@@ -13,6 +13,8 @@ SuperNodeMediator::SuperNodeMediator()
 {
 }
 
+const string SuperNodeMediator::SUPER_NODE_NAME = "am_super";
+
 /**Encapsulates properties and methods that relate to the transition of states
  * from various sources (SuperState, NodeLifecycle, Flight Controller) to ensure
  * the system state is correct.
@@ -77,6 +79,16 @@ std::string SuperNodeMediator::nodeNameStripped(std::string node_name)
   {
     return node_name;
   }
+}
+
+bool SuperNodeMediator::nodeNameIsSuper(std::string node_name)
+{
+  return SuperNodeMediator::nodeNameStripped(node_name) == SUPER_NODE_NAME;
+}
+
+void  SuperNodeMediator::addSuperToManifest(SuperNodeMediator::Supervisor& supervisor)
+{
+  supervisor.manifest.push_back(SUPER_NODE_NAME);
 }
 
 SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std::string node_name)
@@ -144,7 +156,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
 bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
   //FIXME: am_super check must be delegated to a single method to do the name check
-  return  nr.state == LifeCycleState::INACTIVE || (nr.state == LifeCycleState::ACTIVE && nr.name == "am_super");
+  return  nr.state == LifeCycleState::INACTIVE || (nr.state == LifeCycleState::ACTIVE && SuperNodeMediator::nodeNameIsSuper(nr.name));
 }
 
 bool SuperNodeMediator::checkOperatorSignaledToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)

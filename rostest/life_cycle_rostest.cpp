@@ -18,6 +18,7 @@
 #include <brain_box_msgs/ControllerState.h>
 #include <super_lib/am_life_cycle.h>
 #include <super_lib/am_life_cycle_mediator.h>
+#include <am_super/super_node_mediator.h>
 
 using namespace std;
 using namespace am;
@@ -52,6 +53,7 @@ constexpr string_view CORRECT = "CORRECT";  // represents the correct result in 
 string_view order_status = CORRECT;         // used in test to verify order_status is correct
 
 AMLifeCycleMediator life_cycle_mediator_;
+SuperNodeMediator super_node_mediator_;
 
 class LifeCycleNodeTest : public ::testing::Test, am::AMLifeCycle
 {
@@ -163,7 +165,7 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
   string_view state_string = life_cycle_mediator_.stateToString(state);
   ROS_INFO_STREAM("Node lifecycle state " << state_string << " received from " << msg.node_name);
   //FIXME: super's node name should come from a constant since it is also used in super
-  if(msg.node_name.find("am_super") != std::string::npos)
+  if(super_node_mediator_.nodeNameIsSuper(msg.node_name))
   {
     switch(state)
     {

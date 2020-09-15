@@ -130,7 +130,7 @@ public:
     node_mediator_.parseManifest(supervisor_, manifest_param);
 
     //Add super to manifest
-    supervisor_.manifest.push_back(SUPER_NODE_NAME);
+    node_mediator_.addSuperToManifest(supervisor_);
 
     // if a manifest has been specified
     if (!supervisor_.manifest.empty())
@@ -538,7 +538,7 @@ private:
   {
     if(getState() == LifeCycleState::INACTIVE) //if super lifecycle is currently inactive
     {
-      sendLifeCycleCommand(SUPER_NODE_NAME, LifeCycleCommand::ACTIVATE);
+      sendLifeCycleCommand(SuperNodeMediator::SUPER_NODE_NAME, LifeCycleCommand::ACTIVATE);
     }
     else
     {

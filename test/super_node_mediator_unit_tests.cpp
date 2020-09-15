@@ -28,6 +28,31 @@ TEST(Node, nodeNameStripped_EmptyStringDoesNotExplode)
   ASSERT_EQ(stripped, "") << "Safety check for index of a string";
 }
 
+TEST(Node, nodeNameIsSuper_ShouldEqualAmSuperWithoutSlash)
+{
+  ASSERT_TRUE(SuperNodeMediator::nodeNameIsSuper("am_super"));
+}
+
+TEST(Node, nodeNameIsSuper_ShouldEqualAmSuperWithSlash)
+{
+  ASSERT_TRUE(SuperNodeMediator::nodeNameIsSuper("/am_super"));
+}
+TEST(Node, nodeNameIsSuper_ShouldNotEqualMissingA)
+{
+  ASSERT_TRUE(SuperNodeMediator::nodeNameIsSuper("m_super"));
+}
+
+TEST(Node, nodeNameStripped_SuperAddedToManifest)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  ASSERT_EQ(supervisor.manifest.size(),0);
+  superNodeMediator.addSuperToManifest(supervisor);
+  ASSERT_EQ(supervisor.manifest.size(),1);
+  string node_name = supervisor.manifest.at(0);
+  ASSERT_TRUE(SuperNodeMediator::nodeNameIsSuper(node_name));
+  
+}
+
 TEST(Node, initializeManifestedNode_FieldsAreSetProperly)
 {
   std::string name = "node1";

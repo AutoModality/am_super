@@ -18,6 +18,9 @@
 #include <brain_box_msgs/StampedAltimeter.h>
 #include <brain_box_msgs/Super2Status.h>
 #include <brain_box_msgs/VxState.h>
+#include <brain_box_msgs/ControllerState.h>
+
+#include <am_super/controller_state.h>
 
 #include <super_lib/am_life_cycle_types.h>
 #include <super_lib/am_life_cycle.h>
@@ -43,7 +46,7 @@ namespace am
 class AMSuper : AMLifeCycle
 {
 private:
-  /**
+  /** 
    * heartbeat log output period
    */
   const int LOG_THROTTLE_S = 10;
@@ -63,6 +66,7 @@ private:
   ros::Subscriber node_state_sub_;
   ros::Subscriber node_status_sub_;
   ros::Subscriber operator_command_sub_;
+  ros::Subscriber controller_state_sub;
   ros::Timer heartbeat_timer_;
 
   /** manage logic for SuperState transitions */
@@ -91,7 +95,7 @@ private:
   // babysitters
   //
   const std::string NODE_BS_ALTIMETER = "can_node";  // TODO: replace with system global const
-  const std::string SUPER_NODE_NAME = "am_super";  
+ 
   typedef brain_box_msgs::StampedAltimeter altimeter_bs_msg_type;
   am::BabySitter<altimeter_bs_msg_type>* altimeter_bs_;
   const std::string ALTIMETER_BS_TOPIC = "/sensor/distance/agl_lw";  // TODO: replace with system global const
@@ -126,7 +130,7 @@ public:
     node_mediator_.parseManifest(supervisor_, manifest_param);
 
     //Add super to manifest
-    supervisor_.manifest.push_back(SUPER_NODE_NAME);
+    node_mediator_.addSuperToManifest(supervisor_);
 
     // if a manifest has been specified
     if (!supervisor_.manifest.empty())
@@ -191,6 +195,7 @@ public:
     BagLogger::instance()->startLogging("SU", SU_LOG_LEVEL);
 
     // subs should always come at the end
+    
     /**
      * node status via LifeCycle
      */
@@ -200,7 +205,12 @@ public:
      */
     node_status_sub_ = nh_.subscribe("/process/status", 100, &AMSuper::statusCB, this);
 
+    /**
+     * commands from operator
+     */
     operator_command_sub_ = nh_.subscribe("/operator/command", 100, &AMSuper::operatorCommandCB, this);
+
+    controller_state_sub = nh_.subscribe("/controller/state", 100, &AMSuper::controllerStateCB, this);
 
     heartbeat_timer_ = nh_.createTimer(ros::Duration(1.0), &AMSuper::heartbeatCB, this);
   }
@@ -256,6 +266,19 @@ private:
     LOG_MSG("/process/status", rmsg, SU_LOG_LEVEL);
   }
 
+  void controllerStateCB(const ros::MessageEvent<brain_box_msgs::ControllerState const>& event)
+  {
+    const brain_box_msgs::ControllerState::ConstPtr& rmsg = event.getMessage();
+
+    switch(rmsg->state)
+    {
+      case brain_box_msgs::ControllerState::COMPLETED:
+        ROS_INFO_STREAM("Controler node: " << rmsg->node_name << " state is COMPLETED");
+        supervisor_.session_completed = true;
+        break;
+    }
+  }
+
   void operatorCommandCB(const ros::MessageEvent<brain_box_msgs::OperatorCommand const>& event)
   {
     const brain_box_msgs::OperatorCommand::ConstPtr& rmsg = event.getMessage();
@@ -264,10 +287,10 @@ private:
     switch(rmsg->command)
     {
       case brain_box_msgs::OperatorCommand::ARM:
-        supervisor_.operator_is_ready_to_arm = true;
+        supervisor_.last_op_command_received = OperatorCommand::ARM;
         break;
       case brain_box_msgs::OperatorCommand::LAUNCH:
-        supervisor_.operator_is_ready_to_launch = true;
+        supervisor_.last_op_command_received = OperatorCommand::LAUNCH;
         break;
     }
     // TODO: topic name should come from vb_util_lib::topics.
@@ -374,7 +397,7 @@ private:
    *
    * times out nodes that haven't been heard from recently. reports on status to bag and trace logs.
    */
-  void heartbeatCB(const ros::TimerEvent& event)
+  void heartbeatCB(const ros::TimerEvent& event) override
   {
 #if CUDA_FLAG
     gpu_info_->display();
@@ -515,7 +538,7 @@ private:
   {
     if(getState() == LifeCycleState::INACTIVE) //if super lifecycle is currently inactive
     {
-      sendLifeCycleCommand(SUPER_NODE_NAME, LifeCycleCommand::ACTIVATE);
+      sendLifeCycleCommand(SuperNodeMediator::SUPER_NODE_NAME, LifeCycleCommand::ACTIVATE);
     }
     else
     {
@@ -528,9 +551,11 @@ private:
       else if (transition_instructions.resend_life_cycle_command)
       {
         LifeCycleCommand command = transition_instructions.life_cycle_command;
+        std::string failed_nodes_string = boost::algorithm::join(transition_instructions.failed_nodes, ", ");
         ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state)
                         << ": sending " << life_cycle_mediator_.commandToString(command) << " to "
-                        << transition_instructions.failed_nodes.size() << " nodes.");
+                        << failed_nodes_string);
+
         for(string failed_node_name : transition_instructions.failed_nodes)
         {
           sendLifeCycleCommand(failed_node_name, command);
@@ -563,6 +588,11 @@ private:
 
       // persist given state as the new current state
       supervisor_.system_state = state;
+
+      if(supervisor_.system_state == SuperState::AUTO) //session just started when we enter AUTO mode
+      {
+        supervisor_.session_completed = false;
+      }
 
       reportSystemState();
 
@@ -684,15 +714,7 @@ private:
     warn_ms = (int)(1000.0 / hz * 2.0 + 0.5);
     error_ms = (int)(1000.0 / hz * 3.0 + 0.5);
   }
-
-  void onConfigure()
-  {
-    AMLifeCycle::onConfigure();
-    supervisor_.operator_is_ready_to_arm = false;
-    supervisor_.operator_is_ready_to_launch = false;
-    //sendLifeCycleCommand(SUPER_NODE_NAME,LifeCycleCommand::ACTIVATE);
-  }
-
+  
 };
 };
 

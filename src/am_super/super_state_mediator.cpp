@@ -33,7 +33,8 @@ const std::map<SuperState, SuperStateInfo> state_info_ = {
   { SuperState::ARMING, { "ARMING", { SuperState::ARMED } } },
   { SuperState::ARMED, { "ARMED", { SuperState::AUTO, SuperState::ABORT } } },
   { SuperState::AUTO,
-    { "AUTO", { SuperState::READY, SuperState::SEMI_AUTO, SuperState::HOLD, SuperState::ABORT, SuperState::MANUAL } } },
+    { "AUTO", { SuperState::DISARMING, SuperState::SEMI_AUTO, SuperState::HOLD, SuperState::ABORT, SuperState::MANUAL } } },
+  { SuperState::DISARMING, {"DISARMING", { SuperState::READY } } },
   { SuperState::SEMI_AUTO,
     { "SEMI_AUTO", { SuperState::AUTO, SuperState::HOLD, SuperState::ABORT, SuperState::MANUAL } } },
   { SuperState::HOLD, { "HOLD", { SuperState::ABORT, SuperState::MANUAL } } },
@@ -72,7 +73,7 @@ bool SuperStateMediator::allowsTransition(SuperState from, SuperState to)
 std::vector<SuperState> SuperStateMediator::allSuperStates()
 {
   std::vector<SuperState> all;
-  for (int enumIndex = (int)SuperState::OFF; enumIndex <= (int)SuperState::LAST_STATE; enumIndex++)
+  for (int enumIndex = (int)FIRST_SUPER_STATE; enumIndex <= (int)LAST_SUPER_STATE; enumIndex++)
   {
     SuperState state = static_cast<SuperState>(enumIndex);
     all.push_back(state);
@@ -83,5 +84,6 @@ std::vector<SuperState> SuperStateMediator::allSuperStates()
 std::string_view SuperStateMediator::stateToString(SuperState state)
 {
   return info(state).name_;
-};
+}
+
 }

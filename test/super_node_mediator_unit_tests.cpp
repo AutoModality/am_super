@@ -28,6 +28,31 @@ TEST(Node, nodeNameStripped_EmptyStringDoesNotExplode)
   ASSERT_EQ(stripped, "") << "Safety check for index of a string";
 }
 
+TEST(Node, nodeNameIsSuper_ShouldEqualAmSuperWithoutSlash)
+{
+  ASSERT_TRUE(SuperNodeMediator::nodeNameIsSuper("am_super"));
+}
+
+TEST(Node, nodeNameIsSuper_ShouldEqualAmSuperWithSlash)
+{
+  ASSERT_TRUE(SuperNodeMediator::nodeNameIsSuper("/am_super"));
+}
+TEST(Node, nodeNameIsSuper_ShouldNotEqualMissingA)
+{
+  ASSERT_FALSE(SuperNodeMediator::nodeNameIsSuper("m_super"));
+}
+
+TEST(Node, nodeNameStripped_SuperAddedToManifest)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  ASSERT_EQ(supervisor.manifest.size(),0);
+  superNodeMediator.addSuperToManifest(supervisor);
+  ASSERT_EQ(supervisor.manifest.size(),1);
+  string node_name = supervisor.manifest.at(0);
+  ASSERT_TRUE(SuperNodeMediator::nodeNameIsSuper(node_name));
+  
+}
+
 TEST(Node, initializeManifestedNode_FieldsAreSetProperly)
 {
   std::string name = "node1";
@@ -41,13 +66,12 @@ TEST(Node, initializeManifestedNode_FieldsAreSetProperly)
 }
 
 void ASSERT_CHECK(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> check, LifeCycleState state, bool expected,
-  bool operator_is_ready_to_arm = true, bool operator_is_ready_to_launch = true)
+  OperatorCommand last_op_command_received = OperatorCommand::ARM)
 {
   SuperNodeMediator::SuperNodeInfo info;
   SuperNodeMediator::Supervisor supervisor;
   info.state = state;
-  supervisor.operator_is_ready_to_arm = operator_is_ready_to_arm;
-  supervisor.operator_is_ready_to_launch = operator_is_ready_to_launch;
+  supervisor.last_op_command_received = last_op_command_received;
   ASSERT_EQ(check(supervisor, info), expected) << "For state: " + std::to_string((int)state);
 }
 
@@ -57,7 +81,7 @@ TEST(Node, checkReadyToArm_All)
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
   ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, false);
   ASSERT_CHECK(function, LifeCycleState::INACTIVE, true);
-  ASSERT_CHECK(function, LifeCycleState::ACTIVE, true);
+  ASSERT_CHECK(function, LifeCycleState::ACTIVE, false); //assuming the node isn't super
   ASSERT_CHECK(function, LifeCycleState::FINALIZED, false);
   ASSERT_CHECK(function, LifeCycleState::CONFIGURING, false);
   ASSERT_CHECK(function, LifeCycleState::CLEANING_UP, false);
@@ -70,8 +94,8 @@ TEST(Node, checkOperatorSignaledToArm)
 {
   std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkOperatorSignaledToArm;
 
-  ASSERT_CHECK(function, (LifeCycleState)NULL, false, false);
-  ASSERT_CHECK(function, (LifeCycleState)NULL, true, true);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, false, OperatorCommand::LAUNCH);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, true, OperatorCommand::ARM);
 }
 
 TEST(Node, checkArmed_All)
@@ -93,8 +117,8 @@ TEST(Node, checkOperatorSignaledToLaunch)
 {
   std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> function = SuperNodeMediator::checkOperatorSignaledToLaunch;
 
-  ASSERT_CHECK(function, (LifeCycleState)NULL, false, true, false);
-  ASSERT_CHECK(function, (LifeCycleState)NULL, true, true, true);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, false, OperatorCommand::ARM);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, true, OperatorCommand::LAUNCH);
 }
 
 void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result,

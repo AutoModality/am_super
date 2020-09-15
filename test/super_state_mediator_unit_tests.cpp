@@ -117,7 +117,7 @@ TEST(State, allowsTransition_InvalidStateHandled)
 
 TEST(State, allowsTransition_AutoToManyAllowed)
 {
-  std::vector<SuperState> allowed{ SuperState::HOLD, SuperState::ABORT, SuperState::READY, SuperState::SEMI_AUTO,
+  std::vector<SuperState> allowed{ SuperState::HOLD, SuperState::ABORT, SuperState::DISARMING, SuperState::SEMI_AUTO,
                                    SuperState::MANUAL };
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::AUTO, allowed);
@@ -147,7 +147,7 @@ TEST(State, stateToString_InvalidStateReturnsInvalidString)
 TEST(State, allSuperStates_IncludesAll)
 {
   std::vector<SuperState> all = mediator.allSuperStates();
-  int expectedNumberOfStates = 11;
+  int expectedNumberOfStates = 12;
   int actualNumberOfStates = all.size();
   ASSERT_EQ(expectedNumberOfStates, actualNumberOfStates);
   ASSERT_EQ(all.at((int)SuperState::OFF), SuperState::OFF);
@@ -158,5 +158,4 @@ TEST(State, allSuperStates_IncludesAll)
   ASSERT_EQ(all.at((int)SuperState::SHUTDOWN), SuperState::SHUTDOWN);
   ASSERT_EQ(all.front(), SuperState::OFF);
   ASSERT_EQ(all.back(), SuperState::SHUTDOWN);
-  ASSERT_EQ(all.back(), SuperState::LAST_STATE);
 }

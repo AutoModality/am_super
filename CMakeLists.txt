@@ -212,7 +212,7 @@ if (CATKIN_ENABLE_TESTING)
 
   # For ros testing
   find_package(rostest REQUIRED)
-  add_rostest_gtest(life_cycle_rostest rostest/life_cycle_rostest.launch rostest/life_cycle_rostest.cpp )
+  add_rostest_gtest(life_cycle_rostest rostest/life_cycle_rostest.launch rostest/life_cycle_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(life_cycle_rostest ${catkin_LIBRARIES} super_lib)
 
   # Create a target ${PROJECT_NAME}_coverage_report

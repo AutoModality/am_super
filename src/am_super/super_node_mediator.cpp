@@ -13,6 +13,8 @@ SuperNodeMediator::SuperNodeMediator()
 {
 }
 
+const string SuperNodeMediator::SUPER_NODE_NAME = "am_super";
+
 /**Encapsulates properties and methods that relate to the transition of states
  * from various sources (SuperState, NodeLifecycle, Flight Controller) to ensure
  * the system state is correct.
@@ -79,6 +81,16 @@ std::string SuperNodeMediator::nodeNameStripped(std::string node_name)
   }
 }
 
+bool SuperNodeMediator::nodeNameIsSuper(std::string node_name)
+{
+  return SuperNodeMediator::nodeNameStripped(node_name) == SUPER_NODE_NAME;
+}
+
+void  SuperNodeMediator::addSuperToManifest(SuperNodeMediator::Supervisor& supervisor)
+{
+  supervisor.manifest.push_back(SUPER_NODE_NAME);
+}
+
 SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std::string node_name)
 {
   SuperNodeInfo nr;
@@ -143,12 +155,13 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
 
 bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
-  return  nr.state == LifeCycleState::INACTIVE || nr.state == LifeCycleState::ACTIVE;
+  //FIXME: am_super check must be delegated to a single method to do the name check
+  return  nr.state == LifeCycleState::INACTIVE || (nr.state == LifeCycleState::ACTIVE && SuperNodeMediator::nodeNameIsSuper(nr.name));
 }
 
 bool SuperNodeMediator::checkOperatorSignaledToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
-  return supervisor.operator_is_ready_to_arm;
+  return supervisor.last_op_command_received == OperatorCommand::ARM;
 }
 
 bool SuperNodeMediator::checkArmed(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
@@ -158,7 +171,7 @@ bool SuperNodeMediator::checkArmed(SuperNodeMediator::Supervisor& supervisor,Sup
 
 bool SuperNodeMediator::checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
-  return supervisor.operator_is_ready_to_launch;
+  return supervisor.last_op_command_received == OperatorCommand::LAUNCH;
 }
 
 bool SuperNodeMediator::checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
@@ -169,6 +182,9 @@ bool SuperNodeMediator::checkSessionCompleted(SuperNodeMediator::Supervisor& sup
 pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
     Supervisor& supervisor, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&)> check)
 {
+  //FIXME: this should be a private member in super_node_mediator
+  AMLifeCycleMediator life_cycle_mediator; 
+
   map<string, string> failed_nodes;
 
   bool success = true;
@@ -185,8 +201,8 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
       }
       else if (!check(supervisor,node))
       {
-        string node_state = to_string((int)node.state);  // string(AMLifeCycle::stateToString(node.state));
-        error_message = "[2OQ0] check failed: node in wrong state (" + node_state + "): " + node.name;
+        string_view node_state = life_cycle_mediator.stateToString(node.state);
+        error_message = "[2OQ0] check failed: node in wrong state " + node.name + ": " + string(node_state);
       }
       else if (node.status == LifeCycleStatus::ERROR)
       {

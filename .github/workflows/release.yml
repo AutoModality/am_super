@@ -85,31 +85,6 @@ jobs:
         with:
           version: ${{ steps.version.outputs.value }}
           release-repo-entitlement: ${{ secrets.CLOUDSMITH_READ_RELEASE_ENTITLEMENT }}
-      - name: Repo Name
-        if: steps.published.outputs.value == 'true'
-        run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")
-      - name: Test Results
-        if: steps.published.outputs.value == 'true'
-        id: xunit-viewer
-        uses: AutoModality/action-xunit-viewer@v1
-        with: 
-          results: catkin_ws/build/${{env.REPOSITORY_NAME}}/test_results/${{env.REPOSITORY_NAME}}
-      - name: Attach Test Reports
-        if: steps.published.outputs.value == 'true'
-        uses: actions/upload-artifact@v1
-        with:
-          name: ${{ steps.xunit-viewer.outputs.report-name }}
-          path: ${{ steps.xunit-viewer.outputs.report-dir }}
-      # - name: Publish Test Reports to Azure Storage
-      #   if: steps.published.outputs.value == 'true'
-      #   uses: bacongobbler/azure-blob-storage-upload@v1.0.0
-      #   with:
-      #     source_dir: ${{ steps.xunit-viewer.outputs.report-dir }}
-      #     container_name: docs
-      #     # http://tiny.cc/y1bznz
-      #     connection_string: ${{ secrets.AMROSDOC_AZURE_STORAGE_CONNECTION_STRING }}
-      #     extra_args: --destination-path ${{github.repository}}/test-reports
-      #     sync: true
       - name: Deploy if published
         if: steps.published.outputs.value == 'true'
         id: deploy

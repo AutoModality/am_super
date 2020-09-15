@@ -37,23 +37,20 @@ jobs:
           release: 'bionic'
           file: '${{ steps.package.outputs.artifact-path }}'
       - name: Repo Name
-        if: always()
+        if: contains( matrix.os, 'x64' )
         run: echo ::set-env name=REPOSITORY_NAME::$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")
       - name: Test Results
-        if: always()
+        if: contains( matrix.os, 'x64' )
         id: xunit-viewer
         uses: AutoModality/action-xunit-viewer@v1
         with: 
           results: catkin_ws/build/${{env.REPOSITORY_NAME}}/test_results/${{env.REPOSITORY_NAME}}
       - name: Attach Test Reports
-        if: always()
+        if: contains( matrix.os, 'x64' )
         uses: actions/upload-artifact@v1
         with:
           name: ${{ steps.xunit-viewer.outputs.report-name }}
           path: ${{ steps.xunit-viewer.outputs.report-dir }}
-      - uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
   draft-pr:
     runs-on: ubuntu-18.04
     needs: package

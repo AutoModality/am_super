@@ -4,17 +4,29 @@
 #define AM_SUPER_INCLUDE_AM_SUPER_NODE_MEDIATOR_H_
 #include <ros/ros.h>
 #include <brain_box_msgs/LifeCycleState.h>
+
 #include <super_lib/am_life_cycle_types.h>
 #include <super_lib/am_life_cycle.h>
+#include <super_lib/am_life_cycle_mediator.h>
+
 #include <am_super/super_state.h>
+#include <am_super/super_state_mediator.h>
+#include <am_super/operator_command.h>
+
+
 
 using namespace std;
 namespace am
 {
 class SuperNodeMediator
 {
+private:
+  // SuperStateMediator super_state_mediator;
+  // AMLifeCycleMediator life_cycle_mediator;
+
 public:
   SuperNodeMediator();
+  static const std::string SUPER_NODE_NAME; 
 
   /**
    * Instructions Super receives from flight controller.
@@ -61,10 +73,7 @@ public:
     SuperFltCtrlState flt_ctrl_state;
 
     /** Indication that the operator is supervising the robot, has sent the signal to arm the system */
-    bool operator_is_ready_to_arm;
-
-    /** Indication that the operator wants the system to start the session. */
-    bool operator_is_ready_to_launch;
+    OperatorCommand last_op_command_received;
     
     /** True indicates the session controller has signaled the end of the session (flight, etc). */
     bool session_completed;
@@ -74,7 +83,13 @@ public:
    * @param node_name orginal name with characgters
    * @return node name stripped of characters.
    */
-  std::string nodeNameStripped(std::string node_name);
+  static std::string nodeNameStripped(std::string node_name);
+
+  /** The only place authorized to validate a node is super.  It will call nodeNameStripped just in case.*/
+  static bool nodeNameIsSuper(std::string node_name);
+
+  /** Appends super node to the manifest to participate as a lifecycle node */
+  void addSuperToManifest(SuperNodeMediator::Supervisor& supervisor);
 
   /**Nodes declared in manifest are created with default
    * state so the system can seek them out.
@@ -181,7 +196,6 @@ public:
   /** @return a csv string of names of the manifested nodes not online */
   string manifestedNodesNotOnlineNamesList(Supervisor supervisor);
 
-private:
 };
 }
 

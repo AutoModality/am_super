@@ -47,6 +47,8 @@ enum class LifeCycleCommand : std::uint8_t
   DEACTIVATE = brain_box_msgs::LifeCycleCommand::COMMAND_DEACTIVATE,
   SHUTDOWN = brain_box_msgs::LifeCycleCommand::COMMAND_SHUTDOWN,
   DESTROY = brain_box_msgs::LifeCycleCommand::COMMAND_DESTROY,
+
+  //FIXME: there should be no last command
   LAST_COMMAND = brain_box_msgs::LifeCycleCommand::COMMAND_LAST
 };
 

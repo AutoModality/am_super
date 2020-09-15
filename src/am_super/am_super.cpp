@@ -259,7 +259,7 @@ private:
     /*
      * legacy messages don't carry any state or status info so just process as ACTIVE/OK
      */
-    processState(rmsg->node_name, LifeCycleState::ACTIVE, LifeCycleStatus::OK, rmsg->status, rmsg->value,
+    processState(rmsg->node_name, LifeCycleState::INACTIVE, LifeCycleStatus::OK, rmsg->status, rmsg->value,
                  rmsg->process_id, event.getReceiptTime());
 
     // TODO: topic name should come from vb_util_lib::topics.

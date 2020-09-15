@@ -20,6 +20,11 @@ namespace am
 {
 class SuperNodeMediator
 {
+private:
+  // SuperStateMediator super_state_mediator;
+  // AMLifeCycleMediator life_cycle_mediator;
+  const std::string SUPER_NODE_NAME = "am_super"; 
+
 public:
   SuperNodeMediator();
 
@@ -86,6 +91,9 @@ public:
    * @return node info with given name and default information
    */
   SuperNodeMediator::SuperNodeInfo initializeManifestedNode(std::string node_name);
+
+  /** The only place authorized to validate a node is super.*/
+  bool nodeNameIsSuper(std:string node_name);
 
   /**Provided by transitionReady method used by the node to trnasition states and send signals according
    * the properties within.
@@ -185,9 +193,6 @@ public:
   /** @return a csv string of names of the manifested nodes not online */
   string manifestedNodesNotOnlineNamesList(Supervisor supervisor);
 
-private:
-  // SuperStateMediator super_state_mediator;
-  // AMLifeCycleMediator life_cycle_mediator;
 };
 }
 

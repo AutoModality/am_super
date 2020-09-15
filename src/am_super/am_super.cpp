@@ -95,7 +95,7 @@ private:
   // babysitters
   //
   const std::string NODE_BS_ALTIMETER = "can_node";  // TODO: replace with system global const
-  const std::string SUPER_NODE_NAME = "am_super";  
+ 
   typedef brain_box_msgs::StampedAltimeter altimeter_bs_msg_type;
   am::BabySitter<altimeter_bs_msg_type>* altimeter_bs_;
   const std::string ALTIMETER_BS_TOPIC = "/sensor/distance/agl_lw";  // TODO: replace with system global const

@@ -9,10 +9,8 @@ BUILD_COMMAND := $(BUILD_COMMAND) && catkin build -j8 --catkin-make-args run_tes
 endif
 
 default:
-	
 	$(BUILD_COMMAND)
 	rm -f catkin_ws/install/lib/pkgconfig/catkin_tools_prebuild.pc
-
 
 install:
 	rm -rf catkin_ws/install/share/catkin_tools_prebuild

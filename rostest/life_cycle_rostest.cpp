@@ -29,6 +29,8 @@ bool arming = false;
 bool armed = false;
 bool in_auto = false;
 bool disarming = false;
+bool ready_after_disarming = false;
+
 /* LifeCycle - indicates if we received the command yet for a nodde*/
 bool super_unconfigured = false;
 bool super_configuring = false;
@@ -41,6 +43,8 @@ bool rostest_configuring = false;
 bool rostest_inactive = false;
 bool rostest_active = false;
 bool rostest_activating = false;
+bool rostest_deactivating = false;
+bool rostest_inactive_after_disarming = false;
 
 constexpr string_view THIS_NODE_NAME = "/life_cycle_rostest";
 
@@ -130,7 +134,10 @@ void missionStateCallback(const brain_box_msgs::VxState& msg)
       break;
     case brain_box_msgs::VxState::READY:
       ROS_INFO_STREAM("READY received");
-      ready = true;
+      if(disarming)
+        ready_after_disarming = true;
+      else
+        ready = true;
       break;
     case brain_box_msgs::VxState::ARMING:
       ROS_INFO_STREAM("ARMING received");
@@ -190,13 +197,20 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
         rostest_configuring = true;
         break;
       case LifeCycleState::INACTIVE:
-        rostest_inactive = true;
+        //going inactive after being active indicates disarming, but can't use disarming because of race condition
+        if (rostest_active)
+          rostest_inactive_after_disarming = true;
+        else
+          rostest_inactive = true;
         break;
       case LifeCycleState::ACTIVE:
         rostest_active = true;
         break;
       case LifeCycleState::ACTIVATING:
         rostest_activating = true;
+        break;
+      case LifeCycleState::DEACTIVATING:
+        rostest_deactivating = true;
         break;
       default:
         ROS_WARN_STREAM(state_string << " unhandled for " << msg.node_name);
@@ -338,8 +352,26 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
       loop_rate.sleep();
     }
     ASSERT_TRUE(disarming);
+
+    while(!rostest_deactivating && ros::ok())
+    {
+      //super should continually notify nodes to disarm
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
+    ASSERT_TRUE(rostest_deactivating) << "rostest should have been notified of deactivation";
+
+    while(!ready_after_disarming && ros::ok())
+    {
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
+    ASSERT_TRUE(ready_after_disarming) << "Super should go into READY after DISARMING";
+    ASSERT_TRUE(rostest_inactive_after_disarming) << "rostest must be inactive before system is ready again.";
+
   }
 
+  
 
 }
 

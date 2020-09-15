@@ -143,7 +143,8 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
 
 bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
-  return  nr.state == LifeCycleState::INACTIVE || nr.state == LifeCycleState::ACTIVE;
+  //FIXME: am_super check must be delegated to a single method to do the name check
+  return  nr.state == LifeCycleState::INACTIVE || (nr.state == LifeCycleState::ACTIVE && nr.name == "am_super");
 }
 
 bool SuperNodeMediator::checkOperatorSignaledToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)

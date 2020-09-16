@@ -261,7 +261,7 @@ string SuperNodeMediator::manifestedNodesNotOnlineNamesList(Supervisor superviso
     return boost::algorithm::join(node_names, ", ");
 }
 
-void SuperNodeMediator::setControllerState(SuperNodeMediator::Supervisor& supervisor, ControllerState& controller_state)
+void SuperNodeMediator::setControllerState(SuperNodeMediator::Supervisor& supervisor, const ControllerState& controller_state)
 {
   switch(controller_state)
     {
@@ -271,7 +271,7 @@ void SuperNodeMediator::setControllerState(SuperNodeMediator::Supervisor& superv
     }
 }
 
-void SuperNodeMediator::setOperatorCommand(SuperNodeMediator::Supervisor& supevisor, OperatorCommand& command)
+void SuperNodeMediator::setOperatorCommand(SuperNodeMediator::Supervisor& supevisor, const OperatorCommand& command)
 {
   supevisor.last_op_command_received = command;
 }

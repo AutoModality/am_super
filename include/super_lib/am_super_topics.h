@@ -1,0 +1,22 @@
+#ifndef AM_SUPER_LIB_TOPICS_H
+#define AM_SUPER_LIB_TOPICS_H
+
+#include <string>
+
+namespace am
+{
+
+class am_super_topics
+{
+public:
+    /** @brief Operator interacting with the system */
+	static constexpr char OPERATOR_COMMAND[] = "/operator/command";
+    
+    /** Controller of the mission sends State to advance through lifecycle */
+	static constexpr char CONTROLLER_STATE[] = "/controller/state";
+
+};
+
+}
+
+#endif

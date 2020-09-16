@@ -270,7 +270,7 @@ private:
   {
     const brain_box_msgs::ControllerState::ConstPtr& rmsg = event.getMessage();
 
-    ROS_INFO_STREAM("Controler node: " << rmsg->node_name << " state is COMPLETED");
+    ROS_INFO_STREAM("Received controller state");
     node_mediator_.setControllerState(supervisor_, (ControllerState)rmsg->state);
   }
 

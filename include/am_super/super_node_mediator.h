@@ -91,9 +91,9 @@ public:
   /** Appends super node to the manifest to participate as a lifecycle node */
   void addSuperToManifest(SuperNodeMediator::Supervisor& supervisor);
 
-  void setOperatorCommand(SuperNodeMediator::Supervisor& supervisor, const OperatorCommand command);
+  void setOperatorCommand(SuperNodeMediator::Supervisor& supervisor, const OperatorCommand& command);
 
-  void setControllerState(SuperNodeMediator::Supervisor& supervisor, const ControllerState controller_state);
+  void setControllerState(SuperNodeMediator::Supervisor& supervisor, const ControllerState& controller_state);
   /**Nodes declared in manifest are created with default
    * state so the system can seek them out.
    *

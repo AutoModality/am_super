@@ -25,6 +25,7 @@
 #include <super_lib/am_life_cycle_types.h>
 #include <super_lib/am_life_cycle.h>
 #include <super_lib/am_life_cycle_mediator.h>
+#include <super_lib/am_super_topics.h>
 
 #include <vb_util_lib/bag_logger.h>
 #include <vb_util_lib/topics.h>
@@ -209,9 +210,9 @@ public:
     /**
      * commands from operator
      */
-    operator_command_sub_ = nh_.subscribe("/operator/command", 100, &AMSuper::operatorCommandCB, this);
+    operator_command_sub_ = nh_.subscribe(am_super_topics::OPERATOR_COMMAND, 100, &AMSuper::operatorCommandCB, this);
 
-    controller_state_sub = nh_.subscribe("/controller/state", 100, &AMSuper::controllerStateCB, this);
+    controller_state_sub = nh_.subscribe(am_super_topics::CONTROLLER_STATE, 100, &AMSuper::controllerStateCB, this);
 
     heartbeat_timer_ = nh_.createTimer(ros::Duration(1.0), &AMSuper::heartbeatCB, this);
   }
@@ -280,6 +281,7 @@ private:
     const brain_box_msgs::OperatorCommand::ConstPtr& rmsg = event.getMessage();
     
     ROS_INFO_STREAM(rmsg->node_name << " sent command " << rmsg->command );
+    
     node_mediator_.setOperatorCommand(supervisor_, (OperatorCommand)rmsg->command);
     // TODO: topic name should come from vb_util_lib::topics.
     LOG_MSG("/operator/command", rmsg, SU_LOG_LEVEL);

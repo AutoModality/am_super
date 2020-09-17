@@ -123,6 +123,7 @@ public:
      * create initial node list from manifest and create babysitters as needed
      */
     supervisor_.system_state = SuperState::OFF;
+    supervisor_.session_completed = false;
     // strip spaces from manifest param
     string manifest_param;
     ros::param::param<string>("~manifest", manifest_param, "");

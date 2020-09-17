@@ -103,7 +103,7 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   nr.status = LifeCycleStatus::OK;
   return nr;
 }
-
+  
 SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Supervisor supervisor)
 {
   // required default state is junk and should not be consulted since not ready

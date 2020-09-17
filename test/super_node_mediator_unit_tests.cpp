@@ -360,6 +360,7 @@ TEST(Node, setControllerState)
   SuperNodeMediator::Supervisor supervisor;
 
   ControllerState state = ControllerState::COMPLETED;
+  supervisor.session_completed = false;
   superNodeMediator.setControllerState(supervisor, state);
 
   ASSERT_TRUE(supervisor.session_completed);
@@ -375,34 +376,6 @@ TEST(Node, setOperatorCommand)
   ASSERT_EQ(supervisor.last_op_command_received, command);
 
   command = OperatorCommand::ARM;
-  superNodeMediator.setOperatorCommand(supervisor, command);
-  ASSERT_EQ(supervisor.last_op_command_received, command);
-
-  command = OperatorCommand::CANCEL;
-  superNodeMediator.setOperatorCommand(supervisor, command);
-  ASSERT_EQ(supervisor.last_op_command_received, command);
-
-  command = OperatorCommand::LANDED;
-  superNodeMediator.setOperatorCommand(supervisor, command);
-  ASSERT_EQ(supervisor.last_op_command_received, command);
-
-  command = OperatorCommand::LAUNCH;
-  superNodeMediator.setOperatorCommand(supervisor, command);
-  ASSERT_EQ(supervisor.last_op_command_received, command);
-
-  command = OperatorCommand::MANUAL;
-  superNodeMediator.setOperatorCommand(supervisor, command);
-  ASSERT_EQ(supervisor.last_op_command_received, command);
-
-  command = OperatorCommand::PAUSE;
-  superNodeMediator.setOperatorCommand(supervisor, command);
-  ASSERT_EQ(supervisor.last_op_command_received, command);
-
-  command = OperatorCommand::RESUME;
-  superNodeMediator.setOperatorCommand(supervisor, command);
-  ASSERT_EQ(supervisor.last_op_command_received, command);
-
-  command = OperatorCommand::SHUTDOWN;
   superNodeMediator.setOperatorCommand(supervisor, command);
   ASSERT_EQ(supervisor.last_op_command_received, command);
 }

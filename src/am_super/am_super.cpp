@@ -124,6 +124,7 @@ public:
      * create initial node list from manifest and create babysitters as needed
      */
     supervisor_.system_state = SuperState::OFF;
+    supervisor_.session_completed = false;
     // strip spaces from manifest param
     string manifest_param;
     ros::param::param<string>("~manifest", manifest_param, "");
@@ -271,13 +272,8 @@ private:
   {
     const brain_box_msgs::ControllerState::ConstPtr& rmsg = event.getMessage();
 
-    switch(rmsg->state)
-    {
-      case brain_box_msgs::ControllerState::COMPLETED:
-        ROS_INFO_STREAM("Controler node: " << rmsg->node_name << " state is COMPLETED");
-        supervisor_.session_completed = true;
-        break;
-    }
+    ROS_INFO_STREAM("Received controller state");
+    node_mediator_.setControllerState(supervisor_, (ControllerState)rmsg->state);
   }
 
   void operatorCommandCB(const ros::MessageEvent<brain_box_msgs::OperatorCommand const>& event)
@@ -285,16 +281,10 @@ private:
     const brain_box_msgs::OperatorCommand::ConstPtr& rmsg = event.getMessage();
     
     ROS_INFO_STREAM(rmsg->node_name << " sent command " << rmsg->command );
-    switch(rmsg->command)
-    {
-      case brain_box_msgs::OperatorCommand::ARM:
-        supervisor_.last_op_command_received = OperatorCommand::ARM;
-        break;
-      case brain_box_msgs::OperatorCommand::LAUNCH:
-        supervisor_.last_op_command_received = OperatorCommand::LAUNCH;
-        break;
-    }
-    LOG_MSG(am_super_topics::OPERATOR_COMMAND, rmsg, SU_LOG_LEVEL);
+    
+    node_mediator_.setOperatorCommand(supervisor_, (OperatorCommand)rmsg->command);
+    // TODO: topic name should come from vb_util_lib::topics.
+    LOG_MSG("/operator/command", rmsg, SU_LOG_LEVEL);
   }
   /**
    * process state

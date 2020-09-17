@@ -12,7 +12,7 @@
 #include <am_super/super_state.h>
 #include <am_super/super_state_mediator.h>
 #include <am_super/operator_command.h>
-
+#include <am_super/controller_state.h>
 
 
 using namespace std;
@@ -90,6 +90,12 @@ public:
 
   /** Appends super node to the manifest to participate as a lifecycle node */
   void addSuperToManifest(SuperNodeMediator::Supervisor& supervisor);
+
+  /** Sets the supervisors last operator command received */
+  void setOperatorCommand(SuperNodeMediator::Supervisor& supervisor, const OperatorCommand& command);
+
+  /** Stores the last state reported by the controller node into supervisor */
+  void setControllerState(SuperNodeMediator::Supervisor& supervisor, const ControllerState& controller_state);
 
   /**Nodes declared in manifest are created with default
    * state so the system can seek them out.

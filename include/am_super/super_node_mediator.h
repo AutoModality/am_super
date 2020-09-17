@@ -104,7 +104,7 @@ public:
    */
   SuperNodeMediator::SuperNodeInfo initializeManifestedNode(std::string node_name);
 
-  /**Provided by transitionReady method used by the node to trnasition states and send signals accordingSUPER_NODE_NAME
+  /**Provided by transitionReady method used by the node to trnasition states and send signals according
    * the properties within.
    */
   struct TransitionInstructions

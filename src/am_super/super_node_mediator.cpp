@@ -9,53 +9,9 @@ namespace am
 /**
  * The state of the system as the supervisor sees it.*/
 
-SuperNodeMediator::SuperNodeMediator()
-{
-}
+SuperNodeMediator::SuperNodeMediator() : 
 
-const string SuperNodeMediator::SUPER_NODE_NAME = "am_super";
-
-/**Encapsulates properties and methods that relate to the transition of states
- * from various sources (SuperState, NodeLifecycle, Flight Controller) to ensure
- * the system state is correct.
- */
-struct StateTransition
-{
-  StateTransition(SuperState _to_state, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&)> _check,
-                  LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1)
-  {
-    to_state = _to_state;
-    check = _check;
-    life_cycle_command = _life_cycle_command;
-    on_check_result = true; //TODO: remove this; we are assuming the check method should always return true now
-  }
-  /**The future Supervisor.systemState if checks pass.*/
-  SuperState to_state;
-  /**Function that indicates if the transition is allowed (based on node lifecycle)*/
-  std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&)> check;
-
-  /**If the check result matches this value, then transition*/
-  bool on_check_result;
-
-  /**State change based on flight controller state 
-   * DEPRECATED - Remove when operator_is_ready_to_arm is complete AM-461 
-   */
-  std::map<SuperNodeMediator::SuperFltCtrlState, SuperState> flt_ctrl_state_map;
-
-  /**Certain states are waiting on nodes to do their thing.  Sending lifecycle commands to new nodes
-   * or nodes that missed previous messages will help flush these pending nodes to finish.
-   */
-  LifeCycleCommand life_cycle_command;
-
-  bool hasLifecycleCommand()
-  {
-    //-1 is also the constructor default
-    return life_cycle_command != (LifeCycleCommand)-1;
-  }
-};
-
-/** keyed by the current system state, if the check method passes then the new state will be the given.*/
-const std::map<SuperState, StateTransition> state_transitions_ = {
+state_transitions_({
   { SuperState::BOOTING, { SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::CONFIGURE } },
   { SuperState::READY,
     { SuperState::ARMING, SuperNodeMediator::checkOperatorSignaledToArm } /* no lifecycle command since waiting on operator */ }, 
@@ -67,7 +23,12 @@ const std::map<SuperState, StateTransition> state_transitions_ = {
     { SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted } },
   { SuperState::DISARMING,
     { SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE }  },
-};
+  })
+{
+  
+}
+
+const string SuperNodeMediator::SUPER_NODE_NAME = "am_super";
 
 std::string SuperNodeMediator::nodeNameStripped(std::string node_name)
 {
@@ -281,4 +242,11 @@ string SuperNodeMediator::manifestedNodesNotOnlineNamesList(Supervisor superviso
     boost::copy(nodes_not_online | boost::adaptors::map_keys, std::back_inserter(node_names));
     return boost::algorithm::join(node_names, ", ");
 }
+
+bool SuperNodeMediator::StateTransition::hasLifecycleCommand()
+{
+  //-1 is also the constructor default
+  return life_cycle_command != (LifeCycleCommand)-1;
 }
+
+};

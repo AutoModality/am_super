@@ -367,3 +367,28 @@ TEST(Node, manifestedNodesNotOnline_RemovesNonManifestedNotOnline)
     EXPECT_EQ(names,"anotherKeeper, manifestedNotOnlineToBeKept") << "order might be unpredictable if this shows up as flaky";
   }
 }
+
+TEST(Node, setControllerState)
+{
+  SuperNodeMediator::Supervisor supervisor;
+
+  ControllerState state = ControllerState::COMPLETED;
+  supervisor.session_completed = false;
+  superNodeMediator.setControllerState(supervisor, state);
+
+  ASSERT_TRUE(supervisor.session_completed);
+}
+
+TEST(Node, setOperatorCommand)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  OperatorCommand command;
+
+  command = OperatorCommand::ABORT;
+  superNodeMediator.setOperatorCommand(supervisor, command);
+  ASSERT_EQ(supervisor.last_op_command_received, command);
+
+  command = OperatorCommand::ARM;
+  superNodeMediator.setOperatorCommand(supervisor, command);
+  ASSERT_EQ(supervisor.last_op_command_received, command);
+}

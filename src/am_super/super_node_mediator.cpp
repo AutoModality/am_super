@@ -103,7 +103,7 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   nr.status = LifeCycleStatus::OK;
   return nr;
 }
-
+  
 SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Supervisor supervisor)
 {
   // required default state is junk and should not be consulted since not ready
@@ -281,4 +281,20 @@ string SuperNodeMediator::manifestedNodesNotOnlineNamesList(Supervisor superviso
     boost::copy(nodes_not_online | boost::adaptors::map_keys, std::back_inserter(node_names));
     return boost::algorithm::join(node_names, ", ");
 }
+
+void SuperNodeMediator::setControllerState(SuperNodeMediator::Supervisor& supervisor, const ControllerState& controller_state)
+{
+  switch(controller_state)
+    {
+      case ControllerState::COMPLETED:
+        supervisor.session_completed = true;
+        break;
+    }
+}
+
+void SuperNodeMediator::setOperatorCommand(SuperNodeMediator::Supervisor& supevisor, const OperatorCommand& command)
+{
+  supevisor.last_op_command_received = command;
+}
+
 }

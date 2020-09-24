@@ -12,17 +12,17 @@ namespace am
 SuperNodeMediator::SuperNodeMediator() : 
 
 state_transitions_({
-  { SuperState::BOOTING, { SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::CONFIGURE } },
+  { SuperState::BOOTING, { SuperState::READY, std::bind(&SuperNodeMediator::checkReadyToArm, this, std::placeholders::_1, std::placeholders::_2), LifeCycleCommand::CONFIGURE } },
   { SuperState::READY,
-    { SuperState::ARMING, SuperNodeMediator::checkOperatorSignaledToArm } /* no lifecycle command since waiting on operator */ }, 
+    { SuperState::ARMING, std::bind(&SuperNodeMediator::checkOperatorSignaledToArm, this, std::placeholders::_1, std::placeholders::_2) } /* no lifecycle command since waiting on operator */ }, 
   { SuperState::ARMING,
-    { SuperState::ARMED, SuperNodeMediator::checkArmed, LifeCycleCommand::ACTIVATE } },
+    { SuperState::ARMED, std::bind(&SuperNodeMediator::checkArmed, this, std::placeholders::_1, std::placeholders::_2), LifeCycleCommand::ACTIVATE } },
   { SuperState::ARMED,
-    { SuperState::AUTO, SuperNodeMediator::checkOperatorSignaledToLaunch } },
+    { SuperState::AUTO, std::bind(&SuperNodeMediator::checkOperatorSignaledToLaunch, this, std::placeholders::_1, std::placeholders::_2) } },
   { SuperState::AUTO,
-    { SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted } },
+    { SuperState::DISARMING, std::bind(&SuperNodeMediator::checkSessionCompleted, this, std::placeholders::_1, std::placeholders::_2) } },
   { SuperState::DISARMING,
-    { SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE }  },
+    { SuperState::READY, std::bind(&SuperNodeMediator::checkReadyToArm, this, std::placeholders::_1, std::placeholders::_2), LifeCycleCommand::DEACTIVATE }  },
   })
 {
   
@@ -115,9 +115,9 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
 }
 
 /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
-bool lifeCycleNotYetImplemented(string node_name)
+bool SuperNodeMediator::lifeCycleNotYetImplemented(string node_name)
 {
-  string stripped = SuperNodeMediator::nodeNameStripped(node_name);
+  string stripped = nodeNameStripped(node_name);
   return  
     stripped == "flight_controller" || 
     stripped == "locator" ||

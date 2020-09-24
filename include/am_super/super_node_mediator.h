@@ -114,10 +114,10 @@ public:
    * @param node_name orginal name with characgters
    * @return node name stripped of characters.
    */
-  static std::string nodeNameStripped(std::string node_name);
+  std::string nodeNameStripped(std::string node_name);
 
   /** The only place authorized to validate a node is super.  It will call nodeNameStripped just in case.*/
-  static bool nodeNameIsSuper(std::string node_name);
+  bool nodeNameIsSuper(std::string node_name);
 
   /** Appends super node to the manifest to participate as a lifecycle node */
   void addSuperToManifest(SuperNodeMediator::Supervisor& supervisor);
@@ -166,27 +166,27 @@ public:
   /**
   * FIXME: this should be a private method
    * @return true if Lifecyle state is inactive (already configured)*/
-  static bool checkReadyToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+  bool checkReadyToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
 
   /** 
    * FIXME: this should be a private method
    * @return true if the operator sent the signal to arm the system  */
-  static bool checkOperatorSignaledToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+  bool checkOperatorSignaledToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
 
   /**
    * FIXME: this should be a private method
    * @return true if Lifecyle state equals ACTIVE */
-  static bool checkArmed(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+  bool checkArmed(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
 
   /**
    * FIXME: this should be a private method
    * @return true if the operator is ready to launch */
-  static bool checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+  bool checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
 
   /**
    * FIXME: this should be a private method
    * @return true if the session controller signaled the end of the session (flight, etc) */
-  static bool checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+  bool checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
 
 
   /** Reads the given manifest string, typically provided by a ROS param,
@@ -230,6 +230,8 @@ public:
 private:
   // SuperStateMediator super_state_mediator;
   // AMLifeCycleMediator life_cycle_mediator;
+
+  bool lifeCycleNotYetImplemented(string node_name);
   /** keyed by the current system state, if the check method passes then the new state will be the given.*/
   const std::map<SuperState, StateTransition> state_transitions_;
 

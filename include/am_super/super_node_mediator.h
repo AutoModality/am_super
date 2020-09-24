@@ -21,8 +21,8 @@ namespace am
 class SuperNodeMediator
 {
 public:
-  SuperNodeMediator();
-  static const std::string SUPER_NODE_NAME; 
+  SuperNodeMediator(std::string node_name = "am_super");
+  const std::string SUPER_NODE_NAME; 
 
   /**
    * Instructions Super receives from flight controller.

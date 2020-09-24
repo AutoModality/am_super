@@ -9,8 +9,9 @@ namespace am
 /**
  * The state of the system as the supervisor sees it.*/
 
-SuperNodeMediator::SuperNodeMediator() : 
+SuperNodeMediator::SuperNodeMediator(std::string node_name) : 
 
+SUPER_NODE_NAME(node_name),
 state_transitions_({
   { SuperState::BOOTING, { SuperState::READY, std::bind(&SuperNodeMediator::checkReadyToArm, this, std::placeholders::_1, std::placeholders::_2), LifeCycleCommand::CONFIGURE } },
   { SuperState::READY,
@@ -27,8 +28,6 @@ state_transitions_({
 {
   
 }
-
-const string SuperNodeMediator::SUPER_NODE_NAME = "am_super";
 
 std::string SuperNodeMediator::nodeNameStripped(std::string node_name)
 {

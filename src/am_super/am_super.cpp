@@ -538,7 +538,7 @@ private:
   {
     if(getState() == LifeCycleState::INACTIVE) //if super lifecycle is currently inactive
     {
-      sendLifeCycleCommand(SuperNodeMediator::SUPER_NODE_NAME, LifeCycleCommand::ACTIVATE);
+      sendLifeCycleCommand(node_mediator_.nodeNameStripped(ros::this_node::getName()), LifeCycleCommand::ACTIVATE);
     }
     else
     {

@@ -504,9 +504,9 @@ private:
    * - all states are UNCONFIGURED or INACTIVE or ACTIVE
    * - all statuses are not error
    */
-  bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> check)
+  bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
   {
-    pair<bool, map<string, string>> result = node_mediator_.allManifestedNodesCheck(supervisor_, check);
+    pair<bool, map<string, string>> result = node_mediator_.allManifestedNodesCheck(supervisor_, node_mediator_, check);
     bool success = result.first;
     if (!success)
     {
@@ -528,12 +528,12 @@ private:
   {
     if(getState() == LifeCycleState::INACTIVE) //if super lifecycle is currently inactive
     {
-      sendLifeCycleCommand(SuperNodeMediator::SUPER_NODE_NAME, LifeCycleCommand::ACTIVATE);
+      sendLifeCycleCommand(node_mediator_.SUPER_NODE_NAME, LifeCycleCommand::ACTIVATE); //FIXME: make SUPER private
     }
     else
     {
       // ask the mediator to check with the supervisor
-      SuperNodeMediator::TransitionInstructions transition_instructions = node_mediator_.transitionReady(supervisor_);
+      SuperNodeMediator::TransitionInstructions transition_instructions = node_mediator_.transitionReady(supervisor_, node_mediator_);
       if (transition_instructions.ready_for_transition)
       {
         setSystemState(transition_instructions.new_state);

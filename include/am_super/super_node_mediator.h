@@ -21,8 +21,7 @@ namespace am
 class SuperNodeMediator
 {
 private:
-  // SuperStateMediator super_state_mediator;
-  // AMLifeCycleMediator life_cycle_mediator;
+  AMLifeCycleMediator life_cycle_mediator;
 
   /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
   [[deprecated]]

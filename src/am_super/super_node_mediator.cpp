@@ -216,8 +216,6 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
       }
       else if (!check(supervisor,node,node_mediator))
       {
-        //FIXME: this should be a private member in super_node_mediator
-        AMLifeCycleMediator life_cycle_mediator; 
         string_view node_state = life_cycle_mediator.stateToString(node.state);
         error_message = "[2OQ0] check failed: node in wrong state " + node.name + ": " + string(node_state);
         success = false;

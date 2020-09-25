@@ -196,7 +196,7 @@ public:
      * @return a pair with overall success and a map containing any erroneous node names with message explaining why
      *
      */
-  pair<bool, map<string, string>> allManifestedNodesCheck(Supervisor& supervisor, SuperNodeMediator& node_mediator,
+  pair<bool, map<string, string>> allManifestedNodesCheck(Supervisor& supervisor,
                                                           function<bool(Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check);
 
   /**@return the number of nodes where online=true*/

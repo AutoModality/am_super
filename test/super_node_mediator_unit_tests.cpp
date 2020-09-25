@@ -134,7 +134,7 @@ void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::Sup
   string expected_node_name = node.name.empty()? "test-node": node.name;
   node.name = expected_node_name;
   supervisor.nodes.insert({ node.name, node });
-  pair<bool, map<string, string>> result = superNodeMediator.allManifestedNodesCheck(supervisor, superNodeMediator, check);
+  pair<bool, map<string, string>> result = superNodeMediator.allManifestedNodesCheck(supervisor, check);
   map<string, string> error_messages = result.second;
   bool success = result.first;
   ASSERT_EQ(success, expected_success) << error_messages.begin()->second;

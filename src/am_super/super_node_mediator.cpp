@@ -122,7 +122,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
     // each state has a check method providing the logic that should cause transition (based on manifest nodes
     // lifecycle)
     // some transitions happen only when check fails (mostly to abort)
-    pair<bool,map<string,string>> check_results = allManifestedNodesCheck(supervisor, *this, transition.check);
+    pair<bool,map<string,string>> check_results = allManifestedNodesCheck(supervisor, transition.check);
 
     if (check_results.first)
     {
@@ -192,7 +192,7 @@ bool SuperNodeMediator::checkSessionCompleted(SuperNodeMediator::Supervisor& sup
 }
 
 pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
-    Supervisor& supervisor, SuperNodeMediator& node_mediator, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
+    Supervisor& supervisor, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
 {
   map<string, string> failed_nodes;
 
@@ -214,7 +214,7 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
         error_message = "[WCK2] check skipped: node LifeCycle not yet implemented: " + node.name;
         //not a failure to allow temporary transition 
       }
-      else if (!check(supervisor,node,node_mediator))
+      else if (!check(supervisor,node, *this))
       {
         string_view node_state = life_cycle_mediator.stateToString(node.state);
         error_message = "[2OQ0] check failed: node in wrong state " + node.name + ": " + string(node_state);

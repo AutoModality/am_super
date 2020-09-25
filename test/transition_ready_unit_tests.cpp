@@ -14,6 +14,7 @@ class TransitionReady : public ::testing::Test
 {
 protected:
   SuperNodeMediator superNodeMediator;
+  TransitionReady() : superNodeMediator("am_super"){}
 
   SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
   {

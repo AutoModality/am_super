@@ -5,7 +5,7 @@
 using namespace std;
 using namespace am;
 
-SuperNodeMediator superNodeMediator;
+SuperNodeMediator superNodeMediator("am_super");
 
 TEST(Node, nodeNameStripped_RemovesLeadingSlash)
 {

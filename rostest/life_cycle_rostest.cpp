@@ -168,7 +168,7 @@ void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
   string_view state_string = life_cycle_mediator_.stateToString(state);
   ROS_INFO_STREAM("Node lifecycle state " << state_string << " received from " << msg.node_name);
   //FIXME: super's node name should come from a constant since it is also used in super
-  if(super_node_mediator_.nodeNameIsSuper(msg.node_name, super_node_mediator_))
+  if(super_node_mediator_.nodeNameIsSuper(msg.node_name))
   {
     switch(state)
     {

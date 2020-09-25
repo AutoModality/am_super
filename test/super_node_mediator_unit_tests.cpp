@@ -33,16 +33,16 @@ TEST(Node, nodeNameStripped_EmptyStringDoesNotExplode)
 
 TEST(Node, nodeNameIsSuper_ShouldEqualAmSuperWithoutSlash)
 {
-  ASSERT_TRUE(SuperNodeMediator::nodeNameIsSuper("am_super", superNodeMediator));
+  ASSERT_TRUE(superNodeMediator.nodeNameIsSuper("am_super"));
 }
 
 TEST(Node, nodeNameIsSuper_ShouldEqualAmSuperWithSlash)
 {
-  ASSERT_TRUE(SuperNodeMediator::nodeNameIsSuper("/am_super", superNodeMediator));
+  ASSERT_TRUE(superNodeMediator.nodeNameIsSuper("/am_super"));
 }
 TEST(Node, nodeNameIsSuper_ShouldNotEqualMissingA)
 {
-  ASSERT_FALSE(SuperNodeMediator::nodeNameIsSuper("m_super", superNodeMediator));
+  ASSERT_FALSE(superNodeMediator.nodeNameIsSuper("m_super"));
 }
 
 TEST(Node, nodeNameStripped_SuperAddedToManifest)
@@ -52,7 +52,7 @@ TEST(Node, nodeNameStripped_SuperAddedToManifest)
   superNodeMediator.addSuperToManifest(supervisor);
   ASSERT_EQ(supervisor.manifest.size(),1);
   string node_name = supervisor.manifest.at(0);
-  ASSERT_TRUE(SuperNodeMediator::nodeNameIsSuper(node_name, superNodeMediator));
+  ASSERT_TRUE(superNodeMediator.nodeNameIsSuper(node_name));
   
 }
 

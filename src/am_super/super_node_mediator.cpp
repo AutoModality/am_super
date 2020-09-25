@@ -79,9 +79,9 @@ std::string SuperNodeMediator::nodeNameStripped(std::string node_name)
   }
 }
 
-bool SuperNodeMediator::nodeNameIsSuper(std::string node_name, SuperNodeMediator& node_mediator)
+bool SuperNodeMediator::nodeNameIsSuper(std::string node_name)
 {
-  return SuperNodeMediator::nodeNameStripped(node_name) == node_mediator.getNodeName(); 
+  return SuperNodeMediator::nodeNameStripped(node_name) == this->getNodeName(); 
 }
 
 std::string_view SuperNodeMediator::getNodeName()
@@ -156,8 +156,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   return transition_instructions;
 }
 
-/** @brief temporary hack to allow manifested nodes to not halt transitions.*/
-bool lifeCycleNotYetImplemented(string node_name)
+bool SuperNodeMediator::lifeCycleNotYetImplemented(string node_name)
 {
   string stripped = SuperNodeMediator::nodeNameStripped(node_name);
   return  
@@ -167,28 +166,28 @@ bool lifeCycleNotYetImplemented(string node_name)
     stripped == "can_node";
 }
 
-bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator)
+bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
   //FIXME: am_super check must be delegated to a single method to do the name check
-  return  nr.state == LifeCycleState::INACTIVE || (nr.state == LifeCycleState::ACTIVE && SuperNodeMediator::nodeNameIsSuper(nr.name, node_mdediator));
+  return  nr.state == LifeCycleState::INACTIVE || (nr.state == LifeCycleState::ACTIVE && node_mediator.nodeNameIsSuper(nr.name) );
 }
 
-bool SuperNodeMediator::checkOperatorSignaledToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator)
+bool SuperNodeMediator::checkOperatorSignaledToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
   return supervisor.last_op_command_received == OperatorCommand::ARM;
 }
 
-bool SuperNodeMediator::checkArmed(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator)
+bool SuperNodeMediator::checkArmed(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
   return nr.state == LifeCycleState::ACTIVE;
 }
 
-bool SuperNodeMediator::checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator)
+bool SuperNodeMediator::checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
   return supervisor.last_op_command_received == OperatorCommand::LAUNCH;
 }
 
-bool SuperNodeMediator::checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator)
+bool SuperNodeMediator::checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
   return supervisor.session_completed;
 }

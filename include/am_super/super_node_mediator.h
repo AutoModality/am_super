@@ -24,6 +24,9 @@ private:
   // SuperStateMediator super_state_mediator;
   // AMLifeCycleMediator life_cycle_mediator;
 
+  /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
+  bool lifeCycleNotYetImplemented(string node_name);
+
   const std::string SUPER_NODE_NAME = "am_super"; 
 
 public:
@@ -88,10 +91,11 @@ public:
    * @param node_name orginal name with characgters
    * @return node name stripped of characters.
    */
-  static std::string nodeNameStripped(std::string node_name);
+  //FIXME: move static method to am_utils
+ static std::string nodeNameStripped(std::string node_name);
 
   /** The only place authorized to validate a node is super.  It will call nodeNameStripped just in case.*/
-  static bool nodeNameIsSuper(std::string node_name, SuperNodeMediator& node_mediator);
+  bool nodeNameIsSuper(std::string node_name);
 
   /** Appends super node to the manifest to participate as a lifecycle node */
   void addSuperToManifest(SuperNodeMediator::Supervisor& supervisor);

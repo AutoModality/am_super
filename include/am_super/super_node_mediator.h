@@ -25,6 +25,7 @@ private:
   // AMLifeCycleMediator life_cycle_mediator;
 
   /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
+  [[deprecated]]
   bool lifeCycleNotYetImplemented(string node_name);
 
   const std::string SUPER_NODE_NAME = "am_super"; 

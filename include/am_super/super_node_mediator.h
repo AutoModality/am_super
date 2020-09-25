@@ -27,7 +27,7 @@ private:
   const std::string SUPER_NODE_NAME = "am_super"; 
 
 public:
-  SuperNodeMediator();
+  SuperNodeMediator(const std::string& node_name);
   
 
   /**

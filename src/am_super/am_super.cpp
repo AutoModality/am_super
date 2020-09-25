@@ -113,7 +113,7 @@ private:
 #endif
 
 public:
-  AMSuper() : nh_("~")
+  AMSuper() : nh_("~"), node_mediator_(SuperNodeMediator::nodeNameStripped(ros::this_node::getName()))
   {
     ROS_INFO_STREAM(NODE_FUNC);
 

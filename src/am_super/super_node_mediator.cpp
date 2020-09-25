@@ -9,7 +9,7 @@ namespace am
 /**
  * The state of the system as the supervisor sees it.*/
 
-SuperNodeMediator::SuperNodeMediator()
+SuperNodeMediator::SuperNodeMediator(const std::string& node_name): SUPER_NODE_NAME(node_name)
 {
 }
 

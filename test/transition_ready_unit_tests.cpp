@@ -10,15 +10,16 @@ using namespace am;
  * https://automodality.atlassian.net/wiki/spaces/AMROS/pages/929234949/AMROS+System+States
  *
  */
+
+const string SUPER_NODE_NAME = "am_super";
+
 class TransitionReady : public ::testing::Test
 {
 protected:
 
   SuperNodeMediator superNodeMediator;
-  const std::string SUPER_NODE_NAME = "am_super";
 
-  //initalize mediator using member initializer list
-  TransitionReady() : superNodeMediator(SUPER_NODE_NAME){} 
+  TransitionReady() : superNodeMediator(SUPER_NODE_NAME){}
 
   SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
   {

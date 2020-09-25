@@ -11,7 +11,7 @@ using namespace am;
  *
  */
 
-const string SUPER_NODE_NAME = "am_super";
+const string SUPER_NODE_NAME = "my_super_node";
 
 class TransitionReady : public ::testing::Test
 {

@@ -5,7 +5,7 @@
 using namespace std;
 using namespace am;
 
-const string SUPER_NODE_NAME = "am_super";
+const string SUPER_NODE_NAME = "my_super_node";
 
 SuperNodeMediator superNodeMediator(SUPER_NODE_NAME);
 
@@ -33,12 +33,12 @@ TEST(Node, nodeNameStripped_EmptyStringDoesNotExplode)
 
 TEST(Node, nodeNameIsSuper_ShouldEqualAmSuperWithoutSlash)
 {
-  ASSERT_TRUE(superNodeMediator.nodeNameIsSuper("am_super"));
+  ASSERT_TRUE(superNodeMediator.nodeNameIsSuper(SUPER_NODE_NAME));
 }
 
 TEST(Node, nodeNameIsSuper_ShouldEqualAmSuperWithSlash)
 {
-  ASSERT_TRUE(superNodeMediator.nodeNameIsSuper("/am_super"));
+  ASSERT_TRUE(superNodeMediator.nodeNameIsSuper("/" + SUPER_NODE_NAME));
 }
 TEST(Node, nodeNameIsSuper_ShouldNotEqualMissingA)
 {

@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>  // googletest header file
 #include <am_super/super_node_mediator.h>
+#include <boost/algorithm/string/join.hpp>
 
 using namespace std;
 using namespace am;
@@ -128,15 +129,16 @@ void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::Sup
     return check_result;
   };
   SuperNodeMediator::Supervisor supervisor;
-  string expected_node_name = "test-node";
+  string expected_node_name = node.name.empty()? "test-node": node.name;
   node.name = expected_node_name;
   supervisor.nodes.insert({ node.name, node });
   pair<bool, map<string, string>> result = superNodeMediator.allManifestedNodesCheck(supervisor, check);
-  bool success = get<0>(result);
-  ASSERT_EQ(success, expected_success);
+  map<string, string> error_messages = result.second;
+  bool success = result.first;
+  ASSERT_EQ(success, expected_success) << error_messages.begin()->second;
   if (!expected_error_code.empty())
   {
-    map<string, string> error_messages = get<1>(result);
+    ASSERT_EQ(error_messages.size(),1);
     string node_name = error_messages.begin()->first;
     string error_message = error_messages.begin()->second;
     ASSERT_EQ(node_name, expected_node_name);
@@ -187,6 +189,17 @@ TEST(Node, allManifestedNodesCheck_ErrorStatusReturnsFalse)
   node.online = true;
   node.status = LifeCycleStatus::ERROR;
   assertAllManifestedNodesCheck(false, node, true, "[AA0A]");
+}
+
+[[deprecated]]
+TEST(Node, allManifestedNodesCheck_FlightControllerLifeCycleNotYetImplementedSkipsCheck)
+{
+  SuperNodeMediator::SuperNodeInfo node;
+  node.manifested = true;
+  node.online = true;
+  node.name = "flight_controller";
+  bool expected_success, check_result;
+  assertAllManifestedNodesCheck(expected_success = true, node, check_result = false, "[WCK2]");
 }
 
 TEST(Node, parseManifest_EmptyManifest)

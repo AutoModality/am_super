@@ -153,6 +153,17 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   return transition_instructions;
 }
 
+/** @brief temporary hack to allow manifested nodes to not halt transitions.*/
+bool lifeCycleNotYetImplemented(string node_name)
+{
+  string stripped = SuperNodeMediator::nodeNameStripped(node_name);
+  return  
+    stripped == "flight_controller" || 
+    stripped == "locator" ||
+    stripped == "dji_sdk" ||
+    stripped == "can_node";
+}
+
 bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr)
 {
   //FIXME: am_super check must be delegated to a single method to do the name check
@@ -182,9 +193,6 @@ bool SuperNodeMediator::checkSessionCompleted(SuperNodeMediator::Supervisor& sup
 pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
     Supervisor& supervisor, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&)> check)
 {
-  //FIXME: this should be a private member in super_node_mediator
-  AMLifeCycleMediator life_cycle_mediator; 
-
   map<string, string> failed_nodes;
 
   bool success = true;
@@ -198,22 +206,35 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
       if (!node.online)
       {
         error_message = "[U5JB] check failed: node not online: " + node.name;
+        success = false;
+      }
+      else if (lifeCycleNotYetImplemented(node.name))
+      {
+        error_message = "[WCK2] check skipped: node LifeCycle not yet implemented: " + node.name;
+        //not a failure to allow temporary transition 
       }
       else if (!check(supervisor,node))
       {
+        //FIXME: this should be a private member in super_node_mediator
+        AMLifeCycleMediator life_cycle_mediator; 
         string_view node_state = life_cycle_mediator.stateToString(node.state);
         error_message = "[2OQ0] check failed: node in wrong state " + node.name + ": " + string(node_state);
+        success = false;
       }
       else if (node.status == LifeCycleStatus::ERROR)
       {
         error_message = "[AA0A] check failed: node status is ERROR: " + node.name;
-      }
-      if (!error_message.empty())
-      {
         success = false;
-        failed_nodes.insert(pair<string, string>(node.name, error_message));
       }
-    }  // else not manifested so ignore
+    }
+    else
+    {
+      error_message = "[BJIL] check skipped: not manifested: " + node.name;
+    }
+    if (!error_message.empty())
+    {
+      failed_nodes.insert(pair<string, string>(node.name, error_message));
+    }
   }    // for each node
   return pair(success, failed_nodes);
 }

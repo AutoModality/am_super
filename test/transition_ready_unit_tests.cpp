@@ -63,7 +63,7 @@ void ASSERT_TRANSITION_READY(SuperNodeMediator superNodeMediator, SuperState fro
     node.state = node_state;
     supervisor.nodes.insert({ "manresend_life_cycle_commandifested-node-name", node });
   }
-  SuperNodeMediator::TransitionInstructions result = superNodeMediator.transitionReady(supervisor, superNodeMediator);
+  SuperNodeMediator::TransitionInstructions result = superNodeMediator.transitionReady(supervisor);
   ASSERT_EQ(result.ready_for_transition, expected_ready);
   if (result.ready_for_transition)
   {

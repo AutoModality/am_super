@@ -107,7 +107,7 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   return nr;
 }
   
-SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Supervisor supervisor, SuperNodeMediator& node_mediator)
+SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Supervisor supervisor)
 {
   // required default state is junk and should not be consulted since not ready
   TransitionInstructions transition_instructions;
@@ -122,7 +122,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
     // each state has a check method providing the logic that should cause transition (based on manifest nodes
     // lifecycle)
     // some transitions happen only when check fails (mostly to abort)
-    pair<bool,map<string,string>> check_results = allManifestedNodesCheck(supervisor, node_mediator, transition.check);
+    pair<bool,map<string,string>> check_results = allManifestedNodesCheck(supervisor, *this, transition.check);
 
     if (check_results.first)
     {

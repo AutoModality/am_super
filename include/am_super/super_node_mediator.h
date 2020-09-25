@@ -134,7 +134,7 @@ public:
    * @param supervisor is in charge of knowing the state of the system
    * @return pair with the boolean indicating transition is ready and the optional state if ready.
    */
-  SuperNodeMediator::TransitionInstructions transitionReady(Supervisor supervisor, SuperNodeMediator& node_mediator);
+  SuperNodeMediator::TransitionInstructions transitionReady(Supervisor supervisor);
 
   /**
    * Called when transitionReady state fails to provide a LifeCycleCommand for those states

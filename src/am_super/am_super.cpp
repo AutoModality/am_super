@@ -533,7 +533,7 @@ private:
     else
     {
       // ask the mediator to check with the supervisor
-      SuperNodeMediator::TransitionInstructions transition_instructions = node_mediator_.transitionReady(supervisor_, node_mediator_);
+      SuperNodeMediator::TransitionInstructions transition_instructions = node_mediator_.transitionReady(supervisor_);
       if (transition_instructions.ready_for_transition)
       {
         setSystemState(transition_instructions.new_state);

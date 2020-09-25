@@ -528,7 +528,7 @@ private:
   {
     if(getState() == LifeCycleState::INACTIVE) //if super lifecycle is currently inactive
     {
-      sendLifeCycleCommand(node_mediator_.SUPER_NODE_NAME, LifeCycleCommand::ACTIVATE); //FIXME: make SUPER private
+      sendLifeCycleCommand(node_mediator_.getNodeName(), LifeCycleCommand::ACTIVATE); 
     }
     else
     {

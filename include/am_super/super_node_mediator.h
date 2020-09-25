@@ -24,9 +24,11 @@ private:
   // SuperStateMediator super_state_mediator;
   // AMLifeCycleMediator life_cycle_mediator;
 
+  const std::string SUPER_NODE_NAME = "am_super"; 
+
 public:
   SuperNodeMediator();
-  const std::string SUPER_NODE_NAME = "am_super"; 
+  
 
   /**
    * Instructions Super receives from flight controller.
@@ -78,6 +80,9 @@ public:
     /** True indicates the session controller has signaled the end of the session (flight, etc). */
     bool session_completed;
   };
+
+  /** Returns the name of the node that is using the mediator */
+  std::string_view getNodeName();
 
   /**Standardizes the node name which sometimes starts with `/`.
    * @param node_name orginal name with characgters

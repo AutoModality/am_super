@@ -81,7 +81,12 @@ std::string SuperNodeMediator::nodeNameStripped(std::string node_name)
 
 bool SuperNodeMediator::nodeNameIsSuper(std::string node_name, SuperNodeMediator& node_mediator)
 {
-  return SuperNodeMediator::nodeNameStripped(node_name) == node_mediator.SUPER_NODE_NAME; //FIXME: call methood to access constants and make member private
+  return SuperNodeMediator::nodeNameStripped(node_name) == node_mediator.getNodeName(); 
+}
+
+std::string_view SuperNodeMediator::getNodeName()
+{
+  return SUPER_NODE_NAME;
 }
 
 void  SuperNodeMediator::addSuperToManifest(SuperNodeMediator::Supervisor& supervisor)

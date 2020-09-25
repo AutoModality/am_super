@@ -5,7 +5,9 @@
 using namespace std;
 using namespace am;
 
-SuperNodeMediator superNodeMediator("am_super");
+const string SUPER_NODE_NAME = "am_super";
+
+SuperNodeMediator superNodeMediator(SUPER_NODE_NAME);
 
 TEST(Node, nodeNameStripped_RemovesLeadingSlash)
 {

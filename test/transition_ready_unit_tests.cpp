@@ -13,8 +13,12 @@ using namespace am;
 class TransitionReady : public ::testing::Test
 {
 protected:
+
   SuperNodeMediator superNodeMediator;
-  TransitionReady() : superNodeMediator("am_super"){}
+  const std::string SUPER_NODE_NAME = "am_super";
+
+  //initalize mediator using member initializer list
+  TransitionReady() : superNodeMediator(SUPER_NODE_NAME){} 
 
   SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
   {

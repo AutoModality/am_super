@@ -20,15 +20,6 @@ namespace am
 {
 class SuperNodeMediator
 {
-private:
-  AMLifeCycleMediator life_cycle_mediator;
-
-  /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
-  [[deprecated]]
-  bool lifeCycleNotYetImplemented(string node_name);
-
-  const std::string SUPER_NODE_NAME = "am_super"; 
-
 public:
   SuperNodeMediator(const std::string& node_name);
   
@@ -82,6 +73,41 @@ public:
     
     /** True indicates the session controller has signaled the end of the session (flight, etc). */
     bool session_completed;
+  };
+
+  /**Encapsulates properties and methods that relate to the transition of states
+   * from various sources (SuperState, NodeLifecycle, Flight Controller) to ensure
+   * the system state is correct.
+   */
+  struct StateTransition
+  {
+    StateTransition(SuperState _to_state, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check,
+                    LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1)
+    {
+      to_state = _to_state;
+      check = _check;
+      life_cycle_command = _life_cycle_command;
+      on_check_result = true; //TODO: remove this; we are assuming the check method should always return true now
+    }
+    /**The future Supervisor.systemState if checks pass.*/
+    SuperState to_state;
+    /**Function that indicates if the transition is allowed (based on node lifecycle)*/
+    std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check;
+
+    /**If the check result matches this value, then transition*/
+    bool on_check_result;
+
+    /**State change based on flight controller state 
+     * DEPRECATED - Remove when operator_is_ready_to_arm is complete AM-461 
+     */
+    std::map<SuperNodeMediator::SuperFltCtrlState, SuperState> flt_ctrl_state_map;
+
+    /**Certain states are waiting on nodes to do their thing.  Sending lifecycle commands to new nodes
+     * or nodes that missed previous messages will help flush these pending nodes to finish.
+     */
+    LifeCycleCommand life_cycle_command;
+
+    bool hasLifecycleCommand();
   };
 
   /** Returns the name of the node that is using the mediator */
@@ -210,6 +236,19 @@ public:
 
   /** @return a csv string of names of the manifested nodes not online */
   string manifestedNodesNotOnlineNamesList(Supervisor supervisor);
+
+private:
+  /** provides LifeCycleMediator methods */
+  AMLifeCycleMediator life_cycle_mediator;
+
+  /** keyed by the current system state, if the check method passes then the new state will be the given.*/
+  const std::map<SuperState, StateTransition> state_transitions_ ;
+
+  /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
+  [[deprecated]]
+  bool lifeCycleNotYetImplemented(string node_name);
+
+  const std::string SUPER_NODE_NAME = "am_super"; 
 
 };
 }

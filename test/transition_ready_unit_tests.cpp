@@ -10,10 +10,16 @@ using namespace am;
  * https://automodality.atlassian.net/wiki/spaces/AMROS/pages/929234949/AMROS+System+States
  *
  */
+
+const string SUPER_NODE_NAME = "my_super_node";
+
 class TransitionReady : public ::testing::Test
 {
 protected:
-  SuperNodeMediator* superNodeMediator;
+
+  SuperNodeMediator superNodeMediator;
+
+  TransitionReady() : superNodeMediator(SUPER_NODE_NAME){}
 
   SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
   {
@@ -90,20 +96,20 @@ void ASSERT_TRANSITION_READY(SuperNodeMediator superNodeMediator, SuperState fro
 
 TEST_F(TransitionReady, transitionReady_BootingToReadyWhenAllNodesInactive)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::BOOTING, LifeCycleState::INACTIVE, true,
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::BOOTING, LifeCycleState::INACTIVE, true,
                           SuperState::READY);
 }
 
 TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenAllNodesAreActive)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::BOOTING, LifeCycleState::ACTIVE,
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::BOOTING, LifeCycleState::ACTIVE,
                         (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,
                         LifeCycleCommand::CONFIGURE);
 }
 
 TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenNodesNotInactiveOrActive)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::BOOTING, LifeCycleState::UNCONFIGURED, 
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::BOOTING, LifeCycleState::UNCONFIGURED, 
                         (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,
                         LifeCycleCommand::CONFIGURE);
 }
@@ -111,14 +117,14 @@ TEST_F(TransitionReady, transitionReady_BootingNoTransitionWhenNodesNotInactiveO
 /**Not ready to transition from Ready so send another configure command */
 TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotArmed)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, (LifeCycleState)NULL,
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::READY, (LifeCycleState)NULL,
                           (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, false,
                           LifeCycleCommand::CONFIGURE, OperatorCommand::LAUNCH);
 }
 
 TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenArmed)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::READY, (LifeCycleState)NULL,
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::READY, (LifeCycleState)NULL,
                           (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::ARMING, false,
                           LifeCycleCommand::CONFIGURE, OperatorCommand::ARM);
 }
@@ -126,59 +132,59 @@ TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenArmed)
 
 TEST_F(TransitionReady, transitionReady_ArmingToArmedWhenNodesActive)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMING, LifeCycleState::ACTIVE, true, SuperState::ARMED);
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::ARMING, LifeCycleState::ACTIVE, true, SuperState::ARMED);
 }
 
 TEST_F(TransitionReady, transitionReady_ArmingNoTransitionWhenNodesNotActive)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMING, LifeCycleState::INACTIVE,
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::ARMING, LifeCycleState::INACTIVE,
                           (SuperNodeMediator::SuperFltCtrlState)NULL, false, (SuperState)NULL, true,
                           LifeCycleCommand::ACTIVATE);
 }
 /* Enable when we implement multimap for SuperState to StateTransition*/
 TEST_F(TransitionReady, DISABLED_transitionReady_ArmedToAbortWhenDectivated)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMED, LifeCycleState::INACTIVE, true, SuperState::ABORT);
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::ARMED, LifeCycleState::INACTIVE, true, SuperState::ABORT);
 }
 /* Enable when we implement multimap for SuperState to StateTransition*/
 TEST_F(TransitionReady, DISABLED_transitionReady_ArmedNoTransitionRemainingActivated)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMED, LifeCycleState::ACTIVE, false);
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::ARMED, LifeCycleState::ACTIVE, false);
 }
 
 TEST_F(TransitionReady, transitionReady_ArmedToAutoWhenReadyToLaunchAndOperatorIsLaunching)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMED, LifeCycleState::ACTIVE, 
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::ARMED, LifeCycleState::ACTIVE, 
                           (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::AUTO, 
                           false, (LifeCycleCommand)NULL, OperatorCommand::LAUNCH);
 }
 
 TEST_F(TransitionReady, DISABLED_transitionReady_AutoToAbortWhenDeactivated)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::AUTO, LifeCycleState::INACTIVE, true, SuperState::ABORT);
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::AUTO, LifeCycleState::INACTIVE, true, SuperState::ABORT);
 }
 
 TEST_F(TransitionReady, DISABLED_transitionReady_ArmedNoTransitionWhenRemainingActive)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::AUTO, LifeCycleState::ACTIVE, false);
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::AUTO, LifeCycleState::ACTIVE, false);
 }
 
 //======================= FLIGHT Controller States =====================================
 
 TEST_F(TransitionReady, DISABLED_transitionReady_ArmedToAutoWhenFlightControllerIsAuto)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::ARMED, LifeCycleState::ACTIVE,
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::ARMED, LifeCycleState::ACTIVE,
                           SuperNodeMediator::SuperFltCtrlState::AUTO, true, SuperState::AUTO);
 }
 
 TEST_F(TransitionReady, DISABLED_transitionReady_AutoToSemiAutoWhenFlightControllerIsHold)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::AUTO, LifeCycleState::ACTIVE,
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::AUTO, LifeCycleState::ACTIVE,
                           SuperNodeMediator::SuperFltCtrlState::HOLD, true, SuperState::SEMI_AUTO);
 }
 
 TEST_F(TransitionReady, DISABLED_transitionReady_SemiAutoToAutoWhenFlightControllerIsHold)
 {
-  ASSERT_TRANSITION_READY(*superNodeMediator, SuperState::SEMI_AUTO, LifeCycleState::ACTIVE,
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::SEMI_AUTO, LifeCycleState::ACTIVE,
                           SuperNodeMediator::SuperFltCtrlState::AUTO, true, SuperState::AUTO);
 }

@@ -54,7 +54,9 @@ constexpr string_view CORRECT = "CORRECT";  // represents the correct result in 
 string_view order_status = CORRECT;         // used in test to verify order_status is correct
 
 AMLifeCycleMediator life_cycle_mediator_;
-SuperNodeMediator super_node_mediator_;
+
+const std::string SUPER_NODE_MEDIATOR = "am_super";
+SuperNodeMediator super_node_mediator_(SUPER_NODE_MEDIATOR);
 
 class LifeCycleNodeTest : public ::testing::Test, am::AMLifeCycle
 {

@@ -21,12 +21,17 @@ namespace am
 class SuperNodeMediator
 {
 private:
-  // SuperStateMediator super_state_mediator;
-  // AMLifeCycleMediator life_cycle_mediator;
+  AMLifeCycleMediator life_cycle_mediator;
+
+  /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
+  [[deprecated]]
+  bool lifeCycleNotYetImplemented(string node_name);
+
+  const std::string SUPER_NODE_NAME = "am_super"; 
 
 public:
-  SuperNodeMediator();
-  static const std::string SUPER_NODE_NAME; 
+  SuperNodeMediator(const std::string& node_name);
+  
 
   /**
    * Instructions Super receives from flight controller.
@@ -79,14 +84,18 @@ public:
     bool session_completed;
   };
 
+  /** Returns the name of the node that is using the mediator */
+  std::string_view getNodeName();
+
   /**Standardizes the node name which sometimes starts with `/`.
    * @param node_name orginal name with characgters
    * @return node name stripped of characters.
    */
-  static std::string nodeNameStripped(std::string node_name);
+  //FIXME: move static method to am_utils
+ static std::string nodeNameStripped(std::string node_name);
 
   /** The only place authorized to validate a node is super.  It will call nodeNameStripped just in case.*/
-  static bool nodeNameIsSuper(std::string node_name);
+  bool nodeNameIsSuper(std::string node_name);
 
   /** Appends super node to the manifest to participate as a lifecycle node */
   void addSuperToManifest(SuperNodeMediator::Supervisor& supervisor);
@@ -141,27 +150,27 @@ public:
   /**
   * FIXME: this should be a private method
    * @return true if Lifecyle state is inactive (already configured)*/
-  static bool checkReadyToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+  static bool checkReadyToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
 
   /** 
    * FIXME: this should be a private method
    * @return true if the operator sent the signal to arm the system  */
-  static bool checkOperatorSignaledToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+  static bool checkOperatorSignaledToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
 
   /**
    * FIXME: this should be a private method
    * @return true if Lifecyle state equals ACTIVE */
-  static bool checkArmed(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+  static bool checkArmed(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
 
   /**
    * FIXME: this should be a private method
    * @return true if the operator is ready to launch */
-  static bool checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+  static bool checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
 
   /**
    * FIXME: this should be a private method
    * @return true if the session controller signaled the end of the session (flight, etc) */
-  static bool checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr);
+  static bool checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
 
 
   /** Reads the given manifest string, typically provided by a ROS param,
@@ -188,7 +197,7 @@ public:
      *
      */
   pair<bool, map<string, string>> allManifestedNodesCheck(Supervisor& supervisor,
-                                                          function<bool(Supervisor&,SuperNodeMediator::SuperNodeInfo&)> check);
+                                                          function<bool(Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check);
 
   /**@return the number of nodes where online=true*/
   int nodesOnlineCount(Supervisor supervisor);

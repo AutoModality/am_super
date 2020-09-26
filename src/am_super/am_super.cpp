@@ -113,7 +113,7 @@ private:
 #endif
 
 public:
-  AMSuper() : nh_("~")
+  AMSuper() : nh_("~"), node_mediator_(SuperNodeMediator::nodeNameStripped(ros::this_node::getName()))
   {
     ROS_INFO_STREAM(NODE_FUNC);
 
@@ -504,7 +504,7 @@ private:
    * - all states are UNCONFIGURED or INACTIVE or ACTIVE
    * - all statuses are not error
    */
-  bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&)> check)
+  bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
   {
     pair<bool, map<string, string>> result = node_mediator_.allManifestedNodesCheck(supervisor_, check);
     bool success = result.first;
@@ -528,7 +528,7 @@ private:
   {
     if(getState() == LifeCycleState::INACTIVE) //if super lifecycle is currently inactive
     {
-      sendLifeCycleCommand(SuperNodeMediator::SUPER_NODE_NAME, LifeCycleCommand::ACTIVATE);
+      sendLifeCycleCommand(node_mediator_.getNodeName(), LifeCycleCommand::ACTIVATE); 
     }
     else
     {

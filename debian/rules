@@ -61,4 +61,5 @@ override_dh_auto_install:
 	dh_auto_install
 
 override_dh_builddeb:
+	# write debian package to current directory
 	dh_builddeb --destdir=.

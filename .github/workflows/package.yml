@@ -15,6 +15,14 @@ jobs:
       - uses: AutoModality/action-clean@v1.1.0
       - uses: actions/checkout@v2
       - uses: rlespinasse/github-slug-action@2.0.0 # for GITHUB_REF_SLUG
+      - name: Restore Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            catkin_ws
+          # different caches for different architectures and control files
+          # first element in matrix.os is the architecture, by convention
+          key: ${{ matrix.os[0] }}-${{ hashFiles('debian/control') }}
       - name: Package
         id: package
         uses: AutoModality/action-package-debian-ros@AM-498/amros-docker

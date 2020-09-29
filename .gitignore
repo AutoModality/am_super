@@ -35,8 +35,9 @@ catkin_ws
 debian/ros-*
 debian/*-stamp
 debian/source
-ros-melodic-am-super-*.deb
 debian/.debhelper/*
 .history
 build
 .catkin_tools
+*.deb
+*.ddeb

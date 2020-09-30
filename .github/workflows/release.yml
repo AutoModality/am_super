@@ -81,7 +81,7 @@ jobs:
       - name: Package if published
         if: steps.published.outputs.value == 'true'
         id: package
-        uses: AutoModality/action-package-debian-ros@v4
+        uses: AutoModality/action-package-debian-ros@v5-amros
         with:
           version: ${{ steps.version.outputs.value }}
           release-repo-entitlement: ${{ secrets.CLOUDSMITH_READ_RELEASE_ENTITLEMENT }}

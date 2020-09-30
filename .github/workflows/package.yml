@@ -25,7 +25,7 @@ jobs:
       #     key: ${{ matrix.os[0] }}-${{ env.GITHUB_REF_SLUG }}-${{ hashFiles('debian/control') }}
       - name: Package
         id: package
-        uses: AutoModality/action-package-debian-ros@v5-amros
+        uses: AutoModality/action-package-debian-ros@AM-498/ros-docker
         with:
           branch: ${{ env.GITHUB_REF_SLUG }}
           build-number: ${{ github.run_number }}

@@ -71,7 +71,7 @@ jobs:
           version=${{ github.run_number }}-${{ env.GITHUB_REF_SLUG }}
           control_version_line="$package_name ($version) unstable; urgency=medium"
           echo $control_version_line > debian/changelog
-          sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' debian/control
+          echo developer | sudo -S mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' debian/control
           fakeroot debian/rules binary
           package_filename=$(ls *.deb | head -1)
           echo "::set-env name=PACKAGE_FILE::$package_filename"

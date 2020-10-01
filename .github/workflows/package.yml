@@ -66,8 +66,28 @@ jobs:
       - uses: rlespinasse/github-slug-action@2.0.0 # for GITHUB_REF_SLUG
       - name: Package
         run: |
+          # see AutoModality/action-package-debian-ros for the origin of this 
+          package_name=ros-melodic-am-super
+          version=${{ github.run_number }}-${{ env.GITHUB_REF_SLUG }}
+          control_version_line="$package_name ($version) unstable; urgency=medium"
+          echo $control_version_line > debian/changelog
+          sudo mk-build-deps --install --tool='apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' debian/control
           fakeroot debian/rules binary
-          ls -lah
+          package_filename=$(ls *.deb | head -1)
+          echo "::set-env name=PACKAGE_FILE::$package_filename"
+      - name: Deploy
+        id: deploy
+        uses: AutoModality/action-cloudsmith@0.2.0
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          command: 'push'
+          format: 'deb'
+          owner: 'automodality'
+          repo: 'dev'
+          distro: 'ubuntu'
+          release: 'bionic'
+          file: '${{ env.PACKAGE_FILE }}'
+
   draft-pr:
     runs-on: ubuntu-18.04
     needs: package

@@ -59,6 +59,15 @@ jobs:
         with:
           name: ${{ steps.xunit-viewer.outputs.report-name }}
           path: ${{ steps.xunit-viewer.outputs.report-dir }}
+  package-cuda:
+    runs-on: [arm64,self-hosted,linux, cuda]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: rlespinasse/github-slug-action@2.0.0 # for GITHUB_REF_SLUG
+      - name: Package
+        run: |
+          fakeroot debian/rules binary
+          ls -lah
   draft-pr:
     runs-on: ubuntu-18.04
     needs: package

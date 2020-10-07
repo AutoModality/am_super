@@ -71,7 +71,7 @@ public:
     /** Indication that the operator is supervising the robot, has sent the signal to arm the system */
     OperatorCommand last_op_command_received;
     
-    /** True indicates the session controller has signaled the end of the session (flight, etc). */
+    /** True indicates the session  controller has signaled the end of the session (flight, etc). */
     bool session_completed;
   };
 

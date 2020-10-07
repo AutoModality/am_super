@@ -124,6 +124,13 @@ TEST(Node, checkOperatorSignaledToLaunch)
   ASSERT_CHECK(function, (LifeCycleState)NULL, true, OperatorCommand::LAUNCH);
 }
 
+TEST(Node, checkOperatorSignaledToManual)
+{
+  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> function = SuperNodeMediator::checkOperatorSignaledToManual;
+
+  ASSERT_CHECK(function, (LifeCycleState)NULL, false, OperatorCommand::LAUNCH);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, true, OperatorCommand::MANUAL);
+}
 void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result,
                                    string expected_error_code = "")
 {

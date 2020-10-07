@@ -242,7 +242,7 @@ private:
   AMLifeCycleMediator life_cycle_mediator;
 
   /** keyed by the current system state, if the check method passes then the new state will be the given.*/
-  const std::map<SuperState, StateTransition> state_transitions_ ;
+  const std::map<SuperState, vector<StateTransition>> state_transitions_ ;
 
   /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
   [[deprecated]]

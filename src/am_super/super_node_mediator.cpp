@@ -12,17 +12,12 @@ namespace am
 SuperNodeMediator::SuperNodeMediator(const std::string& node_name): 
   SUPER_NODE_NAME(node_name),
   state_transitions_({
-  { SuperState::BOOTING, { SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::CONFIGURE } },
-  { SuperState::READY,
-    { SuperState::ARMING, SuperNodeMediator::checkOperatorSignaledToArm } /* no lifecycle command since waiting on operator */ }, 
-  { SuperState::ARMING,
-    { SuperState::ARMED, SuperNodeMediator::checkArmed, LifeCycleCommand::ACTIVATE } },
-  { SuperState::ARMED,
-    { SuperState::AUTO, SuperNodeMediator::checkOperatorSignaledToLaunch } },
-  { SuperState::AUTO,
-    { SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted } },
-  { SuperState::DISARMING,
-    { SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE }  },
+    { SuperState::BOOTING,   { {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::CONFIGURE} } }, 
+    { SuperState::READY,     { {SuperState::ARMING, SuperNodeMediator::checkOperatorSignaledToArm} } },
+    { SuperState::ARMING,    { {SuperState::ARMED, SuperNodeMediator::checkArmed, LifeCycleCommand::ACTIVATE} } },
+    { SuperState::ARMED,     { {SuperState::AUTO, SuperNodeMediator::checkOperatorSignaledToLaunch} } },
+    { SuperState::AUTO,      { {SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted} } },
+    { SuperState::DISARMING, { {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE} } }
   })
 {
 
@@ -78,8 +73,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   // only check those states registered with state_transitions
   if (state_transitions_.count(supervisor.system_state))
   {
-    StateTransition transition = state_transitions_.at(supervisor.system_state);
-
+    StateTransition transition = state_transitions_.at(supervisor.system_state)[0]; //Currently takes the first one for each one
     // each state has a check method providing the logic that should cause transition (based on manifest nodes
     // lifecycle)
     // some transitions happen only when check fails (mostly to abort)

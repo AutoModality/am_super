@@ -17,7 +17,9 @@ SuperNodeMediator::SuperNodeMediator(const std::string& node_name):
     { SuperState::ARMING,    { {SuperState::ARMED, SuperNodeMediator::checkArmed, LifeCycleCommand::ACTIVATE} } },
     { SuperState::ARMED,     { {SuperState::AUTO, SuperNodeMediator::checkOperatorSignaledToLaunch} } },
     { SuperState::AUTO,      { {SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted} } },
-    { SuperState::DISARMING, { {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE} } }
+    { SuperState::DISARMING, { 
+      {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE}, 
+      {SuperState::MANUAL, SuperNodeMediator::checkOperatorSignaledToManual} } }
   })
 {
 
@@ -144,6 +146,11 @@ bool SuperNodeMediator::checkOperatorSignaledToLaunch(SuperNodeMediator::Supervi
 bool SuperNodeMediator::checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
   return supervisor.session_completed;
+}
+
+bool SuperNodeMediator::checkOperatorSignaledToManual(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
+{
+  return supervisor.last_op_command_received == OperatorCommand::MANUAL;
 }
 
 pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(

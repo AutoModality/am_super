@@ -198,6 +198,10 @@ public:
    * @return true if the session controller signaled the end of the session (flight, etc) */
   static bool checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
 
+  /** 
+   * FIXME: this should be a private method
+   * @return true if the operator sent the signal to transition to manual  */
+  static bool checkOperatorSignaledToManual(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
 
   /** Reads the given manifest string, typically provided by a ROS param,
    * converts it to a vector or node names which will be assigned to the given

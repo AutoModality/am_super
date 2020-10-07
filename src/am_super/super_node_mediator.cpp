@@ -90,6 +90,15 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
       vector<string> failed_nodes;
       boost::copy(check_results.second | boost::adaptors::map_keys, std::back_inserter(failed_nodes));
       transition_instructions.failed_nodes = failed_nodes;
+      
+      // no transition based on state alone.
+      // maybe set the state by the filght controller
+      if (transition.flt_ctrl_state_map.count(supervisor.flt_ctrl_state))
+      {
+        SuperState new_state = transition.flt_ctrl_state_map.at(supervisor.flt_ctrl_state);
+        transition_instructions.ready_for_transition = true;
+        transition_instructions.new_state = new_state;
+      }
 
       // some check failures send lifecycle commands to encourage nodes to progress so the state can change
       if (transition.hasLifecycleCommand())

@@ -97,11 +97,6 @@ public:
     /**If the check result matches this value, then transition*/
     bool on_check_result;
 
-    /**State change based on flight controller state 
-     * DEPRECATED - Remove when operator_is_ready_to_arm is complete AM-461 
-     */
-    std::map<SuperNodeMediator::SuperFltCtrlState, SuperState> flt_ctrl_state_map;
-
     /**Certain states are waiting on nodes to do their thing.  Sending lifecycle commands to new nodes
      * or nodes that missed previous messages will help flush these pending nodes to finish.
      */

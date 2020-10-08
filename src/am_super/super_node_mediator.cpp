@@ -124,6 +124,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
         {
           transition_instructions.ready_for_transition = true;
           transition_instructions.new_state = t.to_state;
+          break; //only one check should pass
         }
       }
     }

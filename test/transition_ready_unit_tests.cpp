@@ -188,3 +188,17 @@ TEST_F(TransitionReady, DISABLED_transitionReady_SemiAutoToAutoWhenFlightControl
   ASSERT_TRANSITION_READY(superNodeMediator, SuperState::SEMI_AUTO, LifeCycleState::ACTIVE,
                           SuperNodeMediator::SuperFltCtrlState::AUTO, true, SuperState::AUTO);
 }
+
+TEST_F(TransitionReady, transitionReady_AutoToManualWhenOperatorSignalsManual)
+{
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::AUTO, LifeCycleState::ACTIVE, 
+                            (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::MANUAL, 
+                            false, (LifeCycleCommand)NULL, OperatorCommand::MANUAL);
+}
+
+TEST_F(TransitionReady, transitionReady_AutoToManualWhenOperatorSignalsManual)
+{
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::AUTO, LifeCycleState::ACTIVE, 
+                            (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::MANUAL, 
+                            false, (LifeCycleCommand)NULL, OperatorCommand::MANUAL);
+}

@@ -195,10 +195,3 @@ TEST_F(TransitionReady, transitionReady_AutoToManualWhenOperatorSignalsManual)
                             (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::MANUAL, 
                             false, (LifeCycleCommand)NULL, OperatorCommand::MANUAL);
 }
-
-TEST_F(TransitionReady, transitionReady_AutoToManualWhenOperatorSignalsManual)
-{
-  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::AUTO, LifeCycleState::ACTIVE, 
-                            (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::MANUAL, 
-                            false, (LifeCycleCommand)NULL, OperatorCommand::MANUAL);
-}

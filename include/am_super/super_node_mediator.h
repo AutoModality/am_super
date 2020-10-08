@@ -62,6 +62,11 @@ public:
      */
     SuperState system_state;
 
+    /** 
+     * Requested state of super
+     */
+    SuperState system_to_state;
+
     /**
      * Allows super to manage flight control.
      * DEPRECATED - Remove this when operator_is_ready is complete AM-461
@@ -237,12 +242,15 @@ public:
   /** @return a csv string of names of the manifested nodes not online */
   string manifestedNodesNotOnlineNamesList(Supervisor supervisor);
 
+  /** @return The 'toState' associated with this operator command */
+  SuperState operatorCommandToState(const OperatorCommand& command);
+
 private:
   /** provides LifeCycleMediator methods */
   AMLifeCycleMediator life_cycle_mediator;
 
   /** keyed by the current system state, if the check method passes then the new state will be the given.*/
-  const std::map<SuperState, StateTransition> state_transitions_ ;
+  const std::map<SuperState, map<SuperState, StateTransition>> state_transitions_ ;
 
   /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
   [[deprecated]]

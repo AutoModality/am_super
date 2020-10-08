@@ -274,6 +274,7 @@ private:
 
     ROS_INFO_STREAM("Received controller state");
     node_mediator_.setControllerState(supervisor_, (ControllerState)rmsg->state);
+    supervisor_.system_to_state = SuperState::DISARMING; //FIXME: should set to respective controllerstate in method
   }
 
   void operatorCommandCB(const ros::MessageEvent<brain_box_msgs::OperatorCommand const>& event)
@@ -283,6 +284,7 @@ private:
     ROS_INFO_STREAM(rmsg->node_name << " sent command " << rmsg->command );
     
     node_mediator_.setOperatorCommand(supervisor_, (OperatorCommand)rmsg->command);
+    supervisor_.system_to_state = node_mediator_.operatorCommandToState((OperatorCommand)rmsg->command); //FIXME: set the state in the method
     // TODO: topic name should come from vb_util_lib::topics.
     LOG_MSG("/operator/command", rmsg, SU_LOG_LEVEL);
   }

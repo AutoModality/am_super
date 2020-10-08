@@ -70,41 +70,61 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   transition_instructions.ready_for_transition = false;
   transition_instructions.resend_life_cycle_command = false;
 
+  pair<bool,map<string,string>> check_results;
+
   // only check those states registered with state_transitions
   if (state_transitions_.count(supervisor.system_state))
   {
-    StateTransition transition = state_transitions_.at(supervisor.system_state)[0]; //Currently takes the first one for each one
+    vector<StateTransition> transitions = state_transitions_.at(supervisor.system_state); 
     // each state has a check method providing the logic that should cause transition (based on manifest nodes
     // lifecycle)
     // some transitions happen only when check fails (mostly to abort)
-    pair<bool,map<string,string>> check_results = allManifestedNodesCheck(supervisor, transition.check);
-
-    if (check_results.first)
+    if(transitions.size() == 1)
     {
-      transition_instructions.ready_for_transition = true;
-      transition_instructions.new_state = transition.to_state;
+      StateTransition transition = transitions[0];
+      check_results = allManifestedNodesCheck(supervisor, transition.check);
+
+      if (check_results.first)
+      {
+        transition_instructions.ready_for_transition = true;
+        transition_instructions.new_state = transition.to_state;
+      }
+      else
+      {
+        
+        vector<string> failed_nodes;
+        boost::copy(check_results.second | boost::adaptors::map_keys, std::back_inserter(failed_nodes));
+        transition_instructions.failed_nodes = failed_nodes;
+        
+        // no transition based on state alone.
+        // maybe set the state by the filght controller
+        if (transition.flt_ctrl_state_map.count(supervisor.flt_ctrl_state))
+        {
+          SuperState new_state = transition.flt_ctrl_state_map.at(supervisor.flt_ctrl_state);
+          transition_instructions.ready_for_transition = true;
+          transition_instructions.new_state = new_state;
+        }
+
+        // some check failures send lifecycle commands to encourage nodes to progress so the state can change
+        if (transition.hasLifecycleCommand())
+        {
+          transition_instructions.resend_life_cycle_command = true;
+          transition_instructions.life_cycle_command = transition.life_cycle_command;
+        }
+      }
     }
     else
     {
-      
-      vector<string> failed_nodes;
-      boost::copy(check_results.second | boost::adaptors::map_keys, std::back_inserter(failed_nodes));
-      transition_instructions.failed_nodes = failed_nodes;
-      
-      // no transition based on state alone.
-      // maybe set the state by the filght controller
-      if (transition.flt_ctrl_state_map.count(supervisor.flt_ctrl_state))
+      //Loop through possible transitions and find one and only one check that passes and transition to the 
+      //state associated with it
+      for(const StateTransition& t : transitions)
       {
-        SuperState new_state = transition.flt_ctrl_state_map.at(supervisor.flt_ctrl_state);
-        transition_instructions.ready_for_transition = true;
-        transition_instructions.new_state = new_state;
-      }
-
-      // some check failures send lifecycle commands to encourage nodes to progress so the state can change
-      if (transition.hasLifecycleCommand())
-      {
-        transition_instructions.resend_life_cycle_command = true;
-        transition_instructions.life_cycle_command = transition.life_cycle_command;
+        check_results = allManifestedNodesCheck(supervisor, t.check);
+        if(check_results.first)
+        {
+          transition_instructions.ready_for_transition = true;
+          transition_instructions.new_state = t.to_state;
+        }
       }
     }
   }

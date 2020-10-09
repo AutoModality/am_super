@@ -57,6 +57,7 @@ void ASSERT_TRANSITION_READY(SuperNodeMediator superNodeMediator, SuperState fro
   supervisor.system_state = from;
   supervisor.flt_ctrl_state = flt_ctrl_state;
   supervisor.last_op_command_received = last_op_command_received;
+  supervisor.system_to_state = superNodeMediator.operatorCommandToState(last_op_command_received);
 
   {
     SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();

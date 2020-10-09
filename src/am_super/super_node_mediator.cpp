@@ -77,7 +77,6 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   transition_instructions.resend_life_cycle_command = false;
 
   if(supervisor.system_state == SuperState::BOOTING) supervisor.system_to_state = SuperState::READY;
-  if(supervisor.system_state == SuperState::READY) supervisor.system_to_state = SuperState::ARMING;
   if(supervisor.system_state == SuperState::ARMING) supervisor.system_to_state = SuperState::ARMED;
   if(supervisor.system_state == SuperState::DISARMING) supervisor.system_to_state = SuperState::READY;
   

@@ -29,6 +29,11 @@ operatorToSuperState_({
   {OperatorCommand::ARM, SuperState::ARMING},
   {OperatorCommand::LAUNCH, SuperState::AUTO},
   {OperatorCommand::MANUAL, SuperState::MANUAL}
+}),
+next_state_({
+  {SuperState::BOOTING, SuperState::READY},
+  {SuperState::ARMING, SuperState::ARMED},
+  {SuperState::DISARMING, SuperState::READY}
 })
 {
 
@@ -81,10 +86,12 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   transition_instructions.ready_for_transition = false;
   transition_instructions.resend_life_cycle_command = false;
 
-  if(supervisor.system_state == SuperState::BOOTING) supervisor.system_to_state = SuperState::READY;
-  if(supervisor.system_state == SuperState::ARMING) supervisor.system_to_state = SuperState::ARMED;
-  if(supervisor.system_state == SuperState::DISARMING) supervisor.system_to_state = SuperState::READY;
-  
+  if(next_state_.count(supervisor.system_state))
+  {
+    //set next state based on current state
+    supervisor.system_to_state = next_state_.at(supervisor.system_state);
+  }
+
   // only check those states registered with state_transitions
   if (state_transitions_.count(supervisor.system_state) && state_transitions_.at(supervisor.system_state).count(supervisor.system_to_state))
   {

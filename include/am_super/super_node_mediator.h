@@ -257,7 +257,12 @@ private:
 
   /** keyed by the current system state, if the check method passes then the new state will be the given.*/
   const std::map<SuperState, map<SuperState, StateTransition>> state_transitions_ ;
+
+  /** keyed by the operator command we receive, value is the SuperState that we should transition into*/
   const std::map<OperatorCommand, SuperState> operatorToSuperState_;
+
+  /** keyed by the current system state, value is the SuperState we should transition into given this state*/
+  const std::map<SuperState, SuperState> next_state_;
 
   /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
   [[deprecated]]

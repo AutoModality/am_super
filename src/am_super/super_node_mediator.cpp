@@ -24,6 +24,11 @@ SuperNodeMediator::SuperNodeMediator(const std::string& node_name):
     {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted}}}},
   {SuperState::DISARMING, {
     {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE}}}}
+}),
+operatorToSuperState_({
+  {OperatorCommand::ARM, SuperState::ARMING},
+  {OperatorCommand::LAUNCH, SuperState::AUTO},
+  {OperatorCommand::MANUAL, SuperState::MANUAL}
 })
 {
 
@@ -268,15 +273,18 @@ bool SuperNodeMediator::StateTransition::hasLifecycleCommand()
   return life_cycle_command != (LifeCycleCommand)-1;
 }
 
-SuperState SuperNodeMediator::operatorCommandToState(const OperatorCommand& command) 
+bool SuperNodeMediator::isOperatorCommand(const OperatorCommand &command)
 {
-  switch(command)
-  {
-    case OperatorCommand::ARM:    return SuperState::ARMING;
-    case OperatorCommand::LAUNCH: return SuperState::AUTO;
-    case OperatorCommand::MANUAL: return SuperState::MANUAL;
-  }
-  return (SuperState)NULL;
+  return operatorToSuperState_.count(command);
 }
 
+SuperState SuperNodeMediator::operatorCommandToState(const OperatorCommand& command) 
+{
+  return operatorToSuperState_.at(command);
+}
+
+void SuperNodeMediator::setSystemToState(Supervisor &supervisor, const SuperState &state)
+  {
+    supervisor.system_to_state = state;
+  }
 }

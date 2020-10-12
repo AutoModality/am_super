@@ -242,8 +242,14 @@ public:
   /** @return a csv string of names of the manifested nodes not online */
   string manifestedNodesNotOnlineNamesList(Supervisor supervisor);
 
+  /** @return if a SuperState is associated with the operator command */
+  bool isOperatorCommand(const OperatorCommand &command);
+
   /** @return The 'toState' associated with this operator command */
   SuperState operatorCommandToState(const OperatorCommand& command);
+
+  /** sets the next system state */
+  void setSystemToState(Supervisor &supervisor, const SuperState &state);
 
 private:
   /** provides LifeCycleMediator methods */
@@ -251,6 +257,7 @@ private:
 
   /** keyed by the current system state, if the check method passes then the new state will be the given.*/
   const std::map<SuperState, map<SuperState, StateTransition>> state_transitions_ ;
+  const std::map<OperatorCommand, SuperState> operatorToSuperState_;
 
   /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
   [[deprecated]]

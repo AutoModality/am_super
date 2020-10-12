@@ -280,11 +280,20 @@ private:
   void operatorCommandCB(const ros::MessageEvent<brain_box_msgs::OperatorCommand const>& event)
   {
     const brain_box_msgs::OperatorCommand::ConstPtr& rmsg = event.getMessage();
+
+    OperatorCommand command = (OperatorCommand)rmsg->command;
     
     ROS_INFO_STREAM(rmsg->node_name << " sent command " << rmsg->command );
     
-    node_mediator_.setOperatorCommand(supervisor_, (OperatorCommand)rmsg->command);
-    supervisor_.system_to_state = node_mediator_.operatorCommandToState((OperatorCommand)rmsg->command); //FIXME: set the state in the method
+    if(node_mediator_.isOperatorCommand(command))
+    {
+      node_mediator_.setOperatorCommand(supervisor_, command);
+      node_mediator_.setSystemToState(supervisor_, node_mediator_.operatorCommandToState(command));
+    }
+    else 
+    {
+      ROS_ERROR_STREAM("Received illegal operator command");
+    }
     // TODO: topic name should come from vb_util_lib::topics.
     LOG_MSG("/operator/command", rmsg, SU_LOG_LEVEL);
   }

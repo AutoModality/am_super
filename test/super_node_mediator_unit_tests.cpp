@@ -394,3 +394,31 @@ TEST(Node, setOperatorCommand)
   superNodeMediator.setOperatorCommand(supervisor, command);
   ASSERT_EQ(supervisor.last_op_command_received, command);
 }
+
+TEST(Node, isOperatorCommand)
+{
+  OperatorCommand command;
+  bool result;
+
+  command = OperatorCommand::LAUNCH;
+  result = superNodeMediator.isOperatorCommand(command);
+  ASSERT_TRUE(result);
+
+  command = (OperatorCommand)3121;
+  result = superNodeMediator.isOperatorCommand(command);
+  ASSERT_FALSE(result);
+}
+
+TEST(Node, setSystemToState)
+{
+  SuperNodeMediator::Supervisor supervisor;
+
+  superNodeMediator.setSystemToState(supervisor, SuperState::MANUAL);
+  ASSERT_EQ(SuperState::MANUAL, supervisor.system_to_state);
+}
+
+TEST(Node, operatorCommandToState)
+{
+  SuperState result = superNodeMediator.operatorCommandToState(OperatorCommand::LAUNCH);
+  ASSERT_EQ(result, SuperState::AUTO);
+}

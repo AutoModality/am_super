@@ -171,6 +171,11 @@ public:
    */
   SuperNodeMediator::TransitionInstructions transitionReady(Supervisor supervisor);
 
+  /** 
+   * FIXME: currently public for unit testing
+   * @return the transition that we will attempt */
+  StateTransition getStateTransition(const Supervisor &supervisor);
+
   /**
    * Called when transitionReady state fails to provide a LifeCycleCommand for those states
    * that notify other nodes to keep trying (early in the lifecycle).
@@ -249,9 +254,6 @@ private:
   /** keyed by the current system state, if the check method passes then the new state will be the given.*/
   const std::map<SuperState, std::map<SuperState, StateTransition>> state_transitions_ ;
 
-  /** 
-   * @return the transition that we will attempt */
-  StateTransition getStateTransition(const Supervisor &supervisor);
 
   /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
   [[deprecated]]

@@ -394,3 +394,19 @@ TEST(Node, setOperatorCommand)
   superNodeMediator.setOperatorCommand(supervisor, command);
   ASSERT_EQ(supervisor.last_op_command_received, command);
 }
+
+TEST(Node, getStateTransition)
+{
+  SuperNodeMediator::Supervisor supervisor;
+
+  SuperState expected_state = SuperState::ARMING;
+  supervisor.system_state = SuperState::READY;
+  SuperNodeMediator::StateTransition t = superNodeMediator.getStateTransition(supervisor);
+  ASSERT_EQ(t.to_state, expected_state);
+
+  expected_state = SuperState::AUTO;
+  supervisor.system_state = SuperState::ARMED;
+  supervisor.last_op_command_received = OperatorCommand::LAUNCH;
+  t = superNodeMediator.getStateTransition(supervisor);
+  ASSERT_EQ(t.to_state, expected_state);
+}

@@ -82,11 +82,12 @@ public:
   struct StateTransition
   {
     StateTransition(SuperState _to_state, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check,
-                    LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1)
+                    LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1, OperatorCommand _operator_command = (OperatorCommand)-1)
     {
       to_state = _to_state;
       check = _check;
       life_cycle_command = _life_cycle_command;
+      operator_command = _operator_command;
       on_check_result = true; //TODO: remove this; we are assuming the check method should always return true now
     }
     /**The future Supervisor.systemState if checks pass.*/
@@ -106,6 +107,10 @@ public:
      * or nodes that missed previous messages will help flush these pending nodes to finish.
      */
     LifeCycleCommand life_cycle_command;
+
+    OperatorCommand operator_command;
+
+    bool hasOperatorCommand();
 
     bool hasLifecycleCommand();
   };
@@ -242,7 +247,11 @@ private:
   AMLifeCycleMediator life_cycle_mediator;
 
   /** keyed by the current system state, if the check method passes then the new state will be the given.*/
-  const std::map<SuperState, StateTransition> state_transitions_ ;
+  const std::map<SuperState, std::map<SuperState, StateTransition>> state_transitions_ ;
+
+  /** 
+   * @return the transition that we will attempt */
+  StateTransition getStateTransition(const Supervisor &supervisor);
 
   /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
   [[deprecated]]

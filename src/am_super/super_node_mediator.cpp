@@ -12,18 +12,21 @@ namespace am
 SuperNodeMediator::SuperNodeMediator(const std::string& node_name): 
   SUPER_NODE_NAME(node_name),
   state_transitions_({
-  { SuperState::BOOTING, { SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::CONFIGURE } },
-  { SuperState::READY,
-    { SuperState::ARMING, SuperNodeMediator::checkOperatorSignaledToArm } /* no lifecycle command since waiting on operator */ }, 
-  { SuperState::ARMING,
-    { SuperState::ARMED, SuperNodeMediator::checkArmed, LifeCycleCommand::ACTIVATE } },
-  { SuperState::ARMED,
-    { SuperState::AUTO, SuperNodeMediator::checkOperatorSignaledToLaunch } },
-  { SuperState::AUTO,
-    { SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted } },
-  { SuperState::DISARMING,
-    { SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE }  },
-  })
+    { SuperState::BOOTING, {
+    {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::CONFIGURE}}}},
+  { SuperState::READY, {
+    {SuperState::ARMING, {SuperState::ARMING, SuperNodeMediator::checkOperatorSignaledToArm }}}},
+  {SuperState::ARMING, {
+    {SuperState::ARMED, {SuperState::ARMED, SuperNodeMediator::checkArmed, LifeCycleCommand::ACTIVATE}}}},
+  {SuperState::ARMED, {
+    {SuperState::AUTO, {SuperState::AUTO, SuperNodeMediator::checkOperatorSignaledToLaunch, (LifeCycleCommand)-1, OperatorCommand::LAUNCH}},
+    {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm}}
+  }},
+  {SuperState::AUTO, {
+    {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted}}}},
+  {SuperState::DISARMING, {
+    {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE}}}}
+})
 {
 
 }
@@ -67,7 +70,37 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   nr.status = LifeCycleStatus::OK;
   return nr;
 }
-  
+
+bool SuperNodeMediator::StateTransition::hasOperatorCommand()
+{
+  //-1 is also the constructor default
+  return operator_command != (OperatorCommand)-1;
+}
+
+SuperNodeMediator::StateTransition SuperNodeMediator::getStateTransition(const Supervisor &supervisor)
+{ 
+  std::map<SuperState, StateTransition> transitions(state_transitions_.at(supervisor.system_state));
+  //if there is only one state transition, then attempt this one always
+  if(transitions.size() == 1)
+  {
+    return transitions.begin()->second;
+  }
+
+  //FIXME: if more than one, find a state transition to attempt
+  else
+  {
+    for (auto [state, transition] : transitions)
+    {
+      //if this transition has an operator command associated with it and super received it
+      if(transition.hasOperatorCommand() && supervisor.last_op_command_received == transition.operator_command)
+      {
+        return transition;
+      }
+      //TODO: if this transition has a controller state associated with it and super has received it
+    }
+  }
+}
+
 SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Supervisor supervisor)
 {
   // required default state is junk and should not be consulted since not ready
@@ -78,8 +111,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   // only check those states registered with state_transitions
   if (state_transitions_.count(supervisor.system_state))
   {
-    StateTransition transition = state_transitions_.at(supervisor.system_state);
-
+    StateTransition transition = getStateTransition(supervisor);
     // each state has a check method providing the logic that should cause transition (based on manifest nodes
     // lifecycle)
     // some transitions happen only when check fails (mostly to abort)

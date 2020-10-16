@@ -81,7 +81,7 @@ public:
    */
   struct StateTransition
   {
-    StateTransition(SuperState _to_state, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check,
+    StateTransition(SuperState _to_state = (SuperState)-1, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check = NULL,
                     LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1, OperatorCommand _operator_command = (OperatorCommand)-1)
     {
       to_state = _to_state;
@@ -113,6 +113,8 @@ public:
     bool hasOperatorCommand();
 
     bool hasLifecycleCommand();
+
+    bool isValid();
   };
 
   /** Returns the name of the node that is using the mediator */
@@ -180,6 +182,8 @@ public:
    * the to_state equal to the the systems current state, which can then be checked to determine
    * if a transition should occur */
   StateTransition getStateTransition(const Supervisor &supervisor);
+
+  StateTransition invalidTransition();
 
   /**
    * Called when transitionReady state fails to provide a LifeCycleCommand for those states

@@ -99,10 +99,17 @@ SuperNodeMediator::StateTransition SuperNodeMediator::getStateTransition(const S
     }
   }
   //if no statetransition was found, return a new stateTransition with the to_state equal to the current state. This indicates no transition should occur
-  return StateTransition {
-    supervisor.system_state, 
-    (std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)>)NULL
-  };
+  return invalidTransition();
+}
+
+SuperNodeMediator::StateTransition SuperNodeMediator::invalidTransition()
+{
+  return StateTransition();
+}
+
+bool SuperNodeMediator::StateTransition::isValid()
+{
+  return to_state != (SuperState)-1; //FIXME: reference constant
 }
 
 SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Supervisor supervisor)
@@ -121,7 +128,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
     // some transitions happen only when check fails (mostly to abort)
 
     //if there was no statetransition as indicated by the to_state equalling the current state, then don't transition
-    if(supervisor.system_state != transition.to_state)
+    if(transition.isValid())
     {
       pair<bool,map<string,string>> check_results = allManifestedNodesCheck(supervisor, transition.check);
 

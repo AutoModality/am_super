@@ -173,7 +173,12 @@ public:
 
   /** 
    * FIXME: currently public for unit testing
-   * @return the transition that we will attempt */
+   * @return the transition that we will attempt
+   * 
+   * IMPORTANT: if no state transition can be determined based off of supervisor, then no
+   * transition should occur. In this case, the method returns a StateTransition struct with
+   * the to_state equal to the the systems current state, which can then be checked to determine
+   * if a transition should occur */
   StateTransition getStateTransition(const Supervisor &supervisor);
 
   /**

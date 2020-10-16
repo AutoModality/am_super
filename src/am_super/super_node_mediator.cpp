@@ -19,7 +19,8 @@ SuperNodeMediator::SuperNodeMediator(const std::string& node_name):
   {SuperState::ARMING, {
     {SuperState::ARMED, {SuperState::ARMED, SuperNodeMediator::checkArmed, LifeCycleCommand::ACTIVATE}}}},
   {SuperState::ARMED, {
-    {SuperState::AUTO, {SuperState::AUTO, SuperNodeMediator::checkOperatorSignaledToLaunch, (LifeCycleCommand)-1, OperatorCommand::LAUNCH}}
+    {SuperState::AUTO, {SuperState::AUTO, SuperNodeMediator::checkOperatorSignaledToLaunch, (LifeCycleCommand)-1, OperatorCommand::LAUNCH}},
+    {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, (LifeCycleCommand)-1, OperatorCommand::CANCEL}}
   }},
   {SuperState::AUTO, {
     {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted}}}},
@@ -41,7 +42,6 @@ std::string SuperNodeMediator::nodeNameStripped(std::string node_name)
     return node_name;
   }
 }
-
 bool SuperNodeMediator::nodeNameIsSuper(std::string node_name)
 {
   return SuperNodeMediator::nodeNameStripped(node_name) == this->getNodeName(); 
@@ -98,6 +98,11 @@ SuperNodeMediator::StateTransition SuperNodeMediator::getStateTransition(const S
       //TODO: if this transition has a controller state associated with it and super has received it
     }
   }
+  //if no statetransition was found, return a new stateTransition with the to_state equal to the current state. This indicates no transition should occur
+  return StateTransition {
+    supervisor.system_state, 
+    (std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)>)NULL
+  };
 }
 
 SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Supervisor supervisor)
@@ -114,34 +119,39 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
     // each state has a check method providing the logic that should cause transition (based on manifest nodes
     // lifecycle)
     // some transitions happen only when check fails (mostly to abort)
-    pair<bool,map<string,string>> check_results = allManifestedNodesCheck(supervisor, transition.check);
 
-    if (check_results.first)
+    //if there was no statetransition as indicated by the to_state equalling the current state, then don't transition
+    if(supervisor.system_state != transition.to_state)
     {
-      transition_instructions.ready_for_transition = true;
-      transition_instructions.new_state = transition.to_state;
-    }
-    else
-    {
-      
-      vector<string> failed_nodes;
-      boost::copy(check_results.second | boost::adaptors::map_keys, std::back_inserter(failed_nodes));
-      transition_instructions.failed_nodes = failed_nodes;
-      
-      // no transition based on state alone.
-      // maybe set the state by the filght controller
-      if (transition.flt_ctrl_state_map.count(supervisor.flt_ctrl_state))
+      pair<bool,map<string,string>> check_results = allManifestedNodesCheck(supervisor, transition.check);
+
+      if (check_results.first)
       {
-        SuperState new_state = transition.flt_ctrl_state_map.at(supervisor.flt_ctrl_state);
         transition_instructions.ready_for_transition = true;
-        transition_instructions.new_state = new_state;
+        transition_instructions.new_state = transition.to_state;
       }
-
-      // some check failures send lifecycle commands to encourage nodes to progress so the state can change
-      if (transition.hasLifecycleCommand())
+      else
       {
-        transition_instructions.resend_life_cycle_command = true;
-        transition_instructions.life_cycle_command = transition.life_cycle_command;
+        
+        vector<string> failed_nodes;
+        boost::copy(check_results.second | boost::adaptors::map_keys, std::back_inserter(failed_nodes));
+        transition_instructions.failed_nodes = failed_nodes;
+        
+        // no transition based on state alone.
+        // maybe set the state by the filght controller
+        if (transition.flt_ctrl_state_map.count(supervisor.flt_ctrl_state))
+        {
+          SuperState new_state = transition.flt_ctrl_state_map.at(supervisor.flt_ctrl_state);
+          transition_instructions.ready_for_transition = true;
+          transition_instructions.new_state = new_state;
+        }
+
+        // some check failures send lifecycle commands to encourage nodes to progress so the state can change
+        if (transition.hasLifecycleCommand())
+        {
+          transition_instructions.resend_life_cycle_command = true;
+          transition_instructions.life_cycle_command = transition.life_cycle_command;
+        }
       }
     }
   }

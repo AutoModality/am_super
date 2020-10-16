@@ -108,12 +108,22 @@ public:
      */
     LifeCycleCommand life_cycle_command;
 
+    /** The command super needs to receive in order for us to attempt this transition*/
     OperatorCommand operator_command;
 
+    /**
+     * @returns true - operator_command has been assigned 
+     */
     bool hasOperatorCommand();
 
+    /**
+     * @returns true - life_cycle_command has been assigned
+     */
     bool hasLifecycleCommand();
 
+    /**
+     * @returns true - to_state has been assigned
+     */
     bool isValid();
   };
 
@@ -175,14 +185,13 @@ public:
 
   /** 
    * FIXME: currently public for unit testing
-   * @return the transition that we will attempt
-   * 
-   * IMPORTANT: if no state transition can be determined based off of supervisor, then no
-   * transition should occur. In this case, the method returns a StateTransition struct with
-   * the to_state equal to the the systems current state, which can then be checked to determine
-   * if a transition should occur */
+   * @return the transition that we will attempt. If no transition was found, invalidTransition() is returned
+   */
   StateTransition getStateTransition(const Supervisor &supervisor);
 
+  /**
+   * @return Default StateTransition with all of its fields at default. A transition is valid if it's values aren't default
+   */
   StateTransition invalidTransition();
 
   /**

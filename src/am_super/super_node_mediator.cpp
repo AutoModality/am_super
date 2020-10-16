@@ -79,27 +79,35 @@ bool SuperNodeMediator::StateTransition::hasOperatorCommand()
 SuperNodeMediator::StateTransition SuperNodeMediator::getStateTransition(const Supervisor &supervisor)
 { 
   std::map<SuperState, StateTransition> transitions(state_transitions_.at(supervisor.system_state));
+
+  StateTransition attempt_transition;
+
   //if there is only one state transition, then attempt this one always
   if(transitions.size() == 1)
   {
-    return transitions.begin()->second;
+    attempt_transition = transitions.begin()->second;
   }
 
   //FIXME: if more than one, find a state transition to attempt
-  else
+  else if(transitions.size() > 1)
   {
     for (auto [state, transition] : transitions)
     {
       //if this transition has an operator command associated with it and super received it
       if(transition.hasOperatorCommand() && supervisor.last_op_command_received == transition.operator_command)
       {
-        return transition;
+        attempt_transition = transition;
       }
       //TODO: if this transition has a controller state associated with it and super has received it
     }
   }
-  //if no statetransition was found, return a new stateTransition with the to_state equal to the current state. This indicates no transition should occur
-  return invalidTransition();
+  else
+  {
+    //if no statetransition was found, return a new stateTransition with the to_state equal to the current state. This indicates no transition should occur
+    attempt_transition = invalidTransition();
+  }
+  
+  return attempt_transition;
 }
 
 SuperNodeMediator::StateTransition SuperNodeMediator::invalidTransition()

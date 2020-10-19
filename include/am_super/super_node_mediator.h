@@ -13,6 +13,7 @@
 #include <am_super/super_state_mediator.h>
 #include <am_super/operator_command.h>
 #include <am_super/controller_state.h>
+#include <am_super/state_transition.h>
 
 
 using namespace std;
@@ -21,6 +22,7 @@ namespace am
 class SuperNodeMediator
 {
 public:
+  
   SuperNodeMediator(const std::string& node_name);
   
 
@@ -73,58 +75,6 @@ public:
     
     /** True indicates the session controller has signaled the end of the session (flight, etc). */
     bool session_completed;
-  };
-
-  /**Encapsulates properties and methods that relate to the transition of states
-   * from various sources (SuperState, NodeLifecycle, Flight Controller) to ensure
-   * the system state is correct.
-   */
-  struct StateTransition
-  {
-    StateTransition(SuperState _to_state = (SuperState)-1, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check = NULL,
-                    LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1, OperatorCommand _operator_command = (OperatorCommand)-1)
-    {
-      to_state = _to_state;
-      check = _check;
-      life_cycle_command = _life_cycle_command;
-      operator_command = _operator_command;
-      on_check_result = true; //TODO: remove this; we are assuming the check method should always return true now
-    }
-    /**The future Supervisor.systemState if checks pass.*/
-    SuperState to_state;
-    /**Function that indicates if the transition is allowed (based on node lifecycle)*/
-    std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check;
-
-    /**If the check result matches this value, then transition*/
-    bool on_check_result;
-
-    /**State change based on flight controller state 
-     * DEPRECATED - Remove when operator_is_ready_to_arm is complete AM-461 
-     */
-    std::map<SuperNodeMediator::SuperFltCtrlState, SuperState> flt_ctrl_state_map;
-
-    /**Certain states are waiting on nodes to do their thing.  Sending lifecycle commands to new nodes
-     * or nodes that missed previous messages will help flush these pending nodes to finish.
-     */
-    LifeCycleCommand life_cycle_command;
-
-    /** The command super needs to receive in order for us to attempt this transition*/
-    OperatorCommand operator_command;
-
-    /**
-     * @returns true - operator_command has been assigned 
-     */
-    bool hasOperatorCommand();
-
-    /**
-     * @returns true - life_cycle_command has been assigned
-     */
-    bool hasLifecycleCommand();
-
-    /**
-     * @returns true - to_state has been assigned
-     */
-    bool isValid();
   };
 
   /** Returns the name of the node that is using the mediator */
@@ -280,6 +230,7 @@ private:
   const std::string SUPER_NODE_NAME = "am_super"; 
 
 };
+
 }
 
 #endif /* AM_SUPER_INCLUDE_AM_SUPER_NODE_MEDIATOR_H_ */

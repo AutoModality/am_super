@@ -81,12 +81,13 @@ public:
    */
   struct StateTransition
   {
-    StateTransition(SuperState _to_state, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check,
-                    LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1)
+    StateTransition(SuperState _to_state = (SuperState)-1, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check = NULL,
+                    LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1, OperatorCommand _operator_command = (OperatorCommand)-1)
     {
       to_state = _to_state;
       check = _check;
       life_cycle_command = _life_cycle_command;
+      operator_command = _operator_command;
       on_check_result = true; //TODO: remove this; we are assuming the check method should always return true now
     }
     /**The future Supervisor.systemState if checks pass.*/
@@ -107,7 +108,23 @@ public:
      */
     LifeCycleCommand life_cycle_command;
 
+    /** The command super needs to receive in order for us to attempt this transition*/
+    OperatorCommand operator_command;
+
+    /**
+     * @returns true - operator_command has been assigned 
+     */
+    bool hasOperatorCommand();
+
+    /**
+     * @returns true - life_cycle_command has been assigned
+     */
     bool hasLifecycleCommand();
+
+    /**
+     * @returns true - to_state has been assigned
+     */
+    bool isValid();
   };
 
   /** Returns the name of the node that is using the mediator */
@@ -165,6 +182,17 @@ public:
    * @return pair with the boolean indicating transition is ready and the optional state if ready.
    */
   SuperNodeMediator::TransitionInstructions transitionReady(Supervisor supervisor);
+
+  /** 
+   * FIXME: currently public for unit testing
+   * @return the transition that we will attempt. If no transition was found, invalidTransition() is returned
+   */
+  StateTransition getStateTransition(const Supervisor &supervisor);
+
+  /**
+   * @return Default StateTransition with all of its fields at default. A transition is valid if it's values aren't default
+   */
+  StateTransition invalidTransition();
 
   /**
    * Called when transitionReady state fails to provide a LifeCycleCommand for those states
@@ -242,7 +270,8 @@ private:
   AMLifeCycleMediator life_cycle_mediator;
 
   /** keyed by the current system state, if the check method passes then the new state will be the given.*/
-  const std::map<SuperState, StateTransition> state_transitions_ ;
+  const std::map<SuperState, std::map<SuperState, StateTransition>> state_transitions_ ;
+
 
   /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
   [[deprecated]]

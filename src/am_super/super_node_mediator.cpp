@@ -70,13 +70,13 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   return nr;
 }
 
-bool StateTransition::hasOperatorCommand()
+bool SuperNodeMediator::StateTransition::hasOperatorCommand()
 {
   //-1 is also the constructor default
   return operator_command != (OperatorCommand)-1;
 }
 
-StateTransition SuperNodeMediator::getStateTransition(const Supervisor &supervisor)
+SuperNodeMediator::StateTransition SuperNodeMediator::getStateTransition(const Supervisor &supervisor)
 { 
   std::map<SuperState, StateTransition> transitions(state_transitions_.at(supervisor.system_state));
 
@@ -110,12 +110,12 @@ StateTransition SuperNodeMediator::getStateTransition(const Supervisor &supervis
   return attempt_transition;
 }
 
-StateTransition SuperNodeMediator::invalidTransition()
+SuperNodeMediator::StateTransition SuperNodeMediator::invalidTransition()
 {
   return StateTransition();
 }
 
-bool StateTransition::isValid()
+bool SuperNodeMediator::StateTransition::isValid()
 {
   return to_state != (SuperState)-1; //FIXME: reference constant
 }
@@ -313,7 +313,7 @@ void SuperNodeMediator::setOperatorCommand(SuperNodeMediator::Supervisor& supevi
   supevisor.last_op_command_received = command;
 }
 
-bool StateTransition::hasLifecycleCommand()
+bool SuperNodeMediator::StateTransition::hasLifecycleCommand()
 {
   //-1 is also the constructor default
   return life_cycle_command != (LifeCycleCommand)-1;

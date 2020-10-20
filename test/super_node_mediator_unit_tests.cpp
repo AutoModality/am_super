@@ -69,12 +69,13 @@ TEST(Node, initializeManifestedNode_FieldsAreSetProperly)
 }
 
 void ASSERT_CHECK(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check, LifeCycleState state, bool expected,
-  OperatorCommand last_op_command_received = OperatorCommand::ARM)
+  OperatorCommand last_op_command_received = OperatorCommand::ARM, ControllerState last_controller_state_received = ControllerState::COMPLETED)
 {
   SuperNodeMediator::SuperNodeInfo info;
   SuperNodeMediator::Supervisor supervisor;
   info.state = state;
   supervisor.last_op_command_received = last_op_command_received;
+  supervisor.last_controller_state_received = last_controller_state_received;
   ASSERT_EQ(check(supervisor, info, superNodeMediator), expected) << "For state: " + std::to_string((int)state);
 }
 
@@ -122,6 +123,22 @@ TEST(Node, checkOperatorSignaledToLaunch)
 
   ASSERT_CHECK(function, (LifeCycleState)NULL, false, OperatorCommand::ARM);
   ASSERT_CHECK(function, (LifeCycleState)NULL, true, OperatorCommand::LAUNCH);
+}
+
+TEST(Node, checkSessionCompleted)
+{
+  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> function = SuperNodeMediator::checkSessionCompleted;
+
+  ASSERT_CHECK(function, (LifeCycleState)NULL, false, (OperatorCommand)NULL, (ControllerState)-1);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, true, (OperatorCommand)NULL, ControllerState::COMPLETED);
+}
+
+TEST(Node, checkOperatorSignaledToManual)
+{
+  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> function = SuperNodeMediator::checkOperatorSignaledToManual;
+
+  ASSERT_CHECK(function, (LifeCycleState)NULL, false, OperatorCommand::ARM);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, true, OperatorCommand::MANUAL);
 }
 
 void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result,

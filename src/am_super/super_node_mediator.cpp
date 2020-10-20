@@ -97,6 +97,10 @@ SuperNodeMediator::StateTransition SuperNodeMediator::getStateTransition(const S
         attempt_transition = transition;
       }
       //TODO: if this transition has a controller state associated with it and super has received it
+      else if(transitionHasControllerState(transition) && supervisor.last_controller_state_received == transition.controller_state)
+      {
+        attempt_transition = transition;
+      }
     }
   }
   else
@@ -203,7 +207,7 @@ bool SuperNodeMediator::checkOperatorSignaledToLaunch(SuperNodeMediator::Supervi
 
 bool SuperNodeMediator::checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
-  return supervisor.session_completed;
+  return supervisor.last_controller_state_received == ControllerState::COMPLETED;
 }
 
 bool SuperNodeMediator::checkOperatorSignaledToManual(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
@@ -303,12 +307,7 @@ string SuperNodeMediator::manifestedNodesNotOnlineNamesList(Supervisor superviso
 
 void SuperNodeMediator::setControllerState(SuperNodeMediator::Supervisor& supervisor, const ControllerState& controller_state)
 {
-  switch(controller_state)
-    {
-      case ControllerState::COMPLETED:
-        supervisor.session_completed = true;
-        break;
-    }
+  supervisor.last_controller_state_received = controller_state;
 }
 
 void SuperNodeMediator::setOperatorCommand(SuperNodeMediator::Supervisor& supevisor, const OperatorCommand& command)
@@ -320,6 +319,11 @@ bool SuperNodeMediator::transitionHasLifecycleCommand(const StateTransition& tra
 {
   //-1 is also the constructor default
   return transition.life_cycle_command != (LifeCycleCommand)-1;
+}
+
+bool SuperNodeMediator::transitionHasControllerState(const StateTransition& transition) 
+{
+  return transition.controller_state != (ControllerState)-1;
 }
 
 }

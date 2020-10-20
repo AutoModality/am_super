@@ -375,10 +375,9 @@ TEST(Node, setControllerState)
   SuperNodeMediator::Supervisor supervisor;
 
   ControllerState state = ControllerState::COMPLETED;
-  supervisor.session_completed = false;
   superNodeMediator.setControllerState(supervisor, state);
 
-  ASSERT_TRUE(supervisor.session_completed);
+  ASSERT_EQ(supervisor.last_controller_state_received, state);
 }
 
 TEST(Node, setOperatorCommand)

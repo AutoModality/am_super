@@ -70,8 +70,8 @@ public:
     /** Indication that the operator is supervising the robot, has sent the signal to arm the system */
     OperatorCommand last_op_command_received;
     
-    /** True indicates the session controller has signaled the end of the session (flight, etc). */
-    bool session_completed;
+    /** Last state of the controller received */
+    ControllerState last_controller_state_received;
   };
 
   /**Encapsulates properties and methods that relate to the transition of states
@@ -81,7 +81,8 @@ public:
   struct StateTransition
   {
     StateTransition(SuperState _to_state = (SuperState)-1, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check = NULL,
-                    LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1, OperatorCommand _operator_command = (OperatorCommand)-1)
+                    LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1, OperatorCommand _operator_command = (OperatorCommand)-1, 
+                    ControllerState controller_state = (ControllerState)-1)
     {
       to_state = _to_state;
       check = _check;
@@ -109,6 +110,9 @@ public:
 
     /** The command super needs to receive in order for us to attempt this transition*/
     OperatorCommand operator_command;
+
+    /** The controllerState super needs to receive in order for us to attempt this transition */
+    ControllerState controller_state;
   };
 
   /**Provided by transitionReady method used by the node to trnasition states and send signals according
@@ -263,6 +267,11 @@ public:
    * @returns true - life_cycle_command has been assigned
    */
   bool transitionHasLifecycleCommand(const StateTransition&);
+
+  /**
+   * @returns true - life_cycle_command has been assigned
+   */
+  bool transitionHasControllerState(const StateTransition&);
 
   /**
    * @returns true - to_state has been assigned

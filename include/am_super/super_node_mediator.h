@@ -23,7 +23,6 @@ class SuperNodeMediator
 public:
   SuperNodeMediator(const std::string& node_name);
   
-
   /**
    * Instructions Super receives from flight controller.
    */
@@ -110,51 +109,7 @@ public:
 
     /** The command super needs to receive in order for us to attempt this transition*/
     OperatorCommand operator_command;
-
-    /**
-     * @returns true - operator_command has been assigned 
-     */
-    bool hasOperatorCommand();
-
-    /**
-     * @returns true - life_cycle_command has been assigned
-     */
-    bool hasLifecycleCommand();
-
-    /**
-     * @returns true - to_state has been assigned
-     */
-    bool isValid();
   };
-
-  /** Returns the name of the node that is using the mediator */
-  std::string_view getNodeName();
-
-  /**Standardizes the node name which sometimes starts with `/`.
-   * @param node_name orginal name with characgters
-   * @return node name stripped of characters.
-   */
-  //FIXME: move static method to am_utils
- static std::string nodeNameStripped(std::string node_name);
-
-  /** The only place authorized to validate a node is super.  It will call nodeNameStripped just in case.*/
-  bool nodeNameIsSuper(std::string node_name);
-
-  /** Appends super node to the manifest to participate as a lifecycle node */
-  void addSuperToManifest(SuperNodeMediator::Supervisor& supervisor);
-
-  /** Sets the supervisors last operator command received */
-  void setOperatorCommand(SuperNodeMediator::Supervisor& supervisor, const OperatorCommand& command);
-
-  /** Stores the last state reported by the controller node into supervisor */
-  void setControllerState(SuperNodeMediator::Supervisor& supervisor, const ControllerState& controller_state);
-
-  /**Nodes declared in manifest are created with default
-   * state so the system can seek them out.
-   *
-   * @return node info with given name and default information
-   */
-  SuperNodeMediator::SuperNodeInfo initializeManifestedNode(std::string node_name);
 
   /**Provided by transitionReady method used by the node to trnasition states and send signals according
    * the properties within.
@@ -174,6 +129,35 @@ public:
     /** List of node names that should receive the life_cycle_command */
     std::vector<string> failed_nodes;
   };
+
+  /** Returns the name of the node that is using the mediator */
+  std::string_view getNodeName();
+
+  /**Standardizes the node name which sometimes starts with `/`.
+   * @param node_name orginal name with characgters
+   * @return node name stripped of characters.
+   */
+  //FIXME: move static method to am_utils
+  static std::string nodeNameStripped(std::string node_name);
+
+  /** The only place authorized to validate a node is super.  It will call nodeNameStripped just in case.*/
+  bool nodeNameIsSuper(std::string node_name);
+
+  /** Appends super node to the manifest to participate as a lifecycle node */
+  void addSuperToManifest(SuperNodeMediator::Supervisor& supervisor);
+
+  /** Sets the supervisors last operator command received */
+  void setOperatorCommand(SuperNodeMediator::Supervisor& supervisor, const OperatorCommand& command);
+
+  /** Stores the last state reported by the controller node into supervisor */
+  void setControllerState(SuperNodeMediator::Supervisor& supervisor, const ControllerState& controller_state);
+
+  /**Nodes declared in manifest are created with default
+   * state so the system can seek them out.
+   *
+   * @return node info with given name and default information
+   */
+  SuperNodeMediator::SuperNodeInfo initializeManifestedNode(std::string node_name);
 
   /**Provides the next state when the system is in a specific state provided by the Supervisor.
    * https://automodality.atlassian.net/wiki/spaces/AMROS/pages/929234949/AMROS+System+States
@@ -265,7 +249,25 @@ public:
   /** @return a csv string of names of the manifested nodes not online */
   string manifestedNodesNotOnlineNamesList(Supervisor supervisor);
 
+  /**
+   * @returns true - operator_command has been assigned 
+   */
+  bool transitionHasOperatorCommand(const StateTransition&);
+
+  /**
+   * @returns true - life_cycle_command has been assigned
+   */
+  bool transitionHasLifecycleCommand(const StateTransition&);
+
+  /**
+   * @returns true - to_state has been assigned
+   */
+  bool transitionIsValid(const StateTransition&);
+
 private:
+  /** name of supervisor node */
+  const std::string SUPER_NODE_NAME;
+
   /** provides LifeCycleMediator methods */
   AMLifeCycleMediator life_cycle_mediator;
 
@@ -276,9 +278,6 @@ private:
   /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
   [[deprecated]]
   bool lifeCycleNotYetImplemented(string node_name);
-
-  const std::string SUPER_NODE_NAME = "am_super"; 
-
 };
 }
 

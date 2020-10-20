@@ -442,14 +442,14 @@ TEST(Node, DISABLED_getStateTransition_AutoToManualWhenOperatorSendsManual)
 TEST(Node, isValid_stateTransition)
 {
   SuperNodeMediator::StateTransition t;
-  ASSERT_FALSE(t.isValid());
+  ASSERT_FALSE(superNodeMediator.transitionIsValid(t));
 
   t.to_state = SuperState::AUTO;
-  ASSERT_TRUE(t.isValid());
+  ASSERT_TRUE(superNodeMediator.transitionIsValid(t));
 }
 
 TEST(Node, invalidTransition)
 {
   SuperNodeMediator::StateTransition t = superNodeMediator.invalidTransition();
-  ASSERT_FALSE(t.isValid());
+  ASSERT_FALSE(superNodeMediator.transitionIsValid(t));
 }

@@ -68,10 +68,10 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   return nr;
 }
 
-bool SuperNodeMediator::StateTransition::hasOperatorCommand()
+bool SuperNodeMediator::transitionHasOperatorCommand(const StateTransition& transition)
 {
   //-1 is also the constructor default
-  return operator_command != (OperatorCommand)-1;
+  return transition.operator_command != (OperatorCommand)-1;
 }
 
 SuperNodeMediator::StateTransition SuperNodeMediator::getStateTransition(const Supervisor &supervisor)
@@ -89,10 +89,10 @@ SuperNodeMediator::StateTransition SuperNodeMediator::getStateTransition(const S
   //FIXME: if more than one, find a state transition to attempt
   else if(transitions.size() > 1)
   {
-    for (auto [state, transition] : transitions)
+    for (auto const& [state, transition] : transitions)
     {
       //if this transition has an operator command associated with it and super received it
-      if(transition.hasOperatorCommand() && supervisor.last_op_command_received == transition.operator_command)
+      if(transitionHasOperatorCommand(transition) && supervisor.last_op_command_received == transition.operator_command)
       {
         attempt_transition = transition;
       }
@@ -113,9 +113,9 @@ SuperNodeMediator::StateTransition SuperNodeMediator::invalidTransition()
   return StateTransition();
 }
 
-bool SuperNodeMediator::StateTransition::isValid()
+bool SuperNodeMediator::transitionIsValid(const StateTransition& transition)
 {
-  return to_state != (SuperState)-1; //FIXME: reference constant
+  return transition.to_state != (SuperState)-1; //FIXME: reference constant
 }
 
 SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Supervisor supervisor)
@@ -134,7 +134,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
     // some transitions happen only when check fails (mostly to abort)
 
     //if there was no statetransition as indicated by the to_state equalling the current state, then don't transition
-    if(transition.isValid())
+    if(transitionIsValid(transition))
     {
       pair<bool,map<string,string>> check_results = allManifestedNodesCheck(supervisor, transition.check);
 
@@ -160,7 +160,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
         }
 
         // some check failures send lifecycle commands to encourage nodes to progress so the state can change
-        if (transition.hasLifecycleCommand())
+        if (transitionHasLifecycleCommand(transition))
         {
           transition_instructions.resend_life_cycle_command = true;
           transition_instructions.life_cycle_command = transition.life_cycle_command;
@@ -311,10 +311,10 @@ void SuperNodeMediator::setOperatorCommand(SuperNodeMediator::Supervisor& supevi
   supevisor.last_op_command_received = command;
 }
 
-bool SuperNodeMediator::StateTransition::hasLifecycleCommand()
+bool SuperNodeMediator::transitionHasLifecycleCommand(const StateTransition& transition)
 {
   //-1 is also the constructor default
-  return life_cycle_command != (LifeCycleCommand)-1;
+  return transition.life_cycle_command != (LifeCycleCommand)-1;
 }
 
 }

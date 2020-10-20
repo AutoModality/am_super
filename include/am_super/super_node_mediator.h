@@ -193,22 +193,27 @@ public:
   /** 
    * FIXME: this should be a private method
    * @return true if the operator sent the signal to arm the system  */
-  static bool checkOperatorSignaledToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
+  static bool checkOperatorSignaledToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
 
   /**
    * FIXME: this should be a private method
    * @return true if Lifecyle state equals ACTIVE */
-  static bool checkArmed(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
+  static bool checkArmed(Supervisor& supervisor, SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
 
   /**
    * FIXME: this should be a private method
    * @return true if the operator is ready to launch */
-  static bool checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
+  static bool checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
 
   /**
    * FIXME: this should be a private method
    * @return true if the session controller signaled the end of the session (flight, etc) */
-  static bool checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
+  static bool checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
+
+  /**
+   * FIXME: this should be a private method
+   * @return true if the session controller signaled the end of the session (flight, etc) */
+  static bool checkOperatorSignaledToManual(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
 
 
   /** Reads the given manifest string, typically provided by a ROS param,

@@ -444,7 +444,7 @@ TEST(Node, getStateTransition_ArmedToAutoWhenOperatorSendsLaunch)
 
 TEST(Node, getStateTransition_AutoToDisarmingWhenControllerStateIsCompleted)
 {
-  ASSERT_getStateTransition(SuperState::AUTO, SuperState::READY, (OperatorCommand)NULL, ControllerState::COMPLETED);
+  ASSERT_getStateTransition(SuperState::AUTO, SuperState::DISARMING, (OperatorCommand)NULL, ControllerState::COMPLETED);
 }
 
 TEST(Node, getStateTransition_DisarmingToReady)

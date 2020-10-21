@@ -10,10 +10,9 @@ using namespace am;
 
 constexpr string_view THIS_NODE_NAME = "/auto_to_manual_rostest";
 
-bool booting = false,
-ready = false,
-arming= false,
-armed= false,
+
+
+bool armed= false,
 in_auto= false,
 manual= false;
 
@@ -28,18 +27,6 @@ void missionStateCallback(const brain_box_msgs::VxState& msg)
 { 
   switch(msg.state)
   {
-    case brain_box_msgs::VxState::BOOTING:
-      ROS_INFO_STREAM("BOOTING received");
-      booting = true;
-      break;
-    case brain_box_msgs::VxState::READY:
-      ROS_INFO_STREAM("READY received");
-      ready = true;
-      break;
-    case brain_box_msgs::VxState::ARMING:
-      ROS_INFO_STREAM("ARMING received");
-      arming = true;
-      break;
     case brain_box_msgs::VxState::ARMED:
       ROS_INFO_STREAM("ARMED received");
       armed = true;
@@ -68,13 +55,34 @@ TEST_F(TransitionTest, testState_AutoToManual)
   //Super transitions into ready on its own, send arm command for READY->ARMING
   command.command = brain_box_msgs::OperatorCommand::ARM;
 
-  while(!ready && ros::ok())
+  while(!armed && ros::ok())
   {
     operatorCommandPublisher.publish(command);
     ros::spinOnce();
     loop_rate.sleep();
   }
-  
+  ASSERT_TRUE(armed);
+
+  //Send launch  
+  command.command = brain_box_msgs::OperatorCommand::LAUNCH;
+
+  while(!in_auto && ros::ok())
+  {
+    operatorCommandPublisher.publish(command);
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
+  ASSERT_TRUE(in_auto);
+
+  //Send manual
+  command.command = brain_box_msgs::OperatorCommand::MANUAL;
+  while(!manual && ros::ok())
+  {
+    operatorCommandPublisher.publish(command);
+    ros::spinOnce();
+    loop_rate.sleep();
+  }
+  ASSERT_TRUE(manual);
 }
 
 int main(int argc, char** argv)

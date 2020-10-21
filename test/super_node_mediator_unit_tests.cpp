@@ -411,11 +411,13 @@ TEST(Node, setOperatorCommand)
   ASSERT_EQ(supervisor.last_op_command_received, command);
 }
 
-void ASSERT_getStateTransition(const SuperState &current_state, const SuperState &expected_state, const OperatorCommand &operator_command = (OperatorCommand)-1)
+void ASSERT_getStateTransition(const SuperState &current_state, const SuperState &expected_state, const OperatorCommand &operator_command = (OperatorCommand)-1, 
+  const ControllerState& controller_state = (ControllerState)-1)
 {
   SuperNodeMediator::Supervisor supervisor;
   supervisor.system_state = current_state;
   supervisor.last_op_command_received = operator_command;
+  supervisor.last_controller_state_received = controller_state;
   SuperNodeMediator::StateTransition t = superNodeMediator.getStateTransition(supervisor);
   ASSERT_EQ(t.to_state, expected_state) << "StateTransition to_state not equal to expected_state";
 }
@@ -440,9 +442,9 @@ TEST(Node, getStateTransition_ArmedToAutoWhenOperatorSendsLaunch)
   ASSERT_getStateTransition(SuperState::ARMED, SuperState::AUTO, OperatorCommand::LAUNCH);
 }
 
-TEST(Node, DISABLED_getStateTransition_AutoToDisarmingWhenControllerStateIsCompleted)
+TEST(Node, getStateTransition_AutoToDisarmingWhenControllerStateIsCompleted)
 {
-  
+  ASSERT_getStateTransition(SuperState::AUTO, SuperState::READY, (OperatorCommand)NULL, ControllerState::COMPLETED);
 }
 
 TEST(Node, getStateTransition_DisarmingToReady)

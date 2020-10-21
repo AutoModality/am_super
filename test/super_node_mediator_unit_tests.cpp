@@ -452,7 +452,7 @@ TEST(Node, getStateTransition_DisarmingToReady)
   ASSERT_getStateTransition(SuperState::DISARMING, SuperState::READY);
 }
 
-TEST(Node, DISABLED_getStateTransition_AutoToManualWhenOperatorSendsManual)
+TEST(Node, getStateTransition_AutoToManualWhenOperatorSendsManual)
 {
   ASSERT_getStateTransition(SuperState::AUTO, SuperState::MANUAL, OperatorCommand::MANUAL);
 }

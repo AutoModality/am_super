@@ -82,13 +82,14 @@ public:
   {
     StateTransition(SuperState _to_state = (SuperState)-1, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check = NULL,
                     LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1, OperatorCommand _operator_command = (OperatorCommand)-1, 
-                    ControllerState controller_state = (ControllerState)-1)
+                    ControllerState _controller_state = (ControllerState)-1)
     {
       to_state = _to_state;
       check = _check;
       life_cycle_command = _life_cycle_command;
       operator_command = _operator_command;
       on_check_result = true; //TODO: remove this; we are assuming the check method should always return true now
+      controller_state = _controller_state;
     }
     /**The future Supervisor.systemState if checks pass.*/
     SuperState to_state;

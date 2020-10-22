@@ -15,7 +15,7 @@ in_auto= false,
 manual= false;
 
 //Needed so this node is in LifeCycle communication and super is able to transition
-class TransitionTest : public ::testing::Test, am::AMLifeCycle {};
+class AutoToManual : public ::testing::Test, am::AMLifeCycle {};
 
 /**
  * callback function for ROS test node whenever data is published
@@ -41,7 +41,7 @@ void missionStateCallback(const brain_box_msgs::VxState& msg)
   }
 }
 
-TEST_F(TransitionTest, testState_AutoToManual)
+TEST_F(AutoToManual, testState_AutoToManual)
 {
   ros::NodeHandle n;
   ros::Subscriber missionStateSubscription = n.subscribe(am_super_topics::SUPER_STATE, 1000, missionStateCallback);

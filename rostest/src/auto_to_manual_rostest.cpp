@@ -10,12 +10,11 @@ using namespace am;
 
 constexpr string_view THIS_NODE_NAME = "/auto_to_manual_rostest";
 
-
-
 bool armed= false,
 in_auto= false,
 manual= false;
 
+//Needed so this node is in LifeCycle communication and super is able to transition
 class TransitionTest : public ::testing::Test, am::AMLifeCycle {};
 
 /**

@@ -85,16 +85,23 @@ SuperNodeMediator::StateTransition SuperNodeMediator::getStateTransition(const S
   for (auto const& [state, transition] : transitions)
   {
     //if this transition has an operator command associated with it and super received it
-    if(transitionHasOperatorCommand(transition)){
-      if(supervisor.last_op_command_received == transition.operator_command){
+    if(transitionHasOperatorCommand(transition))
+    {
+      if(supervisor.last_op_command_received == transition.operator_command)
+      {
         return transition;
       }
-    } else if(transition.hasControllerState()){
-      if(supervisor.last_controller_state_received == transition.controller_state)){
+    } 
+    else if(transitionHasControllerState(transition))
+    {
+      if(supervisor.last_controller_state_received == transition.controller_state)
+      {
         return transition;
       }
-    }else{
-        return transition;
+    }
+    else
+    {
+      return transition;
     }
   }
   return invalidTransition();

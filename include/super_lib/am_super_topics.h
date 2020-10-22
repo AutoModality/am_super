@@ -9,12 +9,14 @@ namespace am
 class am_super_topics
 {
 public:
-    /** @brief Operator interacting with the system */
+  /** @brief Operator interacting with the system */
 	static constexpr char OPERATOR_COMMAND[] = "/operator/command";
     
-    /** Controller of the mission sends State to advance through lifecycle */
+  /** Controller of the mission sends State to advance through lifecycle */
 	static constexpr char CONTROLLER_STATE[] = "/controller/state";
 
+  /** State of super as reported by super */
+  static constexpr char SUPER_STATE[] = "/vstate/summary";
 };
 
 }

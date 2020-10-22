@@ -21,7 +21,9 @@ SuperNodeMediator::SuperNodeMediator(const std::string& node_name):
   {SuperState::ARMED, {
     {SuperState::AUTO, {SuperState::AUTO, SuperNodeMediator::checkOperatorSignaledToLaunch, (LifeCycleCommand)-1, OperatorCommand::LAUNCH}}}},
   {SuperState::AUTO, {
-    {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted}}}},
+    {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted, (LifeCycleCommand)-1, (OperatorCommand)-1, ControllerState::COMPLETED}},
+    {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkOperatorSignaledToManual, (LifeCycleCommand)-1, OperatorCommand::MANUAL}}
+  }},
   {SuperState::DISARMING, {
     {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE}}}}
 })
@@ -80,32 +82,29 @@ SuperNodeMediator::StateTransition SuperNodeMediator::getStateTransition(const S
 
   StateTransition attempt_transition;
 
-  //if there is only one state transition, then attempt this one always
-  if(transitions.size() == 1)
+  for (auto const& [state, transition] : transitions)
   {
-    attempt_transition = transitions.begin()->second;
-  }
-
-  //FIXME: if more than one, find a state transition to attempt
-  else if(transitions.size() > 1)
-  {
-    for (auto const& [state, transition] : transitions)
+    //if this transition has an operator command associated with it and super received it
+    if(transitionHasOperatorCommand(transition))
     {
-      //if this transition has an operator command associated with it and super received it
-      if(transitionHasOperatorCommand(transition) && supervisor.last_op_command_received == transition.operator_command)
+      if(supervisor.last_op_command_received == transition.operator_command)
       {
-        attempt_transition = transition;
+        return transition;
       }
-      //TODO: if this transition has a controller state associated with it and super has received it
+    } 
+    else if(transitionHasControllerState(transition))
+    {
+      if(supervisor.last_controller_state_received == transition.controller_state)
+      {
+        return transition;
+      }
+    }
+    else
+    {
+      return transition;
     }
   }
-  else
-  {
-    //if no statetransition was found, return a new stateTransition with the to_state equal to the current state. This indicates no transition should occur
-    attempt_transition = invalidTransition();
-  }
-  
-  return attempt_transition;
+  return invalidTransition();
 }
 
 SuperNodeMediator::StateTransition SuperNodeMediator::invalidTransition()
@@ -203,7 +202,12 @@ bool SuperNodeMediator::checkOperatorSignaledToLaunch(SuperNodeMediator::Supervi
 
 bool SuperNodeMediator::checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
-  return supervisor.session_completed;
+  return supervisor.last_controller_state_received == ControllerState::COMPLETED;
+}
+
+bool SuperNodeMediator::checkOperatorSignaledToManual(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
+{
+  return supervisor.last_op_command_received == OperatorCommand::MANUAL;
 }
 
 pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
@@ -229,7 +233,7 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
         error_message = "[WCK2] check skipped: node LifeCycle not yet implemented: " + node.name;
         //not a failure to allow temporary transition 
       }
-      else if (!check(supervisor,node, *this))
+      else if (!check(supervisor, node, *this))
       {
         string_view node_state = life_cycle_mediator.stateToString(node.state);
         error_message = "[2OQ0] check failed: node in wrong state " + node.name + ": " + string(node_state);
@@ -298,12 +302,7 @@ string SuperNodeMediator::manifestedNodesNotOnlineNamesList(Supervisor superviso
 
 void SuperNodeMediator::setControllerState(SuperNodeMediator::Supervisor& supervisor, const ControllerState& controller_state)
 {
-  switch(controller_state)
-    {
-      case ControllerState::COMPLETED:
-        supervisor.session_completed = true;
-        break;
-    }
+  supervisor.last_controller_state_received = controller_state;
 }
 
 void SuperNodeMediator::setOperatorCommand(SuperNodeMediator::Supervisor& supevisor, const OperatorCommand& command)
@@ -315,6 +314,11 @@ bool SuperNodeMediator::transitionHasLifecycleCommand(const StateTransition& tra
 {
   //-1 is also the constructor default
   return transition.life_cycle_command != (LifeCycleCommand)-1;
+}
+
+bool SuperNodeMediator::transitionHasControllerState(const StateTransition& transition) 
+{
+  return transition.controller_state != (ControllerState)-1;
 }
 
 }

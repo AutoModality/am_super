@@ -373,17 +373,13 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
     }
     ASSERT_TRUE(ready_after_disarming) << "Super should go into READY after DISARMING";
     ASSERT_TRUE(rostest_inactive_after_disarming) << "rostest must be inactive before system is ready again.";
-
   }
-
-  
-
 }
 
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "subscriber");
+  ros::init(argc, argv, "life_cycle");
 
   return RUN_ALL_TESTS();
 }

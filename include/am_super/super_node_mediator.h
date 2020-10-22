@@ -70,8 +70,8 @@ public:
     /** Indication that the operator is supervising the robot, has sent the signal to arm the system */
     OperatorCommand last_op_command_received;
     
-    /** True indicates the session controller has signaled the end of the session (flight, etc). */
-    bool session_completed;
+    /** Last state of the controller received */
+    ControllerState last_controller_state_received;
   };
 
   /**Encapsulates properties and methods that relate to the transition of states
@@ -81,13 +81,15 @@ public:
   struct StateTransition
   {
     StateTransition(SuperState _to_state = (SuperState)-1, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check = NULL,
-                    LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1, OperatorCommand _operator_command = (OperatorCommand)-1)
+                    LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1, OperatorCommand _operator_command = (OperatorCommand)-1, 
+                    ControllerState _controller_state = (ControllerState)-1)
     {
       to_state = _to_state;
       check = _check;
       life_cycle_command = _life_cycle_command;
       operator_command = _operator_command;
       on_check_result = true; //TODO: remove this; we are assuming the check method should always return true now
+      controller_state = _controller_state;
     }
     /**The future Supervisor.systemState if checks pass.*/
     SuperState to_state;
@@ -109,6 +111,9 @@ public:
 
     /** The command super needs to receive in order for us to attempt this transition*/
     OperatorCommand operator_command;
+
+    /** The controllerState super needs to receive in order for us to attempt this transition */
+    ControllerState controller_state;
   };
 
   /**Provided by transitionReady method used by the node to trnasition states and send signals according
@@ -193,22 +198,27 @@ public:
   /** 
    * FIXME: this should be a private method
    * @return true if the operator sent the signal to arm the system  */
-  static bool checkOperatorSignaledToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
+  static bool checkOperatorSignaledToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
 
   /**
    * FIXME: this should be a private method
    * @return true if Lifecyle state equals ACTIVE */
-  static bool checkArmed(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
+  static bool checkArmed(Supervisor& supervisor, SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
 
   /**
    * FIXME: this should be a private method
    * @return true if the operator is ready to launch */
-  static bool checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
+  static bool checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
 
   /**
    * FIXME: this should be a private method
    * @return true if the session controller signaled the end of the session (flight, etc) */
-  static bool checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mdediator);
+  static bool checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
+
+  /**
+   * FIXME: this should be a private method
+   * @return true if the session controller signaled the end of the session (flight, etc) */
+  static bool checkOperatorSignaledToManual(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
 
 
   /** Reads the given manifest string, typically provided by a ROS param,
@@ -258,6 +268,11 @@ public:
    * @returns true - life_cycle_command has been assigned
    */
   bool transitionHasLifecycleCommand(const StateTransition&);
+
+  /**
+   * @returns true - life_cycle_command has been assigned
+   */
+  bool transitionHasControllerState(const StateTransition&);
 
   /**
    * @returns true - to_state has been assigned

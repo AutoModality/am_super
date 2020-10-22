@@ -69,12 +69,13 @@ TEST(Node, initializeManifestedNode_FieldsAreSetProperly)
 }
 
 void ASSERT_CHECK(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check, LifeCycleState state, bool expected,
-  OperatorCommand last_op_command_received = OperatorCommand::ARM)
+  OperatorCommand last_op_command_received = OperatorCommand::ARM, ControllerState last_controller_state_received = ControllerState::COMPLETED)
 {
   SuperNodeMediator::SuperNodeInfo info;
   SuperNodeMediator::Supervisor supervisor;
   info.state = state;
   supervisor.last_op_command_received = last_op_command_received;
+  supervisor.last_controller_state_received = last_controller_state_received;
   ASSERT_EQ(check(supervisor, info, superNodeMediator), expected) << "For state: " + std::to_string((int)state);
 }
 
@@ -122,6 +123,22 @@ TEST(Node, checkOperatorSignaledToLaunch)
 
   ASSERT_CHECK(function, (LifeCycleState)NULL, false, OperatorCommand::ARM);
   ASSERT_CHECK(function, (LifeCycleState)NULL, true, OperatorCommand::LAUNCH);
+}
+
+TEST(Node, checkSessionCompleted)
+{
+  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> function = SuperNodeMediator::checkSessionCompleted;
+
+  ASSERT_CHECK(function, (LifeCycleState)NULL, false, (OperatorCommand)NULL, (ControllerState)-1);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, true, (OperatorCommand)NULL, ControllerState::COMPLETED);
+}
+
+TEST(Node, checkOperatorSignaledToManual)
+{
+  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> function = SuperNodeMediator::checkOperatorSignaledToManual;
+
+  ASSERT_CHECK(function, (LifeCycleState)NULL, false, OperatorCommand::ARM);
+  ASSERT_CHECK(function, (LifeCycleState)NULL, true, OperatorCommand::MANUAL);
 }
 
 void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result,
@@ -375,10 +392,9 @@ TEST(Node, setControllerState)
   SuperNodeMediator::Supervisor supervisor;
 
   ControllerState state = ControllerState::COMPLETED;
-  supervisor.session_completed = false;
   superNodeMediator.setControllerState(supervisor, state);
 
-  ASSERT_TRUE(supervisor.session_completed);
+  ASSERT_EQ(supervisor.last_controller_state_received, state);
 }
 
 TEST(Node, setOperatorCommand)
@@ -395,11 +411,13 @@ TEST(Node, setOperatorCommand)
   ASSERT_EQ(supervisor.last_op_command_received, command);
 }
 
-void ASSERT_getStateTransition(const SuperState &current_state, const SuperState &expected_state, const OperatorCommand &operator_command = (OperatorCommand)-1)
+void ASSERT_getStateTransition(const SuperState &current_state, const SuperState &expected_state, const OperatorCommand &operator_command = (OperatorCommand)-1, 
+  const ControllerState& controller_state = (ControllerState)-1)
 {
   SuperNodeMediator::Supervisor supervisor;
   supervisor.system_state = current_state;
   supervisor.last_op_command_received = operator_command;
+  supervisor.last_controller_state_received = controller_state;
   SuperNodeMediator::StateTransition t = superNodeMediator.getStateTransition(supervisor);
   ASSERT_EQ(t.to_state, expected_state) << "StateTransition to_state not equal to expected_state";
 }
@@ -424,9 +442,9 @@ TEST(Node, getStateTransition_ArmedToAutoWhenOperatorSendsLaunch)
   ASSERT_getStateTransition(SuperState::ARMED, SuperState::AUTO, OperatorCommand::LAUNCH);
 }
 
-TEST(Node, DISABLED_getStateTransition_AutoToDisarmingWhenControllerStateIsCompleted)
+TEST(Node, getStateTransition_AutoToDisarmingWhenControllerStateIsCompleted)
 {
-  
+  ASSERT_getStateTransition(SuperState::AUTO, SuperState::DISARMING, (OperatorCommand)NULL, ControllerState::COMPLETED);
 }
 
 TEST(Node, getStateTransition_DisarmingToReady)
@@ -434,7 +452,7 @@ TEST(Node, getStateTransition_DisarmingToReady)
   ASSERT_getStateTransition(SuperState::DISARMING, SuperState::READY);
 }
 
-TEST(Node, DISABLED_getStateTransition_AutoToManualWhenOperatorSendsManual)
+TEST(Node, getStateTransition_AutoToManualWhenOperatorSendsManual)
 {
   ASSERT_getStateTransition(SuperState::AUTO, SuperState::MANUAL, OperatorCommand::MANUAL);
 }

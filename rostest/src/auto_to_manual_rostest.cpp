@@ -8,8 +8,6 @@
 using namespace std;
 using namespace am;
 
-constexpr string_view THIS_NODE_NAME = "/auto_to_manual_rostest";
-
 bool armed= false,
 in_auto= false,
 manual= false;
@@ -49,7 +47,7 @@ TEST_F(AutoToManual, testState_AutoToManual)
   ros::Rate loop_rate(1); //1 Hz
 
   brain_box_msgs::OperatorCommand command;
-  command.node_name = THIS_NODE_NAME;
+  command.node_name = ros::this_node::getName();
 
   //Super transitions into ready on its own, send arm command for READY->ARMING
   command.command = brain_box_msgs::OperatorCommand::ARM;

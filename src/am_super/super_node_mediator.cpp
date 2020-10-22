@@ -82,36 +82,22 @@ SuperNodeMediator::StateTransition SuperNodeMediator::getStateTransition(const S
 
   StateTransition attempt_transition;
 
-  //if there is only one state transition, then attempt this one always
-  if(transitions.size() == 1)
+  for (auto const& [state, transition] : transitions)
   {
-    attempt_transition = transitions.begin()->second;
-  }
-
-  //FIXME: if more than one, find a state transition to attempt
-  else if(transitions.size() > 1)
-  {
-    for (auto const& [state, transition] : transitions)
-    {
-      //if this transition has an operator command associated with it and super received it
-      if(transitionHasOperatorCommand(transition) && supervisor.last_op_command_received == transition.operator_command)
-      {
-        attempt_transition = transition;
+    //if this transition has an operator command associated with it and super received it
+    if(transitionHasOperatorCommand(transition)){
+      if(supervisor.last_op_command_received == transition.operator_command){
+        return transition;
       }
-      //TODO: if this transition has a controller state associated with it and super has received it
-      else if(transitionHasControllerState(transition) && supervisor.last_controller_state_received == transition.controller_state)
-      {
-        attempt_transition = transition;
+    } else if(transition.hasControllerState()){
+      if(supervisor.last_controller_state_received == transition.controller_state)){
+        return transition;
       }
+    }else{
+        return transition;
     }
   }
-  else
-  {
-    //if no statetransition was found, return a new stateTransition with the to_state equal to the current state. This indicates no transition should occur
-    attempt_transition = invalidTransition();
-  }
-  
-  return attempt_transition;
+  return invalidTransition();
 }
 
 SuperNodeMediator::StateTransition SuperNodeMediator::invalidTransition()

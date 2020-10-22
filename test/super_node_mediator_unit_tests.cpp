@@ -457,6 +457,12 @@ TEST(Node, getStateTransition_AutoToManualWhenOperatorSendsManual)
   ASSERT_getStateTransition(SuperState::AUTO, SuperState::MANUAL, OperatorCommand::MANUAL);
 }
 
+TEST(Node, getStateTransition_ArmedToReadyWhenOperatorSendsCancel)
+{
+  ASSERT_getStateTransition(SuperState::ARMED, SuperState::READY, OperatorCommand::CANCEL);
+}
+
+
 TEST(Node, isValid_stateTransition)
 {
   SuperNodeMediator::StateTransition t;

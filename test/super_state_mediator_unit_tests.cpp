@@ -77,7 +77,7 @@ TEST(State, allowsTransition_OnlyArmingToArmedIsAllowed)
   ASSERT_SINGLE_STATE_ALLOWED(SuperState::ARMING, SuperState::ARMED);
 }
 
-TEST(State, allowsTransition_ArmedToAutoAndAbortIsAllowed)
+TEST(State, allowsTransition_ArmedToAutoAndAbortAndReadyAllowed)
 {
   std::vector<SuperState> allowed{ SuperState::ABORT, SuperState::READY, SuperState::AUTO };
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::ARMED, allowed);

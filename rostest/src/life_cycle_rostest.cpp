@@ -233,8 +233,8 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
   ros::NodeHandle n;
 
   //FIXME: All these topic names should be constants somewhere to be referenced
-  ros::Subscriber missionStateSubscription = n.subscribe("/vstate/summary", 1000, missionStateCallback);
-  ros::Subscriber nodeLifeCycleStateSubscription = n.subscribe("/node_state", 1000, nodeLifeCycleStateCallback);
+  ros::Subscriber missionStateSubscription = n.subscribe(am_super_topics::SUPER_STATE, 1000, missionStateCallback);
+  ros::Subscriber nodeLifeCycleStateSubscription = n.subscribe(am_super_topics::LIFECYCLE_STATE, 1000, nodeLifeCycleStateCallback);
   ros::Publisher operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>(am_super_topics::OPERATOR_COMMAND,100);
   ros::Publisher controllerStatePublisher = n.advertise<brain_box_msgs::ControllerState>(am_super_topics::CONTROLLER_STATE, 100);
   ros::Rate loop_rate(1);  // 1 Hz

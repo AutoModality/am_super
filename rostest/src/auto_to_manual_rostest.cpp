@@ -7,79 +7,71 @@
 
 using namespace std;
 using namespace am;
+using namespace brain_box_msgs;
 
-bool armed= false,
-in_auto= false,
-manual= false;
+class AutoToManual : public ::testing::Test, am::AMLifeCycle 
+{
+public:
 
-//Needed so this node is in LifeCycle communication and super is able to transition
-class AutoToManual : public ::testing::Test, am::AMLifeCycle {};
+  bool armed, in_auto, manual;
 
-/**
- * callback function for ROS test node whenever data is published
- *
- * @param msg custom message containing state information about am_super
- */
-void missionStateCallback(const brain_box_msgs::VxState& msg)
-{ 
-  switch(msg.state)
+  ros::NodeHandle n;
+  ros::Subscriber missionStateSubscription;
+  ros::Publisher operatorCommandPublisher;
+  ros::Rate loop_rate;
+
+  AutoToManual() : loop_rate(1)
   {
-    case brain_box_msgs::VxState::ARMED:
-      ROS_INFO_STREAM("ARMED received");
-      armed = true;
-      break;
-    case brain_box_msgs::VxState::AUTO:
-      ROS_INFO_STREAM("AUTO received");
-      in_auto = true;
-      break;
-    case brain_box_msgs::VxState::MANUAL:
-      ROS_INFO_STREAM("MANUAL received");
-      manual = true;
-      break;
+    armed = in_auto = manual = false;
+    operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>(am_super_topics::OPERATOR_COMMAND, 100);
+    missionStateSubscription = n.subscribe(am_super_topics::SUPER_STATE, 1000, &AutoToManual::missionStateCallback, this);
   }
-}
+
+  /**
+   * callback function for ROS test node whenever data is published
+   *
+   * @param msg custom message containing state information about am_super
+   */
+  void missionStateCallback(const brain_box_msgs::VxState& msg)
+  { 
+    switch(msg.state)
+    {
+      case brain_box_msgs::VxState::ARMED:
+        ROS_INFO_STREAM("ARMED received");
+        armed = true;
+        break;
+      case brain_box_msgs::VxState::AUTO:
+        ROS_INFO_STREAM("AUTO received");
+        in_auto = true;
+        break;
+      case brain_box_msgs::VxState::MANUAL:
+        ROS_INFO_STREAM("MANUAL received");
+        manual = true;
+        break;
+    }
+  }
+
+  void ASSERT_sendCommandUntilResponseReceived(OperatorCommand::_command_type cmd, bool& responded)
+  {
+    OperatorCommand msg;
+    msg.node_name = ros::this_node::getName();
+    msg.command = cmd;
+
+    while(!responded && ros::ok())
+    {
+      operatorCommandPublisher.publish(msg);
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
+    ASSERT_TRUE(responded);
+  }
+};
 
 TEST_F(AutoToManual, testState_AutoToManual)
 {
-  ros::NodeHandle n;
-  ros::Subscriber missionStateSubscription = n.subscribe(am_super_topics::SUPER_STATE, 1000, missionStateCallback);
-  ros::Publisher operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>(am_super_topics::OPERATOR_COMMAND, 100);
-  ros::Rate loop_rate(1); //1 Hz
-
-  brain_box_msgs::OperatorCommand command;
-  command.node_name = ros::this_node::getName();
-
-  //Super transitions into ready on its own, send arm command for READY->ARMING
-  command.command = brain_box_msgs::OperatorCommand::ARM;
-
-  while(!armed && ros::ok())
-  {
-    operatorCommandPublisher.publish(command);
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
-  ASSERT_TRUE(armed);
-
-  //Send launch  
-  command.command = brain_box_msgs::OperatorCommand::LAUNCH;
-
-  while(!in_auto && ros::ok())
-  {
-    operatorCommandPublisher.publish(command);
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
-  ASSERT_TRUE(in_auto);
-
-  //Send manual
-  command.command = brain_box_msgs::OperatorCommand::MANUAL;
-  while(!manual && ros::ok())
-  {
-    operatorCommandPublisher.publish(command);
-    ros::spinOnce();
-    loop_rate.sleep();
-  }
-  ASSERT_TRUE(manual);
+  ASSERT_sendCommandUntilResponseReceived(OperatorCommand::ARM, armed);
+  ASSERT_sendCommandUntilResponseReceived(OperatorCommand::LAUNCH, in_auto);
+  ASSERT_sendCommandUntilResponseReceived(OperatorCommand::MANUAL, manual);
 }
 
 int main(int argc, char** argv)

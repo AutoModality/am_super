@@ -9,11 +9,6 @@ TransitionUtility::TransitionUtility() : loop_rate(1)
   missionStateSubscription = n.subscribe(am_super_topics::SUPER_STATE, 1000, &TransitionUtility::missionStateCallback, this);
 }
 
-/**
- * callback function for ROS test node whenever data is published
- *
- * @param msg custom message containing state information about am_super
- */
 void TransitionUtility::missionStateCallback(const brain_box_msgs::VxState& msg)
 { 
   switch(msg.state)

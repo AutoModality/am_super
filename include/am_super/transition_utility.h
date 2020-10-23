@@ -4,7 +4,6 @@
 #include <super_lib/am_super_topics.h>        // reference topic names
 #include <super_lib/am_life_cycle.h>
 
-using namespace std;
 using namespace am;
 using namespace brain_box_msgs;
 
@@ -15,12 +14,19 @@ using namespace brain_box_msgs;
 class TransitionUtility
 {
 public:
-
+  //Indicates if we received the respective SuperState from super
   bool armed, in_auto, manual;
 
+  //node handle that allows us to publish and subscribe
   ros::NodeHandle n;
+
+  //to receive SuperState from super
   ros::Subscriber missionStateSubscription;
+
+  //to send operatorCommand to super
   ros::Publisher operatorCommandPublisher;
+
+  //the rate that we send messages at
   ros::Rate loop_rate;
 
   TransitionUtility();

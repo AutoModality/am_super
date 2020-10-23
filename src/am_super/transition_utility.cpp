@@ -40,4 +40,5 @@ void TransitionUtility::ASSERT_sendCommandUntilResponseReceived(OperatorCommand:
     ros::spinOnce();
     loop_rate.sleep();
   }
+  ASSERT_TRUE(responded);
 }

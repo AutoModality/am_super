@@ -23,7 +23,7 @@ TEST_F(AutoToManual, testState_AutoToManual)
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "auto_to_manual");
+  ros::init(argc, argv, "auto_to_manual_rostest");
 
   return RUN_ALL_TESTS();
 }

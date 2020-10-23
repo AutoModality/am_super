@@ -379,7 +379,7 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "life_cycle");
+  ros::init(argc, argv, "life_cycle_rostest");
 
   return RUN_ALL_TESTS();
 }

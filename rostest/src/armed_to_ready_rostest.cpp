@@ -20,7 +20,7 @@ TEST_F(ArmedToReady, testState_ArmedToReady)
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "auto_to_manual");
+  ros::init(argc, argv, "armed_to_ready_rostest");
 
   return RUN_ALL_TESTS();
 }

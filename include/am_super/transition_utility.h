@@ -37,7 +37,7 @@ public:
   /**
    * callback function for ROS test node whenever data is published
    *
-   * @param msg custom message containing state information about am_super
+   * @param msg custom message containing state ijjnformation about am_super
    */
   void missionStateCallback(const brain_box_msgs::VxState& msg);
 

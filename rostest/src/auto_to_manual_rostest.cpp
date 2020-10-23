@@ -1,13 +1,5 @@
-#include "ros/ros.h"                          // ros header file
-#include <gtest/gtest.h>                      // googletest header file
-#include <brain_box_msgs/VxState.h>           // msg for status
-#include <brain_box_msgs/OperatorCommand.h>   // to be armed, launch for state transitions
-#include <super_lib/am_super_topics.h>        // reference topic names
-#include <super_lib/am_life_cycle.h>
 #include <am_super/transition_utility.h>
 
-using namespace std;
-using namespace am;
 using namespace brain_box_msgs;
 
 class AutoToManual : public ::testing::Test, am::AMLifeCycle 

@@ -8,6 +8,10 @@ using namespace std;
 using namespace am;
 using namespace brain_box_msgs;
 
+/**
+ * This class encapsulates the data and methods needed to test supervisor transitioning through states.
+ * Therefore, we can use this between different rostests and different transitions
+ */
 class TransitionUtility
 {
 public:
@@ -27,5 +31,12 @@ public:
    */
   void missionStateCallback(const brain_box_msgs::VxState& msg);
 
+  /**
+   * Sends OperatorCommand to super until 'responded' is true (set by missionStateCallback)
+   * 
+   * @param cmd Operator Command that we will be publishing to operatorCommandPublisher
+   * @param responded One of the bool member variables associated with this class.
+   * 
+   */
   void ASSERT_sendCommandUntilResponseReceived(OperatorCommand::_command_type cmd, bool& responded);
 };

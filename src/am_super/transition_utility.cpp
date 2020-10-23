@@ -3,6 +3,8 @@
 TransitionUtility::TransitionUtility() : loop_rate(1)
 {
   armed = in_auto = manual = false;
+
+  /* TODO: currently hardcoded to send only to super, make it general? */
   operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>(am_super_topics::OPERATOR_COMMAND, 100);
   missionStateSubscription = n.subscribe(am_super_topics::SUPER_STATE, 1000, &TransitionUtility::missionStateCallback, this);
 }

@@ -218,6 +218,9 @@ if (CATKIN_ENABLE_TESTING)
   add_rostest_gtest(auto_to_manual_rostest rostest/test/auto_to_manual_rostest.test rostest/src/auto_to_manual_rostest.cpp src/am_super/transition_utility.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(auto_to_manual_rostest ${catkin_LIBRARIES} super_lib)
 
+  add_rostest_gtest(armed_to_ready_rostest rostest/test/armed_to_ready_rostest.test rostest/src/armed_to_ready_rostest.cpp src/am_super/transition_utility.cpp ${SUPER_MEDIATOR_FILES})
+  target_link_libraries(armed_to_ready_rostest ${catkin_LIBRARIES} super_lib)
+
   # Create a target ${PROJECT_NAME}_coverage_report
   if(ENABLE_COVERAGE_TESTING)
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" )

@@ -1,0 +1,26 @@
+#include <am_super/transition_utility.h>
+
+using namespace brain_box_msgs;
+
+class ArmedToReady : public ::testing::Test, am::AMLifeCycle 
+{
+public:
+  TransitionUtility t;
+};
+
+TEST_F(ArmedToReady, testState_ArmedToReady)
+{
+  t.sendCommandUntilResponseReceived(OperatorCommand::ARM, t.armed);
+  ASSERT_TRUE(t.armed);
+
+  t.ready = false;
+  t.sendCommandUntilResponseReceived(OperatorCommand::CANCEL, t.ready);
+}
+
+int main(int argc, char** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  ros::init(argc, argv, "auto_to_manual");
+
+  return RUN_ALL_TESTS();
+}

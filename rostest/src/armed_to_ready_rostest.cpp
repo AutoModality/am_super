@@ -13,8 +13,8 @@ TEST_F(ArmedToReady, testState_ArmedToReady)
   t.sendCommandUntilResponseReceived(OperatorCommand::ARM, t.armed);
   ASSERT_TRUE(t.armed);
 
-  t.ready = false;
-  t.sendCommandUntilResponseReceived(OperatorCommand::CANCEL, t.ready);
+  t.sendCommandUntilResponseReceived(OperatorCommand::CANCEL, t.ready_after_armed);
+  ASSERT_TRUE(t.ready_after_armed);
 }
 
 int main(int argc, char** argv)

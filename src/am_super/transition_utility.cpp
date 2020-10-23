@@ -2,7 +2,7 @@
 
 TransitionUtility::TransitionUtility() : loop_rate(1)
 {
-  ready = armed = in_auto = manual = false;
+  ready = ready_after_armed = armed = in_auto = manual = false;
 
   /* TODO: currently hardcoded to send only to super, make it general? */
   operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>(am_super_topics::OPERATOR_COMMAND, 100);
@@ -15,7 +15,14 @@ void TransitionUtility::missionStateCallback(const brain_box_msgs::VxState& msg)
   {
     case brain_box_msgs::VxState::READY:
       ROS_INFO_STREAM("READY received");
-      ready = true;
+      if(armed)
+      {
+        ready_after_armed = true;
+      }
+      else
+      {
+        ready = true;
+      }
       break;    
     case brain_box_msgs::VxState::ARMED:
       ROS_INFO_STREAM("ARMED received");
@@ -41,6 +48,14 @@ void TransitionUtility::sendCommandUntilResponseReceived(OperatorCommand::_comma
   while(!responded && ros::ok())
   {
     operatorCommandPublisher.publish(msg);
+    if(cmd == OperatorCommand::ARM)
+    {
+      ROS_INFO_STREAM("Sending ARM");
+    }
+    else{
+      ROS_INFO_STREAM("Sending CANCEL");
+    }
+    
     ros::spinOnce();
     loop_rate.sleep();
   }

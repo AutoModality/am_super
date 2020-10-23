@@ -184,7 +184,8 @@ bool SuperNodeMediator::lifeCycleNotYetImplemented(string node_name)
 
 bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
-  return  nr.state == LifeCycleState::INACTIVE || (nr.state == LifeCycleState::ACTIVE && node_mediator.nodeNameIsSuper(nr.name));
+  return  nr.state == LifeCycleState::INACTIVE || (nr.state == LifeCycleState::ACTIVE && node_mediator.nodeNameIsSuper(nr.name)) || 
+    (supervisor.last_op_command_received == OperatorCommand::CANCEL && nr.state == LifeCycleState::ACTIVE);
 }
 
 bool SuperNodeMediator::checkOperatorSignaledToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)

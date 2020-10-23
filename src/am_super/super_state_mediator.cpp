@@ -31,7 +31,7 @@ const std::map<SuperState, SuperStateInfo> state_info_ = {
   { SuperState::BOOTING, { "BOOTING", { SuperState::READY } } },
   { SuperState::READY, { "READY", { SuperState::ARMING } } },
   { SuperState::ARMING, { "ARMING", { SuperState::ARMED } } },
-  { SuperState::ARMED, { "ARMED", { SuperState::AUTO, SuperState::ABORT } } },
+  { SuperState::ARMED, { "ARMED", { SuperState::AUTO, SuperState::READY, SuperState::ABORT } } },
   { SuperState::AUTO,
     { "AUTO", { SuperState::DISARMING, SuperState::SEMI_AUTO, SuperState::HOLD, SuperState::ABORT, SuperState::MANUAL } } },
   { SuperState::DISARMING, {"DISARMING", { SuperState::READY } } },

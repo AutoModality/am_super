@@ -12,8 +12,10 @@ TEST_F(AutoToManual, testState_AutoToManual)
 {
   t.sendCommandUntilResponseReceived(OperatorCommand::ARM, t.armed);
   ASSERT_TRUE(t.armed);
+
   t.sendCommandUntilResponseReceived(OperatorCommand::LAUNCH, t.in_auto);
   ASSERT_TRUE(t.in_auto);
+  
   t.sendCommandUntilResponseReceived(OperatorCommand::MANUAL, t.manual);
   ASSERT_TRUE(t.manual);
 }

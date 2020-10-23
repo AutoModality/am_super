@@ -19,7 +19,7 @@ class TransitionUtility
 {
 public:
   //Indicates if we received the respective SuperState from super
-  bool ready, armed, in_auto, manual;
+  bool ready, armed, in_auto, manual, ready_after_armed;
 
   //node handle that allows us to publish and subscribe
   ros::NodeHandle n;

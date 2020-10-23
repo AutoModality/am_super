@@ -48,7 +48,7 @@ public:
    * @param responded One of the bool member variables associated with this class.
    * 
    */
-  void ASSERT_sendCommandUntilResponseReceived(OperatorCommand::_command_type cmd, bool& responded);
+  void sendCommandUntilResponseReceived(OperatorCommand::_command_type cmd, bool& responded);
 };
 
 #endif

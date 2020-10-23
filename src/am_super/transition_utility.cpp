@@ -28,7 +28,7 @@ void TransitionUtility::missionStateCallback(const brain_box_msgs::VxState& msg)
   }
 }
 
-void TransitionUtility::ASSERT_sendCommandUntilResponseReceived(OperatorCommand::_command_type cmd, bool& responded)
+void TransitionUtility::sendCommandUntilResponseReceived(OperatorCommand::_command_type cmd, bool& responded)
 {
   OperatorCommand msg;
   msg.node_name = ros::this_node::getName();
@@ -40,5 +40,4 @@ void TransitionUtility::ASSERT_sendCommandUntilResponseReceived(OperatorCommand:
     ros::spinOnce();
     loop_rate.sleep();
   }
-  ASSERT_TRUE(responded);
 }

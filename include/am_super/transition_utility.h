@@ -1,4 +1,8 @@
-#include "ros/ros.h"                          // ros header file       
+#ifndef _TRANSITION_UTILITY_H_
+#define _TRANSITION_UTILITY_H_
+
+#include "ros/ros.h"        
+#include <gtest/gtest.h>                  // ros header file       
 #include <brain_box_msgs/VxState.h>           // msg for status
 #include <brain_box_msgs/OperatorCommand.h>   // to be armed, launch for state transitions
 #include <super_lib/am_super_topics.h>        // reference topic names
@@ -46,3 +50,5 @@ public:
    */
   void ASSERT_sendCommandUntilResponseReceived(OperatorCommand::_command_type cmd, bool& responded);
 };
+
+#endif

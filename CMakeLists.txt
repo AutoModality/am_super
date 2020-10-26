@@ -212,11 +212,14 @@ if (CATKIN_ENABLE_TESTING)
 
   # For ros testing
   find_package(rostest REQUIRED)
-  add_rostest_gtest(life_cycle_rostest rostest/test/life_cycle_rostest.test rostest/src/life_cycle_rostest.cpp ${SUPER_MEDIATOR_FILES})
+  add_rostest_gtest(life_cycle_rostest rostest/life_cycle/life_cycle_rostest.test rostest/life_cycle/life_cycle_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(life_cycle_rostest ${catkin_LIBRARIES} super_lib)
  
-  add_rostest_gtest(auto_to_manual_rostest rostest/test/auto_to_manual_rostest.test rostest/src/auto_to_manual_rostest.cpp ${SUPER_MEDIATOR_FILES})
+  add_rostest_gtest(auto_to_manual_rostest rostest/auto_to_manual/auto_to_manual_rostest.test rostest/auto_to_manual/auto_to_manual_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(auto_to_manual_rostest ${catkin_LIBRARIES} super_lib)
+
+  add_rostest_gtest(armed_to_ready_rostest rostest/armed_to_ready/armed_to_ready_rostest.test rostest/armed_to_ready/armed_to_ready_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  target_link_libraries(armed_to_ready_rostest ${catkin_LIBRARIES} super_lib)
 
   # Create a target ${PROJECT_NAME}_coverage_report
   if(ENABLE_COVERAGE_TESTING)

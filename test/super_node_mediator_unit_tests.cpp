@@ -442,6 +442,11 @@ TEST(Node, getStateTransition_ArmedToAutoWhenOperatorSendsLaunch)
   ASSERT_getStateTransition(SuperState::ARMED, SuperState::AUTO, OperatorCommand::LAUNCH);
 }
 
+TEST(Node, getStateTransition_ArmedToReadyWhenOperatorSendsCancel)
+{
+  ASSERT_getStateTransition(SuperState::ARMED, SuperState::READY, OperatorCommand::CANCEL);
+}
+
 TEST(Node, getStateTransition_AutoToDisarmingWhenControllerStateIsCompleted)
 {
   ASSERT_getStateTransition(SuperState::AUTO, SuperState::DISARMING, (OperatorCommand)NULL, ControllerState::COMPLETED);
@@ -456,6 +461,7 @@ TEST(Node, getStateTransition_AutoToManualWhenOperatorSendsManual)
 {
   ASSERT_getStateTransition(SuperState::AUTO, SuperState::MANUAL, OperatorCommand::MANUAL);
 }
+
 
 TEST(Node, isValid_stateTransition)
 {

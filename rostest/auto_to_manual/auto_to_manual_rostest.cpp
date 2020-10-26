@@ -1,29 +1,19 @@
-#include "../rostest_transition.h"
+#include "../rostest_transition.h" //FIXME: currently relative path
 
 using namespace brain_box_msgs;
 
-class AutoToManual : public ::testing::Test, am::AMLifeCycle 
-{
-public:
-  RostestTransition t;
-};
+class AutoToManual : public RostestTransition {};
 
 TEST_F(AutoToManual, testState_AutoToManual)
 {
-  t.sendCommandUntilResponseReceived(OperatorCommand::ARM, t.armed);
-  ASSERT_TRUE(t.armed);
-
-  t.sendCommandUntilResponseReceived(OperatorCommand::LAUNCH, t.in_auto);
-  ASSERT_TRUE(t.in_auto);
-  
-  t.sendCommandUntilResponseReceived(OperatorCommand::MANUAL, t.manual);
-  ASSERT_TRUE(t.manual);
+  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::ARM, RostestTransition::armed);
+  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::LAUNCH, RostestTransition::in_auto);
+  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::MANUAL, RostestTransition::manual);
 }
 
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, "auto_to_manual_rostest");
-
   return RUN_ALL_TESTS();
 }

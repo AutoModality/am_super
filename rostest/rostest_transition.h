@@ -15,7 +15,7 @@ using namespace brain_box_msgs;
  * This class encapsulates the data and methods needed to test supervisor transitioning through states.
  * Therefore, we can use this between different rostests and different transitions
  */
-class RostestTransition
+class RostestTransition : public ::testing::Test, am::AMLifeCycle 
 {
 public:
   //Indicates if we received the respective SuperState from super

@@ -1,4 +1,4 @@
-#include "rostest_transition.h"
+#include "rostest_transition.h" //FIXME: currently relative path
 
 RostestTransition::RostestTransition() : loop_rate(1)
 {
@@ -59,4 +59,5 @@ void RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::_comma
     ros::spinOnce();
     loop_rate.sleep();
   }
+  ASSERT_TRUE(responded);
 }

@@ -1,6 +1,6 @@
 <launch>
     <node pkg="am_super" type="am_super" name="am_super" output="screen">
-        <rosparam command="load" file="$(dirname)/../yaml/armed_to_ready_rostest.yaml"/>
+        <rosparam command="load" file="$(dirname)/armed_to_ready_rostest.yaml"/>
     </node>
     <test test-name="armed_to_ready_rostest" pkg="am_super" type="armed_to_ready_rostest" time-limit="20">
     </test>

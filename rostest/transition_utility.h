@@ -1,5 +1,5 @@
-#ifndef _TRANSITION_UTILITY_H_
-#define _TRANSITION_UTILITY_H_
+#ifndef _ROSTEST_TRANSITION_H_
+#define _ROSTEST_TRANSITION_H_
 
 #include "ros/ros.h"        
 #include <gtest/gtest.h>                  // ros header file       
@@ -15,7 +15,7 @@ using namespace brain_box_msgs;
  * This class encapsulates the data and methods needed to test supervisor transitioning through states.
  * Therefore, we can use this between different rostests and different transitions
  */
-class TransitionUtility
+class RostestTransition
 {
 public:
   //Indicates if we received the respective SuperState from super
@@ -33,7 +33,7 @@ public:
   //the rate that we send messages at
   ros::Rate loop_rate;
 
-  TransitionUtility();
+  RostestTransition();
   /**
    * callback function for ROS test node whenever data is published
    *

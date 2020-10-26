@@ -1,15 +1,15 @@
 #include "transition_utility.h"
 
-TransitionUtility::TransitionUtility() : loop_rate(1)
+RostestTransition::RostestTransition() : loop_rate(1)
 {
   ready = ready_after_armed = armed = in_auto = manual = false;
 
   /* TODO: currently hardcoded to send only to super, make it general? */
   operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>(am_super_topics::OPERATOR_COMMAND, 100);
-  missionStateSubscription = n.subscribe(am_super_topics::SUPER_STATE, 1000, &TransitionUtility::missionStateCallback, this);
+  missionStateSubscription = n.subscribe(am_super_topics::SUPER_STATE, 1000, &RostestTransition::missionStateCallback, this);
 }
 
-void TransitionUtility::missionStateCallback(const brain_box_msgs::VxState& msg)
+void RostestTransition::missionStateCallback(const brain_box_msgs::VxState& msg)
 { 
   switch(msg.state)
   {
@@ -39,7 +39,7 @@ void TransitionUtility::missionStateCallback(const brain_box_msgs::VxState& msg)
   }
 }
 
-void TransitionUtility::sendCommandUntilResponseReceived(OperatorCommand::_command_type cmd, bool& responded)
+void RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::_command_type cmd, bool& responded)
 {
   OperatorCommand msg;
   msg.node_name = ros::this_node::getName();

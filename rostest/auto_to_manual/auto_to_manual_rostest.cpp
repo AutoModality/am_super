@@ -5,7 +5,7 @@ using namespace brain_box_msgs;
 class AutoToManual : public ::testing::Test, am::AMLifeCycle 
 {
 public:
-  TransitionUtility t;
+  RostestTransition t;
 };
 
 TEST_F(AutoToManual, testState_AutoToManual)

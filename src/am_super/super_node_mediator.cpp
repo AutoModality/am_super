@@ -182,18 +182,18 @@ bool SuperNodeMediator::lifeCycleNotYetImplemented(string node_name)
     stripped == "can_node";
 }
 
-bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
+bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
   return  nr.state == LifeCycleState::INACTIVE || (nr.state == LifeCycleState::ACTIVE && node_mediator.nodeNameIsSuper(nr.name));
 }
 
-bool SuperNodeMediator::checkArmed(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
+bool SuperNodeMediator::checkArmed(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
   return nr.state == LifeCycleState::ACTIVE;
 }
 
 pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
-    Supervisor& supervisor, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
+    Supervisor& supervisor, std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
 {
   map<string, string> failed_nodes;
 
@@ -215,7 +215,7 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
         error_message = "[WCK2] check skipped: node LifeCycle not yet implemented: " + node.name;
         //not a failure to allow temporary transition 
       }
-      else if (!check(supervisor, node, *this))
+      else if (!check(node, *this))
       {
         string_view node_state = life_cycle_mediator.stateToString(node.state);
         error_message = "[2OQ0] check failed: node in wrong state " + node.name + ": " + string(node_state);

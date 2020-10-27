@@ -68,7 +68,7 @@ TEST(Node, initializeManifestedNode_FieldsAreSetProperly)
   ASSERT_EQ(nodeInfo.status, LifeCycleStatus::OK) << "All is good until reported otherwise";
 }
 
-void ASSERT_CHECK(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check, LifeCycleState state, bool expected,
+void ASSERT_CHECK(std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check, LifeCycleState state, bool expected,
   OperatorCommand last_op_command_received = OperatorCommand::ARM, ControllerState last_controller_state_received = ControllerState::COMPLETED)
 {
   SuperNodeMediator::SuperNodeInfo info;
@@ -76,12 +76,12 @@ void ASSERT_CHECK(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMe
   info.state = state;
   supervisor.last_op_command_received = last_op_command_received;
   supervisor.last_controller_state_received = last_controller_state_received;
-  ASSERT_EQ(check(supervisor, info, superNodeMediator), expected) << "For state: " + std::to_string((int)state);
+  ASSERT_EQ(check(info, superNodeMediator), expected) << "For state: " + std::to_string((int)state);
 }
 
 TEST(Node, checkReadyToArm_All)
 {
-  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> function = SuperNodeMediator::checkReadyToArm;
+  std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> function = SuperNodeMediator::checkReadyToArm;
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
   ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, false);
   ASSERT_CHECK(function, LifeCycleState::INACTIVE, true);
@@ -96,7 +96,7 @@ TEST(Node, checkReadyToArm_All)
 
 TEST(Node, checkArmed_All)
 {
-  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&,SuperNodeMediator&)> function = SuperNodeMediator::checkArmed;
+  std::function<bool(SuperNodeMediator::SuperNodeInfo&,SuperNodeMediator&)> function = SuperNodeMediator::checkArmed;
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
   ASSERT_CHECK(function, LifeCycleState::UNCONFIGURED, false);
   ASSERT_CHECK(function, LifeCycleState::INACTIVE, false);
@@ -112,7 +112,7 @@ TEST(Node, checkArmed_All)
 void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result,
                                    string expected_error_code = "")
 {
-  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check = [check_result](SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&) {
+  std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check = [check_result](SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&) {
     return check_result;
   };
   SuperNodeMediator::Supervisor supervisor;

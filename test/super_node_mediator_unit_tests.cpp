@@ -94,14 +94,6 @@ TEST(Node, checkReadyToArm_All)
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
 }
 
-TEST(Node, checkOperatorSignaledToArm)
-{
-  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> function = SuperNodeMediator::checkOperatorSignaledToArm;
-
-  ASSERT_CHECK(function, (LifeCycleState)NULL, false, OperatorCommand::LAUNCH);
-  ASSERT_CHECK(function, (LifeCycleState)NULL, true, OperatorCommand::ARM);
-}
-
 TEST(Node, checkArmed_All)
 {
   std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&,SuperNodeMediator&)> function = SuperNodeMediator::checkArmed;
@@ -115,30 +107,6 @@ TEST(Node, checkArmed_All)
   ASSERT_CHECK(function, LifeCycleState::SHUTTING_DOWN, false);
   ASSERT_CHECK(function, LifeCycleState::ACTIVATING, false);
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
-}
-
-TEST(Node, checkOperatorSignaledToLaunch)
-{
-  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> function = SuperNodeMediator::checkOperatorSignaledToLaunch;
-
-  ASSERT_CHECK(function, (LifeCycleState)NULL, false, OperatorCommand::ARM);
-  ASSERT_CHECK(function, (LifeCycleState)NULL, true, OperatorCommand::LAUNCH);
-}
-
-TEST(Node, checkSessionCompleted)
-{
-  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> function = SuperNodeMediator::checkSessionCompleted;
-
-  ASSERT_CHECK(function, (LifeCycleState)NULL, false, (OperatorCommand)NULL, (ControllerState)-1);
-  ASSERT_CHECK(function, (LifeCycleState)NULL, true, (OperatorCommand)NULL, ControllerState::COMPLETED);
-}
-
-TEST(Node, checkOperatorSignaledToManual)
-{
-  std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> function = SuperNodeMediator::checkOperatorSignaledToManual;
-
-  ASSERT_CHECK(function, (LifeCycleState)NULL, false, OperatorCommand::ARM);
-  ASSERT_CHECK(function, (LifeCycleState)NULL, true, OperatorCommand::MANUAL);
 }
 
 void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result,

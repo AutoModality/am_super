@@ -218,8 +218,12 @@ if (CATKIN_ENABLE_TESTING)
   add_rostest_gtest(auto_to_manual_rostest rostest/auto_to_manual/auto_to_manual_rostest.test rostest/auto_to_manual/auto_to_manual_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(auto_to_manual_rostest ${catkin_LIBRARIES} super_lib)
 
+  add_rostest_gtest(auto_to_semiauto_rostest rostest/auto_to_semiauto/auto_to_semiauto_rostest.test rostest/auto_to_semiauto/auto_to_semiauto_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  target_link_libraries(auto_to_semiauto_rostest ${catkin_LIBRARIES} super_lib)
+
   add_rostest_gtest(armed_to_ready_rostest rostest/armed_to_ready/armed_to_ready_rostest.test rostest/armed_to_ready/armed_to_ready_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(armed_to_ready_rostest ${catkin_LIBRARIES} super_lib)
+  
 
   # Create a target ${PROJECT_NAME}_coverage_report
   if(ENABLE_COVERAGE_TESTING)

@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="am_super" type="am_super" name="am_super" output="screen">
+        <rosparam command="load" file="$(dirname)/auto_to_semiauto_rostest.yaml"/>
+    </node>
+    <test test-name="auto_to_semiauto_rostest" pkg="am_super" type="auto_to_semiauto_rostest" time-limit="20">
+    </test>
+</launch>

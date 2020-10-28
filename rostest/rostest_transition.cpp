@@ -2,7 +2,8 @@
 
 RostestTransition::RostestTransition() : loop_rate(1)
 {
-  ready = ready_after_armed = armed = in_auto = manual = disarming = false;
+  ready = ready_after_armed = armed = in_auto = manual = disarming = 
+  semi_auto = false;
 
   /* TODO: currently hardcoded to send only to super, make it general? */
   operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>(am_super_topics::OPERATOR_COMMAND, 100);
@@ -39,6 +40,10 @@ void RostestTransition::missionStateCallback(const brain_box_msgs::VxState& msg)
     case brain_box_msgs::VxState::MANUAL:
       ROS_INFO_STREAM("MANUAL received");
       manual = true;
+      break;
+    case brain_box_msgs::VxState::SEMI_AUTO:
+      ROS_INFO_STREAM("SEMI-AUTO received");
+      semi_auto = true;
       break;
   }
 }

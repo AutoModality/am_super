@@ -15,16 +15,16 @@ SuperNodeMediator::SuperNodeMediator(const std::string& node_name):
     { SuperState::BOOTING, {
     {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::CONFIGURE}}}},
   { SuperState::READY, {
-    {SuperState::ARMING, {SuperState::ARMING, SuperNodeMediator::checkOperatorSignaledToArm }}}},
+    {SuperState::ARMING, {SuperState::ARMING, SuperNodeMediator::checkReadyToArm, (LifeCycleCommand)-1, OperatorCommand::ARM}}}},
   {SuperState::ARMING, {
     {SuperState::ARMED, {SuperState::ARMED, SuperNodeMediator::checkArmed, LifeCycleCommand::ACTIVATE}}}},
   {SuperState::ARMED, {
-    {SuperState::AUTO, {SuperState::AUTO, SuperNodeMediator::checkOperatorSignaledToLaunch, (LifeCycleCommand)-1, OperatorCommand::LAUNCH}},
-    {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, (LifeCycleCommand)-1, OperatorCommand::CANCEL}}  
+    {SuperState::AUTO, {SuperState::AUTO, SuperNodeMediator::checkArmed, (LifeCycleCommand)-1, OperatorCommand::LAUNCH}},
+    {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, (LifeCycleCommand)-1, OperatorCommand::CANCEL}}  
   }},
   {SuperState::AUTO, {
-    {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkSessionCompleted, (LifeCycleCommand)-1, (OperatorCommand)-1, ControllerState::COMPLETED}},
-    {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkOperatorSignaledToManual, (LifeCycleCommand)-1, OperatorCommand::MANUAL}}
+    {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, (LifeCycleCommand)-1, (OperatorCommand)-1, ControllerState::COMPLETED}},
+    {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkArmed, (LifeCycleCommand)-1, OperatorCommand::MANUAL}}
   }},
   {SuperState::DISARMING, {
     {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE}}}}
@@ -182,39 +182,18 @@ bool SuperNodeMediator::lifeCycleNotYetImplemented(string node_name)
     stripped == "can_node";
 }
 
-bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
+bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
-  return  nr.state == LifeCycleState::INACTIVE || (nr.state == LifeCycleState::ACTIVE && node_mediator.nodeNameIsSuper(nr.name)) || 
-    (supervisor.last_op_command_received == OperatorCommand::CANCEL && nr.state == LifeCycleState::ACTIVE);
+  return  nr.state == LifeCycleState::INACTIVE || (nr.state == LifeCycleState::ACTIVE && node_mediator.nodeNameIsSuper(nr.name));
 }
 
-bool SuperNodeMediator::checkOperatorSignaledToArm(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
-{
-  return supervisor.last_op_command_received == OperatorCommand::ARM;
-}
-
-bool SuperNodeMediator::checkArmed(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
+bool SuperNodeMediator::checkArmed(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
   return nr.state == LifeCycleState::ACTIVE;
 }
 
-bool SuperNodeMediator::checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
-{
-  return supervisor.last_op_command_received == OperatorCommand::LAUNCH;
-}
-
-bool SuperNodeMediator::checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
-{
-  return supervisor.last_controller_state_received == ControllerState::COMPLETED;
-}
-
-bool SuperNodeMediator::checkOperatorSignaledToManual(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
-{
-  return supervisor.last_op_command_received == OperatorCommand::MANUAL;
-}
-
 pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
-    Supervisor& supervisor, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
+    Supervisor& supervisor, std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
 {
   map<string, string> failed_nodes;
 
@@ -236,7 +215,7 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
         error_message = "[WCK2] check skipped: node LifeCycle not yet implemented: " + node.name;
         //not a failure to allow temporary transition 
       }
-      else if (!check(supervisor, node, *this))
+      else if (!check(node, *this))
       {
         string_view node_state = life_cycle_mediator.stateToString(node.state);
         error_message = "[2OQ0] check failed: node in wrong state " + node.name + ": " + string(node_state);

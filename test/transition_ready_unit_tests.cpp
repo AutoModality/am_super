@@ -124,7 +124,7 @@ TEST_F(TransitionReady, transitionReady_ReadyNoTransitionWhenNotArmed)
 
 TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenArmed)
 {
-  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::READY, (LifeCycleState)NULL,
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::READY, LifeCycleState::INACTIVE,
                           (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::ARMING, false,
                           LifeCycleCommand::CONFIGURE, OperatorCommand::ARM);
 }

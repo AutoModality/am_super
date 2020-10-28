@@ -7,7 +7,8 @@ class ArmedToReady : public RostestTransition {};
 TEST_F(ArmedToReady, testState_ArmedToReady)
 {
   RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::ARM, RostestTransition::armed);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::CANCEL, RostestTransition::ready_after_armed);
+  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::CANCEL, RostestTransition::disarming);
+  RostestTransition::waitUntilResponseReceived(RostestTransition::ready_after_armed);
 }
 
 int main(int argc, char** argv)

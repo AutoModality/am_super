@@ -80,7 +80,7 @@ public:
    */
   struct StateTransition
   {
-    StateTransition(SuperState _to_state = (SuperState)-1, std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check = NULL,
+    StateTransition(SuperState _to_state = (SuperState)-1, std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check = NULL,
                     LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1, OperatorCommand _operator_command = (OperatorCommand)-1, 
                     ControllerState _controller_state = (ControllerState)-1)
     {
@@ -94,7 +94,7 @@ public:
     /**The future Supervisor.systemState if checks pass.*/
     SuperState to_state;
     /**Function that indicates if the transition is allowed (based on node lifecycle)*/
-    std::function<bool(SuperNodeMediator::Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check;
+    std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check;
 
     /**If the check result matches this value, then transition*/
     bool on_check_result;
@@ -193,33 +193,12 @@ public:
   /**
   * FIXME: this should be a private method
    * @return true if Lifecyle state is inactive (already configured)*/
-  static bool checkReadyToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
-
-  /** 
-   * FIXME: this should be a private method
-   * @return true if the operator sent the signal to arm the system  */
-  static bool checkOperatorSignaledToArm(Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
+  static bool checkReadyToArm(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
 
   /**
    * FIXME: this should be a private method
    * @return true if Lifecyle state equals ACTIVE */
-  static bool checkArmed(Supervisor& supervisor, SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
-
-  /**
-   * FIXME: this should be a private method
-   * @return true if the operator is ready to launch */
-  static bool checkOperatorSignaledToLaunch(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
-
-  /**
-   * FIXME: this should be a private method
-   * @return true if the session controller signaled the end of the session (flight, etc) */
-  static bool checkSessionCompleted(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
-
-  /**
-   * FIXME: this should be a private method
-   * @return true if the session controller signaled the end of the session (flight, etc) */
-  static bool checkOperatorSignaledToManual(SuperNodeMediator::Supervisor& supervisor,SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
-
+  static bool checkArmed(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
 
   /** Reads the given manifest string, typically provided by a ROS param,
    * converts it to a vector or node names which will be assigned to the given
@@ -245,7 +224,7 @@ public:
      *
      */
   pair<bool, map<string, string>> allManifestedNodesCheck(Supervisor& supervisor,
-                                                          function<bool(Supervisor&,SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check);
+                                                          function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check);
 
   /**@return the number of nodes where online=true*/
   int nodesOnlineCount(Supervisor supervisor);

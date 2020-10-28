@@ -503,7 +503,7 @@ private:
    * - all states are UNCONFIGURED or INACTIVE or ACTIVE
    * - all statuses are not error
    */
-  bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::Supervisor&, SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
+  bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
   {
     pair<bool, map<string, string>> result = node_mediator_.allManifestedNodesCheck(supervisor_, check);
     bool success = result.first;

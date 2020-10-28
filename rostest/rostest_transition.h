@@ -19,7 +19,7 @@ class RostestTransition : public ::testing::Test, am::AMLifeCycle
 {
 public:
   //Indicates if we received the respective SuperState from super
-  bool ready, armed, in_auto, manual, ready_after_armed;
+  bool ready, armed, in_auto, manual, ready_after_armed, disarming;
 
   //node handle that allows us to publish and subscribe
   ros::NodeHandle n;
@@ -49,6 +49,15 @@ public:
    * 
    */
   void sendCommandUntilResponseReceived(OperatorCommand::_command_type cmd, bool& responded);
+
+    /**
+   * Sends OperatorCommand to super until 'responded' is true (set by missionStateCallback)
+   * 
+   * @param responded One of the bool member variables associated with this class. When this become true, we 
+   * received the response
+   * 
+   */
+  void waitUntilResponseReceived(bool& responded);
 };
 
 #endif

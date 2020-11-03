@@ -9,7 +9,7 @@ TEST_F(AutoToSemiAuto, testState_AutoToSemiAuto)
   RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::ARM, RostestTransition::armed);
   RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::LAUNCH, RostestTransition::in_auto);
   RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::PAUSE, RostestTransition::semi_auto);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::RESUME, RostestTransition::auto_after_semiauto);
+  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::RESUME, RostestTransition::auto_after_semi_auto);
 }
 
 int main(int argc, char** argv)

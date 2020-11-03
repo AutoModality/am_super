@@ -172,6 +172,7 @@ TEST_F(TransitionReady, transitionReady_SemiAutoToAutoOnResume)
   ASSERT_TRANSITION_READY(superNodeMediator, SuperState::SEMI_AUTO, LifeCycleState::ACTIVE, 
                         (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::AUTO, 
                           false, (LifeCycleCommand)NULL, OperatorCommand::RESUME);
+}
 
 TEST_F(TransitionReady, TransitionReady_AutoToAbortOnOperatorAbort)
 {

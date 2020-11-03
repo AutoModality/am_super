@@ -28,6 +28,9 @@ SuperNodeMediator::SuperNodeMediator(const std::string& node_name):
     {SuperState::SEMI_AUTO, {SuperState::SEMI_AUTO, SuperNodeMediator::checkArmed, (LifeCycleCommand)-1, OperatorCommand::PAUSE}},
     {SuperState::ABORT, {SuperState::ABORT, SuperNodeMediator::checkArmed, (LifeCycleCommand)-1, OperatorCommand::ABORT}}
   }},
+  {SuperState::SEMI_AUTO, {
+    {SuperState::AUTO, {SuperState::AUTO, SuperNodeMediator::checkArmed, (LifeCycleCommand)-1, OperatorCommand::RESUME}}
+  }},
   {SuperState::DISARMING, {
     {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE}}}}
 })

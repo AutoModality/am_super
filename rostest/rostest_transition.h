@@ -20,7 +20,7 @@ class RostestTransition : public ::testing::Test, am::AMLifeCycle
 public:
   //Indicates if we received the respective SuperState from super
   bool ready, armed, in_auto, manual, ready_after_armed, disarming,
-  semi_auto, auto_after_semi_auto;
+  semi_auto, abort, auto_after_semi_auto;
 
   //node handle that allows us to publish and subscribe
   ros::NodeHandle n;

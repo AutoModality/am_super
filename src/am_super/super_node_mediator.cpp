@@ -79,7 +79,6 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
 
 bool SuperNodeMediator::transitionHasOperatorCommand(const StateTransition& transition)
 {
-  //-1 is also the constructor default
   return transition.operator_command != StateTransition::NO_OPERATOR_COMMAND;
 }
 
@@ -121,7 +120,7 @@ SuperNodeMediator::StateTransition SuperNodeMediator::invalidTransition()
 
 bool SuperNodeMediator::transitionIsValid(const StateTransition& transition)
 {
-  return transition.to_state != (SuperState)-1; //FIXME: reference constant
+  return transition.to_state != StateTransition::NO_SUPER_STATE;
 }
 
 SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Supervisor supervisor)

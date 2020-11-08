@@ -24,7 +24,7 @@ SuperNodeMediator::SuperNodeMediator(const std::string& node_name):
   }},
   {SuperState::AUTO, {
     {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, (LifeCycleCommand)-1, (OperatorCommand)-1, ControllerState::COMPLETED}},
-    {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkArmed, (LifeCycleCommand)-1, OperatorCommand::MANUAL}},
+    {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkArmed, (LifeCycleCommand)-1, OperatorCommand::MANUAL, (ControllerState)-1, true}},
     {SuperState::SEMI_AUTO, {SuperState::SEMI_AUTO, SuperNodeMediator::checkArmed, (LifeCycleCommand)-1, OperatorCommand::PAUSE}},
     {SuperState::ABORT, {SuperState::ABORT, SuperNodeMediator::checkArmed, (LifeCycleCommand)-1, OperatorCommand::ABORT}}
   }},
@@ -144,26 +144,21 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
     {
       pair<bool,map<string,string>> check_results = allManifestedNodesCheck(supervisor, transition.check);
 
-      if (check_results.first)
+      bool checks_passed = check_results.first;
+
+      //instruction to transition if all checks passed or forced 
+      if (checks_passed || transition.force)
       {
         transition_instructions.ready_for_transition = true;
         transition_instructions.new_state = transition.to_state;
       }
-      else
+      
+      //if checks didn't pass, then send lifecycle commands
+      if(!checks_passed)
       {
-        
         vector<string> failed_nodes;
         boost::copy(check_results.second | boost::adaptors::map_keys, std::back_inserter(failed_nodes));
         transition_instructions.failed_nodes = failed_nodes;
-        
-        // no transition based on state alone.
-        // maybe set the state by the filght controller
-        if (transition.flt_ctrl_state_map.count(supervisor.flt_ctrl_state))
-        {
-          SuperState new_state = transition.flt_ctrl_state_map.at(supervisor.flt_ctrl_state);
-          transition_instructions.ready_for_transition = true;
-          transition_instructions.new_state = new_state;
-        }
 
         // some check failures send lifecycle commands to encourage nodes to progress so the state can change
         if (transitionHasLifecycleCommand(transition))

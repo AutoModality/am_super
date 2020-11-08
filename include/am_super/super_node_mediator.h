@@ -82,7 +82,7 @@ public:
   {
     StateTransition(SuperState _to_state = (SuperState)-1, std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check = NULL,
                     LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1, OperatorCommand _operator_command = (OperatorCommand)-1, 
-                    ControllerState _controller_state = (ControllerState)-1)
+                    ControllerState _controller_state = (ControllerState)-1, bool _force = false)
     {
       to_state = _to_state;
       check = _check;
@@ -90,6 +90,7 @@ public:
       operator_command = _operator_command;
       on_check_result = true; //TODO: remove this; we are assuming the check method should always return true now
       controller_state = _controller_state;
+      force = _force;
     }
     /**The future Supervisor.systemState if checks pass.*/
     SuperState to_state;
@@ -114,6 +115,10 @@ public:
 
     /** The controllerState super needs to receive in order for us to attempt this transition */
     ControllerState controller_state;
+
+    /** If true, the this will always force the transition regardless of the check results.*/
+    bool force;
+
   };
 
   /**Provided by transitionReady method used by the node to trnasition states and send signals according

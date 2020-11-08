@@ -330,7 +330,15 @@ private:
       }
       if (nr.pid != pid)
       {
-        ROS_WARN_STREAM(node_name << " changed process id to = " << pid);
+        //process id = 0 observed to be a node coming online. -1 appears to be offline
+        if(pid == 0)
+        {
+          ROS_INFO_STREAM(node_name << " process is alive");
+        }
+        else
+        {
+          ROS_WARN_STREAM(node_name << " changed process id from: " << nr.pid << " to: " <<  pid);
+        }
         nr.pid = pid;
         nodes_changed = true;
       }

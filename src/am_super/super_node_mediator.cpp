@@ -37,7 +37,7 @@ SuperNodeMediator::SuperNodeMediator(const std::string& node_name):
 })
 {
 
-}
+} 
 
 std::string SuperNodeMediator::nodeNameStripped(std::string node_name)
 {

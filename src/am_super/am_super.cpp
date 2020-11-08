@@ -176,11 +176,11 @@ public:
     /**
      * system status pub
      */
-    vstate_summary_pub_ = nh_.advertise<brain_box_msgs::VxState>("/vstate/summary", 1000);
+    vstate_summary_pub_ = nh_.advertise<brain_box_msgs::VxState>(am_super_topics::SUPER_STATE, 1000);
     /**
      * node lifecycle state pub. used to tell nodes to change their lifecycle state.
      */
-    lifecycle_pub_ = nh_.advertise<brain_box_msgs::LifeCycleCommand>("/node_lifecycle", 100);
+    lifecycle_pub_ = nh_.advertise<brain_box_msgs::LifeCycleCommand>(am_super_topics::LIFECYCLE_COMMAND, 100);
     /**
      * led control pub
      */
@@ -188,7 +188,7 @@ public:
     /**
      * super status contains online naode list for gcs_comms
      */
-    super_status_pub_ = nh_.advertise<brain_box_msgs::Super2Status>("/super/status", 1000);
+    super_status_pub_ = nh_.advertise<brain_box_msgs::Super2Status>(am_super_topics::SUPER_STATUS, 1000);
 
     supervisor_.system_state = SuperState::BOOTING;
     supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::INIT;
@@ -200,11 +200,11 @@ public:
     /**
      * node status via LifeCycle
      */
-    node_state_sub_ = nh_.subscribe("/node_state", 100, &AMSuper::nodeStateCB, this);
+    node_state_sub_ = nh_.subscribe(am_super_topics::LIFECYCLE_STATE, 100, &AMSuper::nodeStateCB, this);
     /**
      * legacy node status
      */
-    node_status_sub_ = nh_.subscribe("/process/status", 100, &AMSuper::statusCB, this);
+    node_status_sub_ = nh_.subscribe(am_super_topics::PROCESS_STATUS, 100, &AMSuper::statusCB, this);
 
     /**
      * commands from operator

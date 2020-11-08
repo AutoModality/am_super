@@ -18,7 +18,14 @@ public:
   /** State of super as reported by super */
   static constexpr char SUPER_STATE[] = "/vstate/summary";
 
+  /** State of lifecycle nodes */
   static constexpr char LIFECYCLE_STATE[] = "/node_state";
+
+  static constexpr char LIFECYCLE_COMMAND[] = "/node_lifecycle";
+
+  static constexpr char SUPER_STATUS[] = "/super/status";
+
+  static constexpr char PROCESS_STATUS[] = "process/status";
 };
 
 }

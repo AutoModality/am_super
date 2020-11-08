@@ -130,6 +130,10 @@ public:
     bool ready_for_transition;
     /**The new system state if ready_for_transition*/
     SuperState new_state;
+
+    /** if true, then super will send lifecycle command to nodes and transition regardless of response*/
+    bool send_life_cycle_command;
+
     /** if True, then command should be sent.  if ready_for_transition=true, then this is false*/
     bool resend_life_cycle_command;
 

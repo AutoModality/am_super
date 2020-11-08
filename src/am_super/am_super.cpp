@@ -536,6 +536,16 @@ private:
       if (transition_instructions.ready_for_transition)
       {
         setSystemState(transition_instructions.new_state);
+        if(transition_instructions.send_life_cycle_command)
+        {
+          for(const auto& node_name : supervisor_.manifest)
+          {
+            if(!node_mediator_.nodeNameIsSuper(node_name))
+            {
+              sendLifeCycleCommand(node_name, transition_instructions.life_cycle_command);
+            }
+          }
+        }
       }
       else if (transition_instructions.resend_life_cycle_command)
       {

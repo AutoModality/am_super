@@ -2,6 +2,7 @@
 #include <brain_box_msgs/LifeCycleState.h>
 #include <boost/bimap.hpp>
 #include <boost/assign.hpp>
+#include <super_lib/am_super_topics.h>
 
 
 
@@ -30,7 +31,7 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
     life_cycle_info_.state = LifeCycleState::ACTIVE;
   }
   life_cycle_info_.status = LifeCycleStatus::OK;
-  state_pub_ = nh_.advertise<brain_box_msgs::LifeCycleState>("/node_state", 100);
+  state_pub_ = nh_.advertise<brain_box_msgs::LifeCycleState>(am_super_topics::LIFECYCLE_STATE, 100);
 
   updater_.setHardwareID("none");
   updater_.broadcast(0, "Initializing node");
@@ -52,7 +53,7 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
   /**
    * node status via LifeCycle
    */
-  lifecycle_sub_ = nh_.subscribe("/node_lifecycle", 100, &AMLifeCycle::lifecycleCB, this);
+  lifecycle_sub_ = nh_.subscribe(am_super_topics::LIFECYCLE_COMMAND, 100, &AMLifeCycle::lifecycleCB, this);
 
   heartbeat_timer_ = nh_.createTimer(ros::Duration(1.0), &AMLifeCycle::heartbeatCB, this);
 }

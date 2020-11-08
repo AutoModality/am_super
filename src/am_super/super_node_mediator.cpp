@@ -149,6 +149,8 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
         transition_instructions.ready_for_transition = true;
         transition_instructions.new_state = transition.to_state;
 
+        /* if the check passed and there is both an operator command and lifecycle command 
+        associated with the statetransition, then we send command to nodes and transition */
         if(transitionHasOperatorCommand(transition) && transitionHasLifecycleCommand(transition))
         {
           transition_instructions.send_life_cycle_command = true;

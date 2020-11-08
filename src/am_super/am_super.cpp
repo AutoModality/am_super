@@ -271,7 +271,7 @@ private:
   {
     const brain_box_msgs::ControllerState::ConstPtr& rmsg = event.getMessage();
 
-    ROS_INFO_STREAM("Received controller state");
+    ROS_INFO("Received Controller State: %s sent %i", rmsg->node_name.c_str(), rmsg->state);
     node_mediator_.setControllerState(supervisor_, (ControllerState)rmsg->state);
   }
 
@@ -279,7 +279,7 @@ private:
   {
     const brain_box_msgs::OperatorCommand::ConstPtr& rmsg = event.getMessage();
     
-    ROS_INFO_STREAM(rmsg->node_name << " sent command " << rmsg->command );
+    ROS_INFO("Received Operator Command: %s sent '%i'",rmsg->node_name.c_str(),rmsg->command );
     
     node_mediator_.setOperatorCommand(supervisor_, (OperatorCommand)rmsg->command);
     // TODO: topic name should come from vb_util_lib::topics.

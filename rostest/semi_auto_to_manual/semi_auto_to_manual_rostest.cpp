@@ -15,6 +15,6 @@ TEST_F(SemiAutoToManual, testState_SemiAutoToManual)
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "auto_to_semiauto_rostest");
+  ros::init(argc, argv, ros::this_node::getName());
   return RUN_ALL_TESTS();
 }

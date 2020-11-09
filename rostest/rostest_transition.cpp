@@ -64,14 +64,6 @@ void RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::_comma
   while(!responded && ros::ok())
   {
     operatorCommandPublisher.publish(msg);
-    if(cmd == OperatorCommand::ARM)
-    {
-      ROS_INFO_STREAM("Sending ARM");
-    }
-    else{
-      ROS_INFO_STREAM("Sending CANCEL");
-    }
-    
     ros::spinOnce();
     loop_rate.sleep();
   }

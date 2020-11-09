@@ -537,7 +537,7 @@ private:
       {
         setSystemState(transition_instructions.new_state);
       }
-      else if (transition_instructions.resend_life_cycle_command)
+      if (transition_instructions.resend_life_cycle_command)
       {
         LifeCycleCommand command = transition_instructions.life_cycle_command;
         std::string failed_nodes_string = boost::algorithm::join(transition_instructions.failed_nodes, ", ");

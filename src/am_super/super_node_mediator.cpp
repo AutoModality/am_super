@@ -143,26 +143,20 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
     {
       pair<bool,map<string,string>> check_results = allManifestedNodesCheck(supervisor, transition.check);
 
-      if (check_results.first)
+      //transition to new state if checks passed or forced
+      bool checks_passed = check_results.first;
+      if (checks_passed || forceTransition(transition))
       {
         transition_instructions.ready_for_transition = true;
         transition_instructions.new_state = transition.to_state;
       }
-      else
+
+      //if checks didn't pass
+      if (!checks_passed)
       {
-        
         vector<string> failed_nodes;
         boost::copy(check_results.second | boost::adaptors::map_keys, std::back_inserter(failed_nodes));
         transition_instructions.failed_nodes = failed_nodes;
-        
-        // no transition based on state alone.
-        // maybe set the state by the filght controller
-        if (transition.flt_ctrl_state_map.count(supervisor.flt_ctrl_state))
-        {
-          SuperState new_state = transition.flt_ctrl_state_map.at(supervisor.flt_ctrl_state);
-          transition_instructions.ready_for_transition = true;
-          transition_instructions.new_state = new_state;
-        }
 
         // some check failures send lifecycle commands to encourage nodes to progress so the state can change
         if (transitionHasLifecycleCommand(transition))
@@ -174,6 +168,12 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
     }
   }
   return transition_instructions;
+}
+
+
+bool SuperNodeMediator::forceTransition(StateTransition transition)
+{
+  return transition.to_state == SuperState::MANUAL;
 }
 
 bool SuperNodeMediator::lifeCycleNotYetImplemented(string node_name)

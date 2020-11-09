@@ -277,6 +277,8 @@ private:
   /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
   [[deprecated]]
   bool lifeCycleNotYetImplemented(string node_name);
+
+  bool forceTransition(StateTransition transition);
 };
 }
 

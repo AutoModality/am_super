@@ -374,6 +374,9 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
     ASSERT_TRUE(ready_after_disarming) << "Super should go into READY after DISARMING";
     ASSERT_TRUE(rostest_inactive_after_disarming) << "rostest must be inactive before system is ready again.";
   }
+
+  /** TODO: instead of AUTO->DISARMING->READY do AUTO->MANUAL->DISARMING->READY and ensure the DEACTIVATE
+   *  command is sent after we are in MANUAL*/
 }
 
 int main(int argc, char** argv)

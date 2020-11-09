@@ -189,6 +189,13 @@ TEST_F(TransitionReady, TransitionReady_SemiAutoToManualOnOpManual)
                           true, LifeCycleCommand::DEACTIVATE, OperatorCommand::MANUAL);
 }
 
+TEST_F(TransitionReady, TransitionReady_AutoToManualOnOpManual)
+{
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::AUTO, LifeCycleState::ACTIVE, 
+                        (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::MANUAL, 
+                          true, LifeCycleCommand::DEACTIVATE, OperatorCommand::MANUAL);
+}
+
 TEST_F(TransitionReady, DISABLED_transitionReady_AutoToAbortWhenDeactivated)
 {
   ASSERT_TRANSITION_READY(superNodeMediator, SuperState::AUTO, LifeCycleState::INACTIVE, true, SuperState::ABORT);

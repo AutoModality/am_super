@@ -80,9 +80,14 @@ public:
    */
   struct StateTransition
   {
-    StateTransition(SuperState _to_state = (SuperState)-1, std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check = NULL,
-                    LifeCycleCommand _life_cycle_command = (LifeCycleCommand)-1, OperatorCommand _operator_command = (OperatorCommand)-1, 
-                    ControllerState _controller_state = (ControllerState)-1)
+    static const SuperState NO_SUPER_STATE = (SuperState)-1;
+    static const LifeCycleCommand NO_LIFECYCLE_COMMAND = (LifeCycleCommand)-1;
+    static const OperatorCommand NO_OPERATOR_COMMAND = (OperatorCommand)-1;
+    static const ControllerState NO_CONTROLLER_STATE = (ControllerState)-1;
+
+    StateTransition(SuperState _to_state = NO_SUPER_STATE, std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check = NULL,
+                    LifeCycleCommand _life_cycle_command = NO_LIFECYCLE_COMMAND, OperatorCommand _operator_command = NO_OPERATOR_COMMAND, 
+                    ControllerState _controller_state = NO_CONTROLLER_STATE)
     {
       to_state = _to_state;
       check = _check;

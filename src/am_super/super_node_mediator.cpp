@@ -33,7 +33,11 @@ SuperNodeMediator::SuperNodeMediator(const std::string& node_name):
     {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE, OperatorCommand::MANUAL}}
   }},
   {SuperState::DISARMING, {
-    {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE}}}}
+    {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE}}
+  }},
+  {SuperState::ABORT, {
+    {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE, OperatorCommand::MANUAL}}
+  }}
 })
 {
 

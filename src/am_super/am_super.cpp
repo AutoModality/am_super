@@ -439,8 +439,7 @@ private:
     std::stringstream ss;
     genSystemState(ss);
 
-    if (supervisor_.manifest.size() != num_manifest_nodes_online || supervisor_.system_state == SuperState::ABORT ||
-        supervisor_.system_state == SuperState::HOLD || supervisor_.system_state == SuperState::MANUAL)
+    if (supervisor_.manifest.size() != num_manifest_nodes_online)
     {
       // if all manifested nodes aren't running, report as error
       ROS_ERROR_STREAM(ss.str());

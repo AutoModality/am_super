@@ -178,7 +178,6 @@ TEST(Node, allManifestedNodesCheck_ErrorStatusReturnsFalse)
   assertAllManifestedNodesCheck(false, node, true, "[AA0A]");
 }
 
-[[deprecated]]
 TEST(Node, allManifestedNodesCheck_FlightControllerLifeCycleNotYetImplementedSkipsCheck)
 {
   SuperNodeMediator::SuperNodeInfo node;

@@ -206,7 +206,7 @@ TEST_F(TransitionReady, TransitionReady_ManualToDisarmingOnOpLanded)
 {
   ASSERT_TRANSITION_READY(superNodeMediator, SuperState::MANUAL, LifeCycleState::ACTIVE, 
                         (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::DISARMING, 
-                          true, (LifeCycleCommand)NULL, OperatorCommand::LANDED);
+                          false, (LifeCycleCommand)NULL, OperatorCommand::LANDED);
 }
 
 TEST_F(TransitionReady, DISABLED_transitionReady_AutoToAbortWhenDeactivated)

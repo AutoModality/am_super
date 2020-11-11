@@ -37,6 +37,9 @@ SuperNodeMediator::SuperNodeMediator(const std::string& node_name):
   }},
   {SuperState::ABORT, {
     {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE, OperatorCommand::MANUAL}}
+  }},
+  {SuperState::MANUAL, {
+    {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkNodesActiveOrInactive, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::LANDED}},
   }}
 })
 {
@@ -200,6 +203,12 @@ bool SuperNodeMediator::checkArmed(SuperNodeMediator::SuperNodeInfo& nr, SuperNo
 {
   return nr.state == LifeCycleState::ACTIVE;
 }
+
+bool SuperNodeMediator::checkNodesActiveOrInactive(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
+{
+  return nr.state == LifeCycleState::ACTIVE || nr.state == LifeCycleState::INACTIVE;
+}
+
 
 pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
     Supervisor& supervisor, std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)

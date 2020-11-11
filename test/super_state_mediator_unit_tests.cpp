@@ -57,29 +57,32 @@ void ASSERT_SINGLE_STATE_ALLOWED(SuperState from, SuperState to)
   ASSERT_MULTIPLE_STATES_ALLOWED(from, allowed);
 }
 
-TEST(State, allowsTransition_OnlyOffToBootingIAllowed)
+TEST(State, allowsTransition_OnlyOffToBootingIsAllowed)
 {
   ASSERT_SINGLE_STATE_ALLOWED(SuperState::OFF, SuperState::BOOTING);
 }
 
-TEST(State, allowsTransition_OnlyBootingToReadyIsAllowed)
+TEST(State, allowsTransition_BootingToReadyAndShutdownAllowed)
 {
-  ASSERT_SINGLE_STATE_ALLOWED(SuperState::BOOTING, SuperState::READY);
+  std::vector<SuperState> allowed{ SuperState::READY, SuperState::SHUTDOWN };
+  ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::BOOTING, allowed);
 }
 
-TEST(State, allowsTransition_OnlyReadyToArmingIsAllowed)
+TEST(State, allowsTransition_ReadyToArmingAndShutdownAllowed)
 {
-  ASSERT_SINGLE_STATE_ALLOWED(SuperState::READY, SuperState::ARMING);
+  std::vector<SuperState> allowed{ SuperState::ARMING, SuperState::SHUTDOWN };
+  ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::READY, allowed);
 }
 
-TEST(State, allowsTransition_OnlyArmingToArmedIsAllowed)
+TEST(State, allowsTransition_ArmingToArmedAndReadyAllowed)
 {
-  ASSERT_SINGLE_STATE_ALLOWED(SuperState::ARMING, SuperState::ARMED);
+  std::vector<SuperState> allowed{ SuperState::ARMED, SuperState::READY };
+  ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::ARMING, allowed);
 }
 
-TEST(State, allowsTransition_ArmedToAutoAndAbortAndDisarmingAllowed)
+TEST(State, allowsTransition_ArmedToAutoAndDisarmingAllowed)
 {
-  std::vector<SuperState> allowed{ SuperState::ABORT, SuperState::DISARMING, SuperState::AUTO };
+  std::vector<SuperState> allowed{ SuperState::DISARMING, SuperState::AUTO };
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::ARMED, allowed);
 }
 
@@ -90,16 +93,16 @@ TEST(State, allowsTransition_HoldToExceptionStates)
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::HOLD, allowed);
 }
 
-TEST(State, allowsTransition_AbortToReadyAndManualAllowed)
+TEST(State, allowsTransition_AbortToDisarmingAndManualAllowed)
 {
-  std::vector<SuperState> allowed{ SuperState::READY, SuperState::MANUAL };
+  std::vector<SuperState> allowed{ SuperState::DISARMING, SuperState::MANUAL };
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::ABORT, allowed);
 }
 
-TEST(State, allowsTransition_OnlyManualToReadyIsAllowed)
+TEST(State, allowsTransition_OnlyManualToDisarmingIsAllowed)
 {
-  ASSERT_SINGLE_STATE_ALLOWED(SuperState::MANUAL, SuperState::READY);
+  ASSERT_SINGLE_STATE_ALLOWED(SuperState::MANUAL, SuperState::DISARMING);
 }
 
 TEST(State, allowsTransition_ShutdownToOffAllowed)

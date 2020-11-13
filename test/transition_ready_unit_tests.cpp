@@ -131,7 +131,11 @@ TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenArmed)
 
 TEST_F(TransitionReady, transitionReady_ReadyToShutdownOnOpShutdown)
 {
-  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::READY, LifeCycleState::INACTIVE,
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::READY, LifeCycleState::SHUTTING_DOWN,
+                          (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::SHUTDOWN, false,
+                          LifeCycleCommand::SHUTDOWN, OperatorCommand::SHUTDOWN);
+
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::READY, LifeCycleState::FINALIZED,
                           (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::SHUTDOWN, false,
                           LifeCycleCommand::SHUTDOWN, OperatorCommand::SHUTDOWN);
 }

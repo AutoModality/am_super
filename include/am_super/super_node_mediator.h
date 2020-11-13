@@ -207,6 +207,8 @@ public:
 
   static bool checkNodesActiveOrInactive(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
 
+  static bool checkNodesShuttingDownOrFinalized(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
+
 
   /** Reads the given manifest string, typically provided by a ROS param,
    * converts it to a vector or node names which will be assigned to the given

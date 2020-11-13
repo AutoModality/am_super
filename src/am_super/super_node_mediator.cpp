@@ -15,7 +15,9 @@ SuperNodeMediator::SuperNodeMediator(const std::string& node_name):
     { SuperState::BOOTING, {
     {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::CONFIGURE}}}},
   { SuperState::READY, {
-    {SuperState::ARMING, {SuperState::ARMING, SuperNodeMediator::checkReadyToArm, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::ARM}}}},
+    {SuperState::ARMING, {SuperState::ARMING, SuperNodeMediator::checkReadyToArm, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::ARM}},
+    {SuperState::SHUTDOWN, {SuperState::SHUTDOWN, SuperNodeMediator::checkNodesShuttingDownOrFinalized, LifeCycleCommand::SHUTDOWN, OperatorCommand::SHUTDOWN}}
+  }},
   {SuperState::ARMING, {
     {SuperState::ARMED, {SuperState::ARMED, SuperNodeMediator::checkArmed, LifeCycleCommand::ACTIVATE}}}},
   {SuperState::ARMED, {
@@ -207,6 +209,11 @@ bool SuperNodeMediator::checkArmed(SuperNodeMediator::SuperNodeInfo& nr, SuperNo
 bool SuperNodeMediator::checkNodesActiveOrInactive(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
   return nr.state == LifeCycleState::ACTIVE || nr.state == LifeCycleState::INACTIVE;
+}
+
+bool SuperNodeMediator::checkNodesShuttingDownOrFinalized(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
+{
+  return nr.state == LifeCycleState::SHUTTING_DOWN || nr.state == LifeCycleState::FINALIZED;
 }
 
 

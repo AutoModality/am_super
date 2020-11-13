@@ -226,6 +226,9 @@ if (CATKIN_ENABLE_TESTING)
 
   add_rostest_gtest(auto_to_abort_rostest rostest/auto_to_abort/auto_to_abort_rostest.test rostest/auto_to_abort/auto_to_abort_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(auto_to_abort_rostest ${catkin_LIBRARIES} super_lib)
+
+  add_rostest_gtest(ready_to_shutdown_rostest rostest/ready_to_shutdown/ready_to_shutdown_rostest.test rostest/ready_to_shutdown/ready_to_shutdown_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  target_link_libraries(ready_to_shutdown_rostest ${catkin_LIBRARIES} super_lib)
   
   add_rostest_gtest(semi_auto_to_manual_rostest rostest/semi_auto_to_manual/semi_auto_to_manual_rostest.test rostest/semi_auto_to_manual/semi_auto_to_manual_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(semi_auto_to_manual_rostest ${catkin_LIBRARIES} super_lib)
@@ -236,6 +239,7 @@ if (CATKIN_ENABLE_TESTING)
   add_rostest_gtest(manual_to_disarming_rostest rostest/manual_to_disarming/manual_to_disarming_rostest.test rostest/manual_to_disarming/manual_to_disarming_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(manual_to_disarming_rostest ${catkin_LIBRARIES} super_lib)
 
+  
   # Create a target ${PROJECT_NAME}_coverage_report
   if(ENABLE_COVERAGE_TESTING)
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" )

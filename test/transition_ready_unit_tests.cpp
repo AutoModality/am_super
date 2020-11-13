@@ -129,6 +129,13 @@ TEST_F(TransitionReady, transitionReady_ReadyToArmingWhenArmed)
                           LifeCycleCommand::CONFIGURE, OperatorCommand::ARM);
 }
 
+TEST_F(TransitionReady, transitionReady_ReadyToShutdownOnOpShutdown)
+{
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::READY, LifeCycleState::INACTIVE,
+                          (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::SHUTDOWN, false,
+                          LifeCycleCommand::SHUTDOWN, OperatorCommand::SHUTDOWN);
+}
+
 
 TEST_F(TransitionReady, transitionReady_ArmingToArmedWhenNodesActive)
 {

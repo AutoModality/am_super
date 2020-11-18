@@ -117,7 +117,7 @@ jobs:
       - name: Payload env
         run: |
             payload=$(cat ${{ env.RELEASE_PAYLOAD_FILE }} )
-            echo ::set-env name=RELEASE_PAYLOAD::$payload
+            echo "RELEASE_PAYLOAD=$payload" >> $GITHUB_ENV
       - name: Notify AMROS of Release
         if: steps.published.outputs.value == 'true'
         uses: peter-evans/repository-dispatch@v1

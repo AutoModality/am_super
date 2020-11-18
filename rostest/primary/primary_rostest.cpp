@@ -1,9 +1,9 @@
-#include "primary_rostest_base_class.h"
+#include "rostest_base.h"
 
-class LifeCycleRostest : public PrimaryRostestBaseClass 
+class LifeCycleRostest : public RostestBase 
 {
 public:
-  LifeCycleRostest() : PrimaryRostestBaseClass(ros::this_node::getName()) {}
+  LifeCycleRostest() : RostestBase(ros::this_node::getName()) {}
 };
 
 TEST_F(LifeCycleRostest, primary_scenario)

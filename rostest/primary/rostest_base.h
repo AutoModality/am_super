@@ -20,7 +20,7 @@ using namespace am;
  * Base class for testing the LifeCycle transitions of a target node along with the
  * state transition of the supervisor node.
  */
-class PrimaryRostestBaseClass : public ::testing::Test, am::AMLifeCycle 
+class RostestBase : public ::testing::Test, am::AMLifeCycle 
 {
 private:
   ros::Subscriber nodeLifeCycleStateSubscription_;
@@ -52,7 +52,7 @@ public:
   ros::NodeHandle n;
   string target_node_name_;
 
-  PrimaryRostestBaseClass(string target_node_name);
+  RostestBase(string target_node_name);
 
   /**Publish happy state on demand to act as the acs_flight_api */
   void publishState();

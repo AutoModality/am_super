@@ -27,7 +27,7 @@ using namespace am;
 /* SuperState - indicates if we received the command from super yet*/
 bool booting = false;
 bool ready = false; 
-bool arming = false;
+bool arming = false; 
 bool armed = false;
 bool in_auto = false;
 bool disarming = false;

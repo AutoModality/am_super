@@ -1,388 +1,222 @@
 /**
- * ROS Test node to ensure a node can successfully communicate with am_super
- * and retrieve it's status. Specifically, this test checks if am_super is in
- * the ARMED state 3 times.
+ * ROS Test for the happy case, emulating the acsl_flight_api by publishing mavros and acsl messages necessary to 
+ * transition through a standard lifecycle.
  * 
- * The test node inherits from LifeCycle and must properly go through the lifecycle
- * states which are necessary to be "ARMED".  Assertions will be made to ensure this node
- * received a command to visit each state. 
- *
- * Times out after rostest configured in launch file.
- *
- * Test fails if number of times we receive 'ARMED' from super is less than 3.
+ * On configure, this publishes mavros and health messages as if it were the flight api. This should make the flight monitor happy 
+ * making the system ready.  
+ * 
+ * The test then sends the operator arm command so the monitor will start logging in the bag files and go active.
+ * 
+ * When ARMED, the launch command is sent and this sends the mavros message indicating ACSL OFFBOARD command is cruising
+ * 
+ * When Controller:Completed is sent, the monitor will close the bag files and go back to inactive state.
+ * 
  */
 #include "ros/ros.h"                 // ros header file
 #include <gtest/gtest.h>             // googletest header file
-#include <brain_box_msgs/VxState.h>  // msg for status
+#include <super_lib/am_life_cycle.h>
+#include <super_lib/am_life_cycle_types.h>
+#include <mavros_msgs/State.h>
+#include <vb_util_lib/topics.h>
+#include <super_lib/am_super_topics.h>
+#include <super_lib/am_life_cycle.h>
 #include <brain_box_msgs/OperatorCommand.h>  // to be armed, launch for state transitions
 #include <brain_box_msgs/ControllerState.h>
-#include <super_lib/am_life_cycle.h>
-#include <super_lib/am_life_cycle_mediator.h>
-#include <super_lib/am_super_topics.h>
-#include <am_super/super_node_mediator.h>
+#include <brain_box_msgs/VxState.h>  // msg for status
 
 using namespace std;
 using namespace am;
 
-/* SuperState - indicates if we received the command from super yet*/
-bool booting = false;
-bool ready = false; 
-bool arming = false; 
-bool armed = false;
-bool in_auto = false;
-bool disarming = false;
-bool ready_after_disarming = false;
-
-/* LifeCycle - indicates if we received the command yet for a nodde*/
-bool super_unconfigured = false;
-bool super_configuring = false;
-bool super_inactive = false; 
-bool super_active = false;
-bool super_activating = false;
-
-bool rostest_unconfigured = false;
-bool rostest_configuring = false;
-bool rostest_inactive = false;
-bool rostest_active = false;
-bool rostest_activating = false;
-bool rostest_deactivating = false;
-bool rostest_inactive_after_disarming = false;
-
-constexpr string_view THIS_NODE_NAME = "/life_cycle_rostest";
-
-constexpr string_view CORRECT = "CORRECT";  // represents the correct result in test
-string_view order_status = CORRECT;         // used in test to verify order_status is correct
-
-AMLifeCycleMediator life_cycle_mediator_;
-
-const std::string SUPER_NODE_MEDIATOR = "am_super";
-SuperNodeMediator super_node_mediator_(SUPER_NODE_MEDIATOR);
-
-class LifeCycleNodeTest : public ::testing::Test, am::AMLifeCycle
+/**The test node impersonating ACSL Flight API */
+class TestFixture : public ::testing::Test, am::AMLifeCycle
 {
+  private:
+    ros::Subscriber nodeLifeCycleStateSubscription_;
+    ros::Subscriber missionStateSubscription_;
+    ros::Publisher operatorCommandPublisher_;
+    ros::Publisher controllerStatePublisher_;
+    ros::Publisher mavrosStatePublisher_;
+    std::multimap<string,brain_box_msgs::LifeCycleState> node_states_;
+    std::vector<uint8_t> mission_states_;
+
+
+    /** Act as the operator (typically via a remote or ground station) to send one
+     * signal to transition to proceed, cancel, abort, etc.
+     * 
+     * @param command one of brain_box_msgs::OperatorCommand::ARM;
+     * 
+     * @see arm()
+     * @see launch()
+     */
+    void publishOperatorCommand(uint8_t command)
+    {
+      brain_box_msgs::OperatorCommand msg;
+      msg.node_name = ros::this_node::getName();
+      msg.command = command;
+      operatorCommandPublisher_.publish(msg);
+    }
+
+    /** Acting as the controller, this publishes the controller state 
+     * to signal transitions due to autonomous processing
+     * @param state one of the brain_box_msgs::ControllerState state enums
+     * @see landed()
+     * */
+    void publishControllerState(uint8_t state)
+    {
+      brain_box_msgs::ControllerState msg;
+      msg.node_name = ros::this_node::getName();
+      msg.state = state;
+      controllerStatePublisher_.publish(msg);
+    }
+
   public:
-    LifeCycleNodeTest()
+    ros::NodeHandle n;
+    string target_node_name_;
+;
+    TestFixture()
     {
-      ROS_INFO_STREAM("Constructing Lifecycle Node Test");
-      //see launch file for "init_state" = UNCONFIGURED
+      mavrosStatePublisher_ = n.advertise<mavros_msgs::State>(am::am_topics::MAVROS_STATE, 100);
+      nodeLifeCycleStateSubscription_ = n.subscribe(am_super_topics::LIFECYCLE_STATE, 1000, &TestFixture::nodeLifeCycleStateCallback,this);
+      missionStateSubscription_ = n.subscribe(am_super_topics::SUPER_STATE, 1000, &TestFixture::missionStateCallback,this);
+      operatorCommandPublisher_ = n.advertise<brain_box_msgs::OperatorCommand>(am_super_topics::OPERATOR_COMMAND,100);
+      controllerStatePublisher_ = n.advertise<brain_box_msgs::ControllerState>(am_super_topics::CONTROLLER_STATE, 100);
+
+      target_node_name_= ros::this_node::getName();
     }
 
-    void onConfigure()
+    /**Publish happy state on demand to act as the acs_flight_api */
+    void publishState()
     {
-      AMLifeCycle::onConfigure();
-      configured=true;
+      mavros_msgs::State state;
+      state.connected = true;
+      mavrosStatePublisher_.publish(state);
     }
-    void onActivate()
+
+    /** when configured and Inactive, arm is sent to prepare all nodes for takeoff*/
+    void arm()
     {
-      if(!configured)
+      ROS_INFO("operator sending arm command");
+      publishOperatorCommand(brain_box_msgs::OperatorCommand::ARM);
+    }
+
+    /** when armed, signals for the props to spin and takeoff */
+    void launch()
+    {
+      ROS_INFO("operator sending launch command");
+      publishOperatorCommand(brain_box_msgs::OperatorCommand::LAUNCH);
+    }
+
+    void landed()
+    {
+      ROS_INFO("controller sending landed state");
+      publishControllerState(brain_box_msgs::ControllerState::COMPLETED);
+    }
+
+    /** searches the node states matching the lifecycle given. 
+     * 
+     * @return true if the state is found for the node given, false otherwise
+     */
+    bool nodeStateReceived(string node_name,LifeCycleState state)
+    {
+       if(node_states_.count(node_name)){
+          int key = 2;     
+          auto lower_it = node_states_.lower_bound(node_name); 
+          auto upper_it = node_states_.upper_bound(node_name); 
+            
+          while (lower_it != upper_it)     
+          { 
+              if (lower_it -> first == node_name) {
+                brain_box_msgs::LifeCycleState state_msg = lower_it -> second;
+                if((LifeCycleState)state_msg.state == state){
+                  return true;
+                }
+              }
+              lower_it++; 
+          }     
+          return false; 
+       }
+    }
+
+    /**
+     * @return true if the desired state is anywhere in the list, regardless of order
+     */
+    bool missionStateReceived(uint8_t mission_state)
+    {
+      ROS_INFO("Mission Station: Received: %i  Total: %i",mission_state, (int) mission_states_.size());
+      return mission_states_.back() == mission_state;
+    }
+
+    /**
+     * Callback sniffing the state of nodes, as if it were am_super, to see 
+     * if the target node is transitioning as expected. 
+     * 
+     * Simply registers states in multimap for later inspection.
+     */
+    void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
+    { 
+      node_states_.emplace(msg.node_name,msg);
+    }
+
+    void missionStateCallback(const brain_box_msgs::VxState& msg)
+    {
+      mission_states_.insert(mission_states_.end(),msg.state);
+    }
+
+    /**Loop until a am_super is broadcasting the desired state or until
+     * ros says its time to quit.
+     * FIXME: export SuperState into a library and use instead of the untyped messages.
+     */
+    void waitUntilMissionState(const uint8_t mssion_state, float sleep=1)
+    {
+      ros::Rate loop_rate(sleep);
+      while (!missionStateReceived(mssion_state) && ros::ok() )
       {
-        order_status = "ERROR: Attempting to activate before being configured";
+        ros::spinOnce();
+        loop_rate.sleep();
       }
-      AMLifeCycle::onActivate();
-      activated=true;
     }
 
-    void onCleanup()
-    {
-      AMLifeCycle::onCleanup();
-      cleanedUp=true;
+    /**
+     * spin until the desired state is found or until the test times out.
+     */
+    void waitUntil(const LifeCycleState state, float sleep=1){
+      ros::Rate loop_rate(sleep);
+      while (!nodeStateReceived(target_node_name_,state) && ros::ok() )
+      {
+        ros::spinOnce();
+        loop_rate.sleep();
+      }
     }
-
-    void onDeactivate()
-    {
-      AMLifeCycle::onDeactivate();
-      deactivated=true;
-    }
-
-    void onDestroy()
-    {
-      AMLifeCycle::onDestroy();
-      destroyed=true;
-    }
-
-    void onError()
-    {
-      AMLifeCycle::onError();
-      errored=true;
-    }
-
-    void onShutdown()
-    {
-      AMLifeCycle::onShutdown();
-      shutdown=true;
-    }
-    
-
-  protected:
-    bool configured = false;
-    bool activated = false;
-    bool cleanedUp = false;
-    bool deactivated = false;
-    bool destroyed = false;
-    bool errored = false;
-    bool shutdown = false;
 };
 
 
-/**
- * callback function for ROS test node whenever data is published
- *
- * @param msg custom message containing state information about am_super
- */
-void missionStateCallback(const brain_box_msgs::VxState& msg)
-{ 
-  switch(msg.state)
-  {
-    case brain_box_msgs::VxState::BOOTING:
-      ROS_INFO_STREAM("BOOTING received");
-      booting = true;
-      break;
-    case brain_box_msgs::VxState::READY:
-      ROS_INFO_STREAM("READY received");
-      if(disarming)
-        ready_after_disarming = true;
-      else
-        ready = true;
-      break;
-    case brain_box_msgs::VxState::ARMING:
-      ROS_INFO_STREAM("ARMING received");
-      arming = true;
-      break;
-    case brain_box_msgs::VxState::ARMED:
-      ROS_INFO_STREAM("ARMED received");
-      armed = true;
-      break;
-    case brain_box_msgs::VxState::AUTO:
-      ROS_INFO_STREAM("AUTO received");
-      in_auto = true;
-      break;
-    case brain_box_msgs::VxState::DISARMING:
-      ROS_INFO_STREAM("DISARMING received");
-      disarming = true;
-  }
-}
 
-void nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)
-{ 
-  LifeCycleState state = (LifeCycleState)msg.state;
-  string_view state_string = life_cycle_mediator_.stateToString(state);
-  ROS_INFO_STREAM("Node lifecycle state " << state_string << " received from " << msg.node_name);
-  //FIXME: super's node name should come from a constant since it is also used in super
-  if(super_node_mediator_.nodeNameIsSuper(msg.node_name))
-  {
-    switch(state)
-    {
-      case LifeCycleState::UNCONFIGURED:
-        super_unconfigured = true;
-        break;
-      case LifeCycleState::CONFIGURING:
-        super_configuring = true;
-        break;
-      case LifeCycleState::INACTIVE:
-        super_inactive = true;
-        break;
-      case LifeCycleState::ACTIVE:
-        super_active = true;
-        break;
-      case LifeCycleState::ACTIVATING:
-        super_activating = true;
-        break;
-      default:
-        ROS_WARN_STREAM(state_string << " unhandled for " << msg.node_name);
-    }
-  }
-  else if(msg.node_name.find(THIS_NODE_NAME) != std::string::npos)
-  {
-     switch(state)
-    {
-      case LifeCycleState::UNCONFIGURED:
-        rostest_unconfigured = true;
-        break;
-      case LifeCycleState::CONFIGURING:
-        rostest_configuring = true;
-        break;
-      case LifeCycleState::INACTIVE:
-        //going inactive after being active indicates disarming, but can't use disarming because of race condition
-        if (rostest_active)
-          rostest_inactive_after_disarming = true;
-        else
-          rostest_inactive = true;
-        break;
-      case LifeCycleState::ACTIVE:
-        rostest_active = true;
-        break;
-      case LifeCycleState::ACTIVATING:
-        rostest_activating = true;
-        break;
-      case LifeCycleState::DEACTIVATING:
-        rostest_deactivating = true;
-        break;
-      default:
-        ROS_WARN_STREAM(state_string << " unhandled for " << msg.node_name);
-    }
-  }
-  else
-  {
-    ROS_ERROR_STREAM(msg.node_name << " not recognized.");
-  }
-  
-}
 
-TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
+TEST_F(TestFixture, primary_scenario)
 {
-  ros::NodeHandle n;
+  //wait for acsl super to come online and be ready to configure
+  waitUntil(LifeCycleState::CONFIGURING);
+  //acsl super is configuring and listening for mavros state message
+  publishState();
 
-  //FIXME: All these topic names should be constants somewhere to be referenced
-  ros::Subscriber missionStateSubscription = n.subscribe(am_super_topics::SUPER_STATE, 1000, missionStateCallback);
-  ros::Subscriber nodeLifeCycleStateSubscription = n.subscribe(am_super_topics::LIFECYCLE_STATE, 1000, nodeLifeCycleStateCallback);
-  ros::Publisher operatorCommandPublisher = n.advertise<brain_box_msgs::OperatorCommand>(am_super_topics::OPERATOR_COMMAND,100);
-  ros::Publisher controllerStatePublisher = n.advertise<brain_box_msgs::ControllerState>(am_super_topics::CONTROLLER_STATE, 100);
-  ros::Rate loop_rate(1);  // 1 Hz
-
-  // check that we are booting
-  {
-    ROS_INFO_STREAM("Waiting to receive BOOTING from AMSuper (Ctrl-C to cancel)..\n");
-    while (!booting && ros::ok() )
-    {
-      ros::spinOnce();
-      loop_rate.sleep();
-    }
-    ASSERT_TRUE(booting);
-  }
-
-  ROS_INFO_STREAM("BOOTING received ");
-
-  //super must become active first
-  {
-    //super inactive is not guaranteed and we don't have any repeat messaging
-    while ((!super_active) && ros::ok())
-    {
-      ros::spinOnce();
-      loop_rate.sleep();
-    }
-    ASSERT_TRUE(super_active) << "Super should activate itself after configuring.";
-    //super_inactive is not a guaranteed message, so we can't assert it arrived
-  }
-
-  
-  // check that we are ready
-  {
-    ROS_INFO_STREAM("Waiting to receive READY from AMSuper (Ctrl-C to cancel)..\n");
-
-    ASSERT_FALSE(arming) << "Super should not be arming yet";
-    while ((!ready  || !rostest_inactive) && ros::ok())
-    {
-      ros::spinOnce();
-      loop_rate.sleep();
-    }
-
-    ASSERT_TRUE(ready) << "/am_super SuperState did not report a READY state";
-    ASSERT_TRUE(rostest_inactive) << "/life_cycle_rostest LifeCycle did not report an INACTIVE state";
-    ASSERT_FALSE(rostest_active) << "/life_cycle_rostest should not be active until arming";
-  }
-
-  // check that we are not arming yet, until operator command is sent
-  {
-    ASSERT_FALSE(arming) << "/am_super SuperState must wait for a trigger to transition to ARMING";
-    ASSERT_FALSE(armed) << "/am_super SuperState should not be armed yet";
-    ASSERT_EQ(order_status, CORRECT) << order_status;
-    ASSERT_TRUE(configured) << "This node should be configured";
-    ASSERT_FALSE(activated) << "This node should not be activated yet";
-    ASSERT_FALSE(cleanedUp) << "This node should not have cleaned up yet";
-    ASSERT_FALSE(deactivated) << "This node should not have deactivated yet";
-    ASSERT_FALSE(destroyed) << "This node should not be destroyed yet";
-    ASSERT_FALSE(errored) << "This node should not have an error right now";
-    ASSERT_FALSE(shutdown) << "This node should not have shut down";
-  }
-
-  // now, let's arm it with the operator command
-  {
-    brain_box_msgs::OperatorCommand armCommand;
-    armCommand.node_name = THIS_NODE_NAME;
-    armCommand.command = brain_box_msgs::OperatorCommand::ARM;
-    while(!arming && ros::ok())
-    {
-      operatorCommandPublisher.publish(armCommand);
-      ros::spinOnce();
-      loop_rate.sleep();
-    }    
-    ASSERT_TRUE(arming) << "Super should now be arming";
-  }
-
-  //now it must go armed once all the nodes go active
-  {
-    while(!armed && ros::ok())
-    {
-      ros::spinOnce();
-      loop_rate.sleep();
-    }    
-    ASSERT_TRUE(armed) << "/am_super SuperState should now be armed";
-    ASSERT_TRUE(super_active) << "/am_super LifeCycle should still be active";
-    ASSERT_TRUE(rostest_active) << "/life_cycle_rostest LifeCycle should now be active";
-    ASSERT_TRUE(rostest_activating) << " Rostest is active, but never was activating";
-    ASSERT_TRUE(activated) << "This node should now be activated";
-    ASSERT_FALSE(cleanedUp) << "This node should not have cleaned up yet";
-    ASSERT_FALSE(deactivated) << "This node should not have deactivated yet";
-    ASSERT_FALSE(destroyed) << "This node should not be destroyed yet";
-    ASSERT_FALSE(errored) << "This node should not have an error right now";
-    ASSERT_FALSE(shutdown) << "This node should not have shut down";
-  }
-
-  // now let's launch it with the operator command
-  {
-    brain_box_msgs::OperatorCommand launchCommand;
-    launchCommand.node_name = THIS_NODE_NAME;
-    launchCommand.command = brain_box_msgs::OperatorCommand::LAUNCH;
-    
-    while(!in_auto && ros::ok())
-    {
-      operatorCommandPublisher.publish(launchCommand);
-      ros::spinOnce();
-      loop_rate.sleep();
-    }    
-    ASSERT_TRUE(in_auto) << "/am_super SuperState should now be in AUTO";
-  }
-
-  /* assume flight is done once in AUTO, controller state COMPLETED will
-  be published and super transitons AUTO --> DISARMING */
-  {
-    brain_box_msgs::ControllerState controllerState;
-    controllerState.node_name = THIS_NODE_NAME;
-    controllerState.state = brain_box_msgs::ControllerState::COMPLETED;
-
-    while(!disarming && ros::ok())
-    {
-      controllerStatePublisher.publish(controllerState);
-      ros::spinOnce();
-      loop_rate.sleep();
-    }
-    ASSERT_TRUE(disarming);
-
-    while(!rostest_deactivating && ros::ok())
-    {
-      //super should continually notify nodes to disarm
-      ros::spinOnce();
-      loop_rate.sleep();
-    }
-    ASSERT_TRUE(rostest_deactivating) << "rostest should have been notified of deactivation";
-
-    while(!ready_after_disarming && ros::ok())
-    {
-      ros::spinOnce();
-      loop_rate.sleep();
-    }
-    ASSERT_TRUE(ready_after_disarming) << "Super should go into READY after DISARMING";
-    ASSERT_TRUE(rostest_inactive_after_disarming) << "rostest must be inactive before system is ready again.";
-  }
-
-  /** TODO: instead of AUTO->DISARMING->READY do AUTO->MANUAL->DISARMING->READY and ensure the DEACTIVATE
-   *  command is sent after we are in MANUAL*/
+  //acsl super should configure and transition to ready
+  waitUntil(LifeCycleState::INACTIVE);
+  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  arm();
+  waitUntil(LifeCycleState::ACTIVE);
+  waitUntilMissionState(brain_box_msgs::VxState::ARMED);
+  launch();
+  waitUntilMissionState(brain_box_msgs::VxState::AUTO);
+  landed();
+  waitUntil(LifeCycleState::INACTIVE);
+  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  //the test launch file timeout acts as an assertion if any wait is blocked and unfinishing
 }
 
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "life_cycle_rostest");
+  ros::init(argc, argv, ros::this_node::getName());
 
   return RUN_ALL_TESTS();
 }

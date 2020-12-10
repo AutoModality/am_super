@@ -1,5 +1,3 @@
-
-
 #include <gtest/gtest.h>  // googletest header file
 #include <am_super/super_node_mediator.h>
 
@@ -13,10 +11,9 @@ using namespace am;
 class TransitionReady : public ::testing::Test
 {
 protected:
-  const string SUPER_NODE_NAME = "my_super_node";
   SuperNodeMediator superNodeMediator;
 
-  TransitionReady() : superNodeMediator(SUPER_NODE_NAME){}
+  TransitionReady() : superNodeMediator("am_super"){}
 
   SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
   {
@@ -26,13 +23,13 @@ protected:
     return node;
   }
   /**The main test method providing reuse for testing states. Overloaded methods are provided
- * for ease of use.
- *
- * Three main tests are happening:
- * 1. State transition if the check equals expected
- * 2. State transition if the flight controller state matches desired states.
- * 3. Lifecycle command provided for check failures that want to encourage re-issue
- */
+   * for ease of use.
+   *
+   * Three main tests are happening:
+   * 1. State transition if the check equals expected
+   * 2. State transition if the flight controller state matches desired states.
+   * 3. Lifecycle command provided for check failures that want to encourage re-issue
+   */
   void ASSERT_TRANSITION_READY(SuperNodeMediator superNodeMediator, SuperState from, LifeCycleState node_state,
                               SuperNodeMediator::SuperFltCtrlState flt_ctrl_state, bool expected_ready,
                               SuperState expected_state, bool expected_resend_life_cycle_command,

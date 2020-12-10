@@ -10,24 +10,13 @@ using namespace am;
  * https://automodality.atlassian.net/wiki/spaces/AMROS/pages/929234949/AMROS+System+States
  *
  */
-
-const string SUPER_NODE_NAME = "my_super_node";
-
 class TransitionReady : public ::testing::Test
 {
 protected:
-
+  const string SUPER_NODE_NAME = "my_super_node";
   SuperNodeMediator superNodeMediator;
 
   TransitionReady() : superNodeMediator(SUPER_NODE_NAME){}
-
-  SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
-  {
-    SuperNodeMediator::SuperNodeInfo node;
-    node.online = true;
-    node.manifested = true;
-    return node;
-  }
 };
 
 SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
@@ -37,8 +26,6 @@ SuperNodeMediator::SuperNodeInfo manifested_online_node_fixture()
   node.manifested = true;
   return node;
 }
-
-LifeCycleCommand no_command = (LifeCycleCommand)-1;
 
 /**The main test method providing reuse for testing states. Overloaded methods are provided
  * for ease of use.

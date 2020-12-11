@@ -10,15 +10,15 @@ TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)
 {
   waitUntil(LifeCycleState::CONFIGURING);
   waitUntil(LifeCycleState::INACTIVE);
-  //waitUntilMissionState(brain_box_msgs::VxState::READY);
+  waitUntilMissionState(brain_box_msgs::VxState::READY);
   arm();
   waitUntil(LifeCycleState::ACTIVE);
-  //waitUntilMissionState(brain_box_msgs::VxState::ARMED);
+  waitUntilMissionState(brain_box_msgs::VxState::ARMED);
   launch();
-  //waitUntilMissionState(brain_box_msgs::VxState::AUTO);
+  waitUntilMissionState(brain_box_msgs::VxState::AUTO);
   landed();
   waitUntil(LifeCycleState::INACTIVE);
-  //waitUntilMissionState(brain_box_msgs::VxState::READY);
+  waitUntilMissionState(brain_box_msgs::VxState::READY);
   //the test launch file timeout acts as an assertion if any wait is blocked and unfinishing
 }
 

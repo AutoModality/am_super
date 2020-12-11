@@ -78,8 +78,16 @@ bool RostestBase::nodeStateReceived(string node_name,LifeCycleState state)
 
 bool RostestBase::missionStateReceived(uint8_t mission_state)
 {
-  ROS_INFO("Mission Station: Received: %i  Total: %i",mission_state, (int) mission_states_.size());
-  return mission_states_.back() == mission_state;
+  for (auto state : mission_states_)  
+  {
+    if(state == mission_state) 
+    {
+      //Erase-remove idiom for removing all occurences from list
+      mission_states_.erase(remove(mission_states_.begin(), mission_states_.end(), state), mission_states_.end());
+      return true;
+    }
+  }
+  return false;
 }
 
 void RostestBase::nodeLifeCycleStateCallback(const brain_box_msgs::LifeCycleState& msg)

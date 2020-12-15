@@ -195,10 +195,6 @@ file(GLOB TEST_FILES
 )
 
 
-
-
-
-
 # code coverage setup: https://github.com/mikeferguson/code_coverage
 if (CATKIN_ENABLE_TESTING)
 
@@ -239,7 +235,9 @@ if (CATKIN_ENABLE_TESTING)
   add_rostest_gtest(manual_to_disarming_rostest rostest/manual_to_disarming/manual_to_disarming_rostest.test rostest/manual_to_disarming/manual_to_disarming_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(manual_to_disarming_rostest ${catkin_LIBRARIES} super_lib)
 
-  
+  add_rostest_gtest(abort_to_disarming_rostest rostest/abort_to_disarming/abort_to_disarming_rostest.test rostest/abort_to_disarming/abort_to_disarming_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  target_link_libraries(abort_to_disarming_rostest ${catkin_LIBRARIES} super_lib)
+
   # Create a target ${PROJECT_NAME}_coverage_report
   if(ENABLE_COVERAGE_TESTING)
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" )

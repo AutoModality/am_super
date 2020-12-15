@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="am_super" type="am_super" name="am_super" output="screen">
+        <rosparam command="load" file="$(dirname)/abort_to_disarming_rostest.yaml"/>
+    </node>
+    <test test-name="abort_to_disarming_rostest" pkg="am_super" type="abort_to_disarming_rostest" time-limit="20">
+    </test>
+</launch>

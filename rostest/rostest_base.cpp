@@ -1,4 +1,4 @@
-#include "rostest_base.h"
+#include <rostest/rostest_base.h>
 
 RostestBase::RostestBase(string target_node_name)
 {

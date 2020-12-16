@@ -87,7 +87,7 @@ endif(CUDA_FOUND)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES super_lib
+  LIBRARIES super_lib rostest_base_lib
   CATKIN_DEPENDS 
   am_utils
   diagnostic_msgs

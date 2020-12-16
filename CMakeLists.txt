@@ -133,6 +133,7 @@ add_library(super_lib
 target_link_libraries(super_lib ${catkin_LIBRARIES})
 add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
 
+## Rostest base class library 
 add_library(super_rostest_lib rostest/rostest_base.cpp)
 target_link_libraries(super_rostest_lib ${catkin_LIBRARIES})
 add_dependencies(super_rostest_lib ${catkin_EXPORTED_TARGETS})

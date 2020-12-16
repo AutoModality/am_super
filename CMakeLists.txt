@@ -130,15 +130,20 @@ file(GLOB SUPER_MEDIATOR_FILES
 add_library(super_lib
   ${super_lib_cpp_files}
 )
+
 target_link_libraries(super_lib ${catkin_LIBRARIES})
 add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
 
+add_library(rostest_base_lib rostest/rostest_base.cpp)
+target_link_libraries(rostest_base_lib ${catkin_LIBRARIES})
+add_dependencies(rostest_base_lib ${catkin_EXPORTED_TARGETS})
+
 if(CUDA_FOUND)
 	add_executable(am_super ${am_super_cpp_files} ${cuda_cpp_files} )
-	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib cuda_utility)
+	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib cuda_utility rostest_base_lib)
 else()
 	add_executable(am_super ${am_super_cpp_files})
-	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib)
+	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib rostest_base_lib)
 endif(CUDA_FOUND)
 add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
 
@@ -163,14 +168,14 @@ add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
 
 # Mark libraries for installation
 # See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
- install(TARGETS super_lib
+ install(TARGETS super_lib rostest_base_lib
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
  )
 
 #Mark cpp header files for installation
-install(DIRECTORY include/super_lib
+install(DIRECTORY include/super_lib include/rostest
   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)

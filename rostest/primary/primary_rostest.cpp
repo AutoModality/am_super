@@ -1,4 +1,4 @@
-#include "../rostest_base.h"
+#include <super_rostest_lib/rostest_base.h>
 
 class LifeCycleNodeTest : public RostestBase, am::AMLifeCycle
 {

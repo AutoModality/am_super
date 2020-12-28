@@ -87,7 +87,7 @@ endif(CUDA_FOUND)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES super_lib
+  LIBRARIES super_lib super_rostest_lib
   CATKIN_DEPENDS 
   am_utils
   diagnostic_msgs
@@ -133,6 +133,11 @@ add_library(super_lib
 target_link_libraries(super_lib ${catkin_LIBRARIES})
 add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
 
+## Rostest base class library 
+add_library(super_rostest_lib rostest/rostest_base.cpp)
+target_link_libraries(super_rostest_lib ${catkin_LIBRARIES})
+add_dependencies(super_rostest_lib ${catkin_EXPORTED_TARGETS})
+
 if(CUDA_FOUND)
 	add_executable(am_super ${am_super_cpp_files} ${cuda_cpp_files} )
 	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib cuda_utility)
@@ -163,14 +168,14 @@ add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
 
 # Mark libraries for installation
 # See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
- install(TARGETS super_lib
+ install(TARGETS super_lib super_rostest_lib
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
  )
 
 #Mark cpp header files for installation
-install(DIRECTORY include/super_lib
+install(DIRECTORY include/super_lib include/super_rostest_lib
   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
@@ -195,10 +200,6 @@ file(GLOB TEST_FILES
 )
 
 
-
-
-
-
 # code coverage setup: https://github.com/mikeferguson/code_coverage
 if (CATKIN_ENABLE_TESTING)
 
@@ -212,8 +213,8 @@ if (CATKIN_ENABLE_TESTING)
 
   # For ros testing
   find_package(rostest REQUIRED)
-  add_rostest_gtest(life_cycle_rostest rostest/life_cycle/life_cycle_rostest.test rostest/life_cycle/life_cycle_rostest.cpp ${SUPER_MEDIATOR_FILES})
-  target_link_libraries(life_cycle_rostest ${catkin_LIBRARIES} super_lib)
+  add_rostest_gtest(primary_rostest rostest/primary/primary_rostest.test rostest/primary/primary_rostest.cpp ${SUPER_MEDIATOR_FILES})
+  target_link_libraries(primary_rostest ${catkin_LIBRARIES} super_lib super_rostest_lib)
  
   add_rostest_gtest(auto_to_manual_rostest rostest/auto_to_manual/auto_to_manual_rostest.test rostest/auto_to_manual/auto_to_manual_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(auto_to_manual_rostest ${catkin_LIBRARIES} super_lib)
@@ -226,7 +227,21 @@ if (CATKIN_ENABLE_TESTING)
 
   add_rostest_gtest(auto_to_abort_rostest rostest/auto_to_abort/auto_to_abort_rostest.test rostest/auto_to_abort/auto_to_abort_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(auto_to_abort_rostest ${catkin_LIBRARIES} super_lib)
+
+  add_rostest_gtest(ready_to_shutdown_rostest rostest/ready_to_shutdown/ready_to_shutdown_rostest.test rostest/ready_to_shutdown/ready_to_shutdown_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  target_link_libraries(ready_to_shutdown_rostest ${catkin_LIBRARIES} super_lib)
   
+  add_rostest_gtest(semi_auto_to_manual_rostest rostest/semi_auto_to_manual/semi_auto_to_manual_rostest.test rostest/semi_auto_to_manual/semi_auto_to_manual_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  target_link_libraries(semi_auto_to_manual_rostest ${catkin_LIBRARIES} super_lib)
+
+  add_rostest_gtest(abort_to_manual_rostest rostest/abort_to_manual/abort_to_manual_rostest.test rostest/abort_to_manual/abort_to_manual_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  target_link_libraries(abort_to_manual_rostest ${catkin_LIBRARIES} super_lib)
+
+  add_rostest_gtest(manual_to_disarming_rostest rostest/manual_to_disarming/manual_to_disarming_rostest.test rostest/manual_to_disarming/manual_to_disarming_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  target_link_libraries(manual_to_disarming_rostest ${catkin_LIBRARIES} super_lib)
+
+  add_rostest_gtest(abort_to_disarming_rostest rostest/abort_to_disarming/abort_to_disarming_rostest.test rostest/abort_to_disarming/abort_to_disarming_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  target_link_libraries(abort_to_disarming_rostest ${catkin_LIBRARIES} super_lib)
 
   # Create a target ${PROJECT_NAME}_coverage_report
   if(ENABLE_COVERAGE_TESTING)

@@ -7,21 +7,69 @@ using namespace std;
 
 AMLifeCycleMediator life_cycle_mediator_;
 
-void EXPECT_LIFE_CYCLE_STATUS(LifeCycleStatus expected_status,bool expected_success)
+class AMLifeCycleMediatorTest : public ::testing::Test
 {
-  AMLifeCycleMediator::LifeCycleInfo info;
-  bool success = life_cycle_mediator_.setStatus(expected_status, info);
-  ASSERT_EQ(expected_success, success);
+protected: 
+  AMLifeCycleMediator life_cycle_mediator;
 
-  if(success)
+  void EXPECT_LIFE_CYCLE_STATUS(LifeCycleStatus expected_status,bool expected_success)
   {
-    LifeCycleStatus actual = life_cycle_mediator_.getStatus(info);
-    EXPECT_EQ(expected_status, actual) << life_cycle_mediator_.statusToString(expected_status) << " not equal to " 
-    << life_cycle_mediator_.statusToString(actual);
-  }
-}
+    AMLifeCycleMediator::LifeCycleInfo info;
+    bool success = life_cycle_mediator.setStatus(expected_status, info);
+    ASSERT_EQ(expected_success, success);
 
-TEST(LifeCycleMediator, getAndSetStatus_ALL)
+    if(success)
+    {
+      LifeCycleStatus actual = life_cycle_mediator.getStatus(info);
+      EXPECT_EQ(expected_status, actual) << life_cycle_mediator.statusToString(expected_status) << " not equal to " 
+      << life_cycle_mediator.statusToString(actual);
+    }
+  }
+
+  void EXPECT_LIFE_CYCLE_STATE(LifeCycleState expected_state,bool expected_success)
+  {
+    AMLifeCycleMediator::LifeCycleInfo info;
+    bool success = life_cycle_mediator_.setState(expected_state, info);
+    EXPECT_EQ(expected_success, success);
+
+    if(success)
+    {
+      LifeCycleState actual = life_cycle_mediator_.getState(info);
+      EXPECT_EQ(expected_state, actual) << life_cycle_mediator_.stateToString(expected_state) << " not equal to " 
+      << life_cycle_mediator_.stateToString(actual);
+    }
+  }
+
+  bool EXPECT_EQ_SHUTDOWN(const LifeCycleState& state, bool expected)
+  {
+    AMLifeCycleMediator::LifeCycleInfo info;
+    info.state = state;
+    EXPECT_EQ(life_cycle_mediator_.shutdown(info), expected);
+  }
+
+  bool EXPECT_EQ_REDUNDANT_SHUTDOWN(const LifeCycleState& state, bool expected)
+  {
+    AMLifeCycleMediator::LifeCycleInfo info;
+    info.state = state;
+    EXPECT_EQ(life_cycle_mediator_.redundantShutdown(info), expected);
+  }
+
+  bool EXPECT_EQ_ERROR(const LifeCycleState& state, bool expected)
+  {
+    AMLifeCycleMediator::LifeCycleInfo info;
+    info.state = state;
+    EXPECT_EQ(life_cycle_mediator_.error(info), expected);
+  }
+
+  bool EXPECT_EQ_ILLEGAL_DESTROY(const LifeCycleState& state, bool expected)
+  {
+    AMLifeCycleMediator::LifeCycleInfo info;
+    info.state = state;
+    EXPECT_EQ(life_cycle_mediator_.illegalDestroy(info), expected);
+  }
+};
+
+TEST_F(AMLifeCycleMediatorTest, getAndSetStatus_ALL)
 {
   vector<LifeCycleStatus> all = AMLifeCycleMediator::getLifeCycleStatuses();
 
@@ -31,21 +79,7 @@ TEST(LifeCycleMediator, getAndSetStatus_ALL)
   }
 }
 
-void EXPECT_LIFE_CYCLE_STATE(LifeCycleState expected_state,bool expected_success)
-{
-  AMLifeCycleMediator::LifeCycleInfo info;
-  bool success = life_cycle_mediator_.setState(expected_state, info);
-  EXPECT_EQ(expected_success, success);
-
-  if(success)
-  {
-    LifeCycleState actual = life_cycle_mediator_.getState(info);
-    EXPECT_EQ(expected_state, actual) << life_cycle_mediator_.stateToString(expected_state) << " not equal to " 
-    << life_cycle_mediator_.stateToString(actual);
-  }
-}
-
-TEST(LifeCycleMediator, getAndSetState_ALL)
+TEST_F(AMLifeCycleMediatorTest, getAndSetState_ALL)
 {
   vector<LifeCycleState> all = AMLifeCycleMediator::getLifeCycleStates();
 
@@ -55,7 +89,7 @@ TEST(LifeCycleMediator, getAndSetState_ALL)
   }
 }
 
-TEST(LifeCycleMediator, commandTestStringConversion)
+TEST_F(AMLifeCycleMediatorTest, commandTestStringConversion)
 {
   vector<LifeCycleCommand> allCommands = AMLifeCycleMediator::getLifeCycleCommands();
   string str;
@@ -69,7 +103,7 @@ TEST(LifeCycleMediator, commandTestStringConversion)
   }
 }
 
-TEST(LifeCycleMediator, statusTestStringConversion)
+TEST_F(AMLifeCycleMediatorTest, statusTestStringConversion)
 {
   vector<LifeCycleStatus> allStatus = AMLifeCycleMediator::getLifeCycleStatuses();
   string string_from_status;
@@ -84,7 +118,7 @@ TEST(LifeCycleMediator, statusTestStringConversion)
   }
 } 
 
-TEST(LifeCycleMediator, stateTestStringConversion)
+TEST_F(AMLifeCycleMediatorTest, stateTestStringConversion)
 {
   vector<LifeCycleState> allStates = AMLifeCycleMediator::getLifeCycleStates();
   string str;
@@ -98,7 +132,7 @@ TEST(LifeCycleMediator, stateTestStringConversion)
   }
 }
 
-TEST(LifeCycleMediator, statusToString_BadStatusReturnsEmptyString)
+TEST_F(AMLifeCycleMediatorTest, statusToString_BadStatusReturnsEmptyString)
 {
   LifeCycleStatus badStatus = LifeCycleStatus(-3);
   string str;
@@ -107,7 +141,7 @@ TEST(LifeCycleMediator, statusToString_BadStatusReturnsEmptyString)
   EXPECT_EQ(str, "");
 }
 
-TEST(LifeCycleMediator, stateToString_BadStateReturnsINVALID)
+TEST_F(AMLifeCycleMediatorTest, stateToString_BadStateReturnsINVALID)
 {
   LifeCycleState badState = LifeCycleState(-3);
   string str;
@@ -116,7 +150,7 @@ TEST(LifeCycleMediator, stateToString_BadStateReturnsINVALID)
   EXPECT_EQ(str, "INVALID");
 }
 
-TEST(LifeCycleMediator, commandToString_BadCommandReturnsEmptyString)
+TEST_F(AMLifeCycleMediatorTest, commandToString_BadCommandReturnsEmptyString)
 {
   LifeCycleCommand badCommand = LifeCycleCommand(-3);
   string str;
@@ -125,7 +159,7 @@ TEST(LifeCycleMediator, commandToString_BadCommandReturnsEmptyString)
   EXPECT_EQ(str, "");
 }
 
-TEST(LifeCycleMediator, stringToStatus_BadStringReturnsFalse)
+TEST_F(AMLifeCycleMediatorTest, stringToStatus_BadStringReturnsFalse)
 {
   LifeCycleStatus initial_status = LifeCycleStatus::OK;
   LifeCycleStatus status = initial_status;
@@ -136,7 +170,7 @@ TEST(LifeCycleMediator, stringToStatus_BadStringReturnsFalse)
   EXPECT_EQ(status, initial_status) << "Status should be unchanged since the string is bad";
 }
 
-TEST(LifeCycleMediator, stringToCommand_BadStringReturnsFalse)
+TEST_F(AMLifeCycleMediatorTest, stringToCommand_BadStringReturnsFalse)
 {
   LifeCycleCommand initial_cmd = LifeCycleCommand::ACTIVATE;
   LifeCycleCommand cmd = initial_cmd;
@@ -147,7 +181,7 @@ TEST(LifeCycleMediator, stringToCommand_BadStringReturnsFalse)
   EXPECT_EQ(cmd, initial_cmd) << "Command should be unchanged since the string is bad";
 }
 
-TEST(LifeCycleMediator, stringToState_BadStringReturnsFalse)
+TEST_F(AMLifeCycleMediatorTest, stringToState_BadStringReturnsFalse)
 {
   LifeCycleState default_state=LifeCycleState::FINALIZED;
   LifeCycleState state = default_state;
@@ -158,7 +192,7 @@ TEST(LifeCycleMediator, stringToState_BadStringReturnsFalse)
   EXPECT_EQ(state,default_state) << "State should be unchanged since the string is bad";
 }
 
-TEST(LifeCycleMediator, setThrottleS_default)
+TEST_F(AMLifeCycleMediatorTest, setThrottleS_default)
 {
   AMLifeCycleMediator::ThrottleInfo t;
   double setDefault = AMLifeCycleMediator::DEFAULT_THROTTLE_S;
@@ -171,7 +205,7 @@ TEST(LifeCycleMediator, setThrottleS_default)
   EXPECT_EQ(t.warn_throttle_s, default_t.warn_throttle_s);
 }
 
-TEST(LifeCycleMediator, setThrottleS_notDefault)
+TEST_F(AMLifeCycleMediatorTest, setThrottleS_notDefault)
 {
   AMLifeCycleMediator::ThrottleInfo t;
   double notDefault = 20; //some number thats not 0
@@ -182,7 +216,7 @@ TEST(LifeCycleMediator, setThrottleS_notDefault)
   EXPECT_EQ(t.warn_throttle_s, notDefault);
 }
 
-TEST(LifeCycleMediator, getThrottle)
+TEST_F(AMLifeCycleMediatorTest, getThrottle)
 {
   double throttle;
   AMLifeCycleMediator::LifeCycleInfo info;
@@ -201,14 +235,7 @@ TEST(LifeCycleMediator, getThrottle)
   EXPECT_EQ(throttle, default_t.error_throttle_s);
 }
 
-bool EXPECT_EQ_SHUTDOWN(const LifeCycleState& state, bool expected)
-{
-  AMLifeCycleMediator::LifeCycleInfo info;
-  info.state = state;
-  EXPECT_EQ(life_cycle_mediator_.shutdown(info), expected);
-}
-
-TEST(LifeCycleMediator, shutdown)
+TEST_F(AMLifeCycleMediatorTest, shutdown)
 {
   EXPECT_EQ_SHUTDOWN(LifeCycleState::UNCONFIGURED, true);
   EXPECT_EQ_SHUTDOWN(LifeCycleState::INACTIVE, true);
@@ -224,14 +251,7 @@ TEST(LifeCycleMediator, shutdown)
   EXPECT_EQ_SHUTDOWN(LifeCycleState::SHUTTING_DOWN, false);
 }
 
-bool EXPECT_EQ_REDUNDANT_SHUTDOWN(const LifeCycleState& state, bool expected)
-{
-  AMLifeCycleMediator::LifeCycleInfo info;
-  info.state = state;
-  EXPECT_EQ(life_cycle_mediator_.redundantShutdown(info), expected);
-}
-
-TEST(LifeCycleMediator, redundantShutdown)
+TEST_F(AMLifeCycleMediatorTest, redundantShutdown)
 {
   EXPECT_EQ_REDUNDANT_SHUTDOWN(LifeCycleState::SHUTTING_DOWN, true);
   EXPECT_EQ_REDUNDANT_SHUTDOWN(LifeCycleState::FINALIZED, true);
@@ -244,14 +264,7 @@ TEST(LifeCycleMediator, redundantShutdown)
   EXPECT_EQ_REDUNDANT_SHUTDOWN(LifeCycleState::INVALID, false);
 }
 
-bool EXPECT_EQ_ERROR(const LifeCycleState& state, bool expected)
-{
-  AMLifeCycleMediator::LifeCycleInfo info;
-  info.state = state;
-  EXPECT_EQ(life_cycle_mediator_.error(info), expected);
-}
-
-TEST(LifeCycleMediator, error)
+TEST_F(AMLifeCycleMediatorTest, error)
 {
   EXPECT_EQ_ERROR(LifeCycleState::ERROR_PROCESSING, true);
   EXPECT_EQ_ERROR(LifeCycleState::FINALIZED, true);
@@ -267,14 +280,7 @@ TEST(LifeCycleMediator, error)
   EXPECT_EQ_ERROR(LifeCycleState::SHUTTING_DOWN, false);
 }
 
-bool EXPECT_EQ_ILLEGAL_DESTROY(const LifeCycleState& state, bool expected)
-{
-  AMLifeCycleMediator::LifeCycleInfo info;
-  info.state = state;
-  EXPECT_EQ(life_cycle_mediator_.illegalDestroy(info), expected);
-}
-
-TEST(LifeCycleMediator, illegalDestroy)
+TEST_F(AMLifeCycleMediatorTest, illegalDestroy)
 {
   EXPECT_EQ_ILLEGAL_DESTROY(LifeCycleState::FINALIZED, false);
   

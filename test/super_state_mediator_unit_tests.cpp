@@ -6,108 +6,115 @@
 using std::string;
 using namespace am;
 
-SuperStateMediator mediator;
-
-/**Re-usable test method for validating single states*/
-void ASSERT_TRANSITION_ALLOWED(SuperState from, SuperState to, bool expected)
+class SuperStateMediatorTest : public ::testing::Test
 {
-  bool allowed = mediator.allowsTransition(from, to);
-  EXPECT_EQ(expected, allowed) << "For state: " + std::to_string((int)to);
-}
+protected:
+  SuperStateMediator mediator;
 
-/**Re-usable test method for validating multiple states behave as expected*/
-void ASSERT_TRANSITIONS_ALLOWED(SuperState from, std::vector<SuperState> states, bool expected)
-{
-  for (int i = 0; i < states.size(); i++)
+  /**Re-usable test method for validating single states*/
+  void ASSERT_TRANSITION_ALLOWED(SuperState from, SuperState to, bool expected)
   {
-    SuperState state = states.at(i);
-    ASSERT_TRANSITION_ALLOWED(from, state, expected);
-  }
-}
-
-/**Re-usable method for validating the states given are allowed and all other states
- * are not allowed
- */
-void ASSERT_MULTIPLE_STATES_ALLOWED(SuperState from, std::vector<SuperState> allowedStates)
-{
-  // verify allowed as expected
-  for (int i = 0; i < allowedStates.size(); i++)
-  {
-    SuperState to = allowedStates.at(i);
-    ASSERT_TRANSITION_ALLOWED(from, to, true);
+    bool allowed = mediator.allowsTransition(from, to);
+    EXPECT_EQ(expected, allowed) << "For state: " + std::to_string((int)to);
   }
 
-  // not allowed is all states minus those allowed
-  std::vector<SuperState> notAllowed;
-  for (SuperState state : mediator.allSuperStates())
+  /**Re-usable test method for validating multiple states behave as expected*/
+  void ASSERT_TRANSITIONS_ALLOWED(SuperState from, std::vector<SuperState> states, bool expected)
   {
-    if (std::find(allowedStates.begin(), allowedStates.end(), state) == allowedStates.end())
+    for (int i = 0; i < states.size(); i++)
     {
-      notAllowed.push_back(state);
+      SuperState state = states.at(i);
+      ASSERT_TRANSITION_ALLOWED(from, state, expected);
     }
   }
 
-  ASSERT_TRANSITIONS_ALLOWED(from, notAllowed, false);
-}
+  /**Re-usable method for validating the states given are allowed and all other states
+   * are not allowed
+   */
+  void ASSERT_MULTIPLE_STATES_ALLOWED(SuperState from, std::vector<SuperState> allowedStates)
+  {
+    // verify allowed as expected
+    for (int i = 0; i < allowedStates.size(); i++)
+    {
+      SuperState to = allowedStates.at(i);
+      ASSERT_TRANSITION_ALLOWED(from, to, true);
+    }
 
-/**Common situation to ensure a single state transition is allowed*/
-void ASSERT_SINGLE_STATE_ALLOWED(SuperState from, SuperState to)
-{
-  std::vector<SuperState> allowed{ to };
-  ASSERT_MULTIPLE_STATES_ALLOWED(from, allowed);
-}
+    // not allowed is all states minus those allowed
+    std::vector<SuperState> notAllowed;
+    for (SuperState state : mediator.allSuperStates())
+    {
+      if (std::find(allowedStates.begin(), allowedStates.end(), state) == allowedStates.end())
+      {
+        notAllowed.push_back(state);
+      }
+    }
 
-TEST(State, allowsTransition_OnlyOffToBootingIAllowed)
+    ASSERT_TRANSITIONS_ALLOWED(from, notAllowed, false);
+  }
+
+  /**Common situation to ensure a single state transition is allowed*/
+  void ASSERT_SINGLE_STATE_ALLOWED(SuperState from, SuperState to)
+  {
+    std::vector<SuperState> allowed{ to };
+    ASSERT_MULTIPLE_STATES_ALLOWED(from, allowed);
+  }
+};
+
+TEST_F(SuperStateMediatorTest, allowsTransition_OnlyOffToBootingIsAllowed)
 {
   ASSERT_SINGLE_STATE_ALLOWED(SuperState::OFF, SuperState::BOOTING);
 }
 
-TEST(State, allowsTransition_OnlyBootingToReadyIsAllowed)
+TEST_F(SuperStateMediatorTest, allowsTransition_BootingToReadyAndShutdownAllowed)
 {
-  ASSERT_SINGLE_STATE_ALLOWED(SuperState::BOOTING, SuperState::READY);
+  std::vector<SuperState> allowed{ SuperState::READY, SuperState::SHUTDOWN };
+  ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::BOOTING, allowed);
 }
 
-TEST(State, allowsTransition_OnlyReadyToArmingIsAllowed)
+TEST_F(SuperStateMediatorTest, allowsTransition_ReadyToArmingAndShutdownAllowed)
 {
-  ASSERT_SINGLE_STATE_ALLOWED(SuperState::READY, SuperState::ARMING);
+  std::vector<SuperState> allowed{ SuperState::ARMING, SuperState::SHUTDOWN };
+  ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::READY, allowed);
 }
 
-TEST(State, allowsTransition_OnlyArmingToArmedIsAllowed)
+TEST_F(SuperStateMediatorTest, allowsTransition_ArmingToArmedAndReadyAllowed)
 {
-  ASSERT_SINGLE_STATE_ALLOWED(SuperState::ARMING, SuperState::ARMED);
+  std::vector<SuperState> allowed{ SuperState::ARMED, SuperState::READY };
+  ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::ARMING, allowed);
 }
 
-TEST(State, allowsTransition_ArmedToAutoAndAbortAndDisarmingAllowed)
+TEST_F(SuperStateMediatorTest, allowsTransition_ArmedToAutoAndDisarmingAllowed)
 {
-  std::vector<SuperState> allowed{ SuperState::ABORT, SuperState::DISARMING, SuperState::AUTO };
+  std::vector<SuperState> allowed{ SuperState::DISARMING, SuperState::AUTO };
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::ARMED, allowed);
 }
 
-TEST(State, allowsTransition_HoldToExceptionStates)
+TEST_F(SuperStateMediatorTest, allowsTransition_HoldToExceptionStates)
 {
   std::vector<SuperState> allowed{ SuperState::ABORT, SuperState::MANUAL };
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::HOLD, allowed);
 }
 
-TEST(State, allowsTransition_AbortToReadyAndManualAllowed)
+TEST_F(SuperStateMediatorTest, allowsTransition_AbortToDisarmingAndManualAllowed)
 {
-  std::vector<SuperState> allowed{ SuperState::READY, SuperState::MANUAL };
+  std::vector<SuperState> allowed{ SuperState::DISARMING, SuperState::MANUAL };
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::ABORT, allowed);
 }
 
-TEST(State, allowsTransition_OnlyManualToReadyIsAllowed)
+TEST_F(SuperStateMediatorTest, allowsTransition_OnlyManualToDisarmingIsAllowed)
 {
-  ASSERT_SINGLE_STATE_ALLOWED(SuperState::MANUAL, SuperState::READY);
+  ASSERT_SINGLE_STATE_ALLOWED(SuperState::MANUAL, SuperState::DISARMING);
 }
 
-TEST(State, allowsTransition_ShutdownToOffAllowed)
+TEST_F(SuperStateMediatorTest, allowsTransition_ShutdownToOffAllowed)
 {
   ASSERT_SINGLE_STATE_ALLOWED(SuperState::SHUTDOWN, SuperState::OFF);
 }
 
-TEST(State, allowsTransition_InvalidStateHandled)
+TEST_F(SuperStateMediatorTest, allowsTransition_InvalidStateHandled)
 {
   int someBadNumber = 999999;
   ASSERT_ANY_THROW(mediator.allowsTransition((SuperState)someBadNumber, SuperState::OFF))
@@ -115,21 +122,21 @@ TEST(State, allowsTransition_InvalidStateHandled)
   ASSERT_TRANSITION_ALLOWED(SuperState::OFF, (SuperState)someBadNumber, false);
 }
 
-TEST(State, allowsTransition_AutoToManyAllowed)
+TEST_F(SuperStateMediatorTest, allowsTransition_AutoToManyAllowed)
 {
   std::vector<SuperState> allowed{ SuperState::HOLD, SuperState::ABORT, SuperState::DISARMING, SuperState::SEMI_AUTO,
                                    SuperState::MANUAL };
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::AUTO, allowed);
 }
-TEST(State, allowsTransition_SemiAutoToManyAllowed)
+TEST_F(SuperStateMediatorTest, allowsTransition_SemiAutoToManyAllowed)
 {
   std::vector<SuperState> allowed{ SuperState::AUTO, SuperState::HOLD, SuperState::ABORT, SuperState::MANUAL };
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::SEMI_AUTO, allowed);
 }
 
-TEST(State, stateToString_AllStatesHaveString)
+TEST_F(SuperStateMediatorTest, stateToString_AllStatesHaveString)
 {
   for (SuperState state : mediator.allSuperStates())
   {
@@ -138,13 +145,13 @@ TEST(State, stateToString_AllStatesHaveString)
   }
 }
 
-TEST(State, stateToString_InvalidStateReturnsInvalidString)
+TEST_F(SuperStateMediatorTest, stateToString_InvalidStateReturnsInvalidString)
 {
   ASSERT_ANY_THROW(mediator.stateToString((SuperState)999999));
 }
 
 /**Basic validation of super state enumeration */
-TEST(State, allSuperStates_IncludesAll)
+TEST_F(SuperStateMediatorTest, allSuperStates_IncludesAll)
 {
   std::vector<SuperState> all = mediator.allSuperStates();
   int expectedNumberOfStates = 12;

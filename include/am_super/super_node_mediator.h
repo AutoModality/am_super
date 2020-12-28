@@ -195,6 +195,7 @@ public:
    */
   pair<bool, LifeCycleCommand> lifeCycleCommand(SuperState system_state);
 
+
   /**
   * FIXME: this should be a private method
    * @return true if Lifecyle state is inactive (already configured)*/
@@ -204,6 +205,17 @@ public:
    * FIXME: this should be a private method
    * @return true if Lifecyle state equals ACTIVE */
   static bool checkArmed(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
+
+  /**
+   * FIXME: this should be a private method
+   * @return true if Lifecyle state equals ACTIVE or INACTIVE */
+  static bool checkNodesActiveOrInactive(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
+
+  /**
+   * FIXME: this should be a private method
+   * @return true if Lifecyle state equals ShuttingDown or Finalized */
+  static bool checkNodesShuttingDownOrFinalized(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
+
 
   /** Reads the given manifest string, typically provided by a ROS param,
    * converts it to a vector or node names which will be assigned to the given
@@ -275,7 +287,6 @@ private:
 
 
   /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
-  [[deprecated]]
   bool lifeCycleNotYetImplemented(string node_name);
 
   bool forceTransition(StateTransition transition);

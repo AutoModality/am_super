@@ -5,11 +5,62 @@
 using namespace std;
 using namespace am;
 
-const string SUPER_NODE_NAME = "my_super_node";
+class SuperNodeMediatorTest : public ::testing::Test
+{
+protected:
+  const string SUPER_NODE_NAME = "my_super_node";
+  SuperNodeMediator superNodeMediator;
 
-SuperNodeMediator superNodeMediator(SUPER_NODE_NAME);
+  SuperNodeMediatorTest() : superNodeMediator(SUPER_NODE_NAME) {}
 
-TEST(Node, nodeNameStripped_RemovesLeadingSlash)
+  void ASSERT_CHECK(std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check, LifeCycleState state, bool expected,
+    OperatorCommand last_op_command_received = OperatorCommand::ARM, ControllerState last_controller_state_received = ControllerState::COMPLETED)
+  {
+    SuperNodeMediator::SuperNodeInfo info;
+    SuperNodeMediator::Supervisor supervisor;
+    info.state = state;
+    supervisor.last_op_command_received = last_op_command_received;
+    supervisor.last_controller_state_received = last_controller_state_received;
+    ASSERT_EQ(check(info, superNodeMediator), expected) << "For state: " + std::to_string((int)state);
+  }
+
+  void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result,
+                                   string expected_error_code = "")
+  {
+    std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check = [check_result](SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&) {
+      return check_result;
+    };
+    SuperNodeMediator::Supervisor supervisor;
+    string expected_node_name = node.name.empty()? "test-node": node.name;
+    node.name = expected_node_name;
+    supervisor.nodes.insert({ node.name, node });
+    pair<bool, map<string, string>> result = superNodeMediator.allManifestedNodesCheck(supervisor, check);
+    map<string, string> error_messages = result.second;
+    bool success = result.first;
+    ASSERT_EQ(success, expected_success) << error_messages.begin()->second;
+    if (!expected_error_code.empty())
+    {
+      ASSERT_EQ(error_messages.size(),1);
+      string node_name = error_messages.begin()->first;
+      string error_message = error_messages.begin()->second;
+      ASSERT_EQ(node_name, expected_node_name);
+      ASSERT_TRUE(error_message.rfind(expected_error_code, 0) == 0) << error_message;
+    }
+  }
+
+  void ASSERT_getStateTransition(const SuperState &current_state, const SuperState &expected_state, const OperatorCommand &operator_command = (OperatorCommand)-1, 
+    const ControllerState& controller_state = (ControllerState)-1)
+  {
+    SuperNodeMediator::Supervisor supervisor;
+    supervisor.system_state = current_state;
+    supervisor.last_op_command_received = operator_command;
+    supervisor.last_controller_state_received = controller_state;
+    SuperNodeMediator::StateTransition t = superNodeMediator.getStateTransition(supervisor);
+    ASSERT_EQ(t.to_state, expected_state) << "StateTransition to_state not equal to expected_state";
+  }
+};
+
+TEST_F(SuperNodeMediatorTest, nodeNameStripped_RemovesLeadingSlash)
 {
   std::string name = "/something";
   std::string stripped = superNodeMediator.nodeNameStripped(name);
@@ -17,35 +68,35 @@ TEST(Node, nodeNameStripped_RemovesLeadingSlash)
   ASSERT_EQ(name, "/something") << "Original is not modified";
 }
 
-TEST(Node, nodeNameStripped_RegularNameNotModified)
+TEST_F(SuperNodeMediatorTest, nodeNameStripped_RegularNameNotModified)
 {
   std::string name = "something";
   std::string stripped = superNodeMediator.nodeNameStripped(name);
   ASSERT_EQ(stripped, "something") << "Nothing should be removed";
 }
 
-TEST(Node, nodeNameStripped_EmptyStringDoesNotExplode)
+TEST_F(SuperNodeMediatorTest, nodeNameStripped_EmptyStringDoesNotExplode)
 {
   std::string name = "";
   std::string stripped = superNodeMediator.nodeNameStripped(name);
   ASSERT_EQ(stripped, "") << "Safety check for index of a string";
 }
 
-TEST(Node, nodeNameIsSuper_ShouldEqualAmSuperWithoutSlash)
+TEST_F(SuperNodeMediatorTest, nodeNameIsSuper_ShouldEqualAmSuperWithoutSlash)
 {
   ASSERT_TRUE(superNodeMediator.nodeNameIsSuper(SUPER_NODE_NAME));
 }
 
-TEST(Node, nodeNameIsSuper_ShouldEqualAmSuperWithSlash)
+TEST_F(SuperNodeMediatorTest, nodeNameIsSuper_ShouldEqualAmSuperWithSlash)
 {
   ASSERT_TRUE(superNodeMediator.nodeNameIsSuper("/" + SUPER_NODE_NAME));
 }
-TEST(Node, nodeNameIsSuper_ShouldNotEqualMissingA)
+TEST_F(SuperNodeMediatorTest, nodeNameIsSuper_ShouldNotEqualMissingA)
 {
   ASSERT_FALSE(superNodeMediator.nodeNameIsSuper("m_super"));
 }
 
-TEST(Node, nodeNameStripped_SuperAddedToManifest)
+TEST_F(SuperNodeMediatorTest, nodeNameStripped_SuperAddedToManifest)
 {
   SuperNodeMediator::Supervisor supervisor;
   ASSERT_EQ(supervisor.manifest.size(),0);
@@ -56,7 +107,7 @@ TEST(Node, nodeNameStripped_SuperAddedToManifest)
   
 }
 
-TEST(Node, initializeManifestedNode_FieldsAreSetProperly)
+TEST_F(SuperNodeMediatorTest, initializeManifestedNode_FieldsAreSetProperly)
 {
   std::string name = "node1";
   SuperNodeMediator::SuperNodeInfo nodeInfo = superNodeMediator.initializeManifestedNode(name);
@@ -68,18 +119,7 @@ TEST(Node, initializeManifestedNode_FieldsAreSetProperly)
   ASSERT_EQ(nodeInfo.status, LifeCycleStatus::OK) << "All is good until reported otherwise";
 }
 
-void ASSERT_CHECK(std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check, LifeCycleState state, bool expected,
-  OperatorCommand last_op_command_received = OperatorCommand::ARM, ControllerState last_controller_state_received = ControllerState::COMPLETED)
-{
-  SuperNodeMediator::SuperNodeInfo info;
-  SuperNodeMediator::Supervisor supervisor;
-  info.state = state;
-  supervisor.last_op_command_received = last_op_command_received;
-  supervisor.last_controller_state_received = last_controller_state_received;
-  ASSERT_EQ(check(info, superNodeMediator), expected) << "For state: " + std::to_string((int)state);
-}
-
-TEST(Node, checkReadyToArm_All)
+TEST_F(SuperNodeMediatorTest, checkReadyToArm_All)
 {
   std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> function = SuperNodeMediator::checkReadyToArm;
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
@@ -94,7 +134,7 @@ TEST(Node, checkReadyToArm_All)
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
 }
 
-TEST(Node, checkArmed_All)
+TEST_F(SuperNodeMediatorTest, checkArmed_All)
 {
   std::function<bool(SuperNodeMediator::SuperNodeInfo&,SuperNodeMediator&)> function = SuperNodeMediator::checkArmed;
   ASSERT_CHECK(function, LifeCycleState::INVALID, false);
@@ -109,31 +149,7 @@ TEST(Node, checkArmed_All)
   ASSERT_CHECK(function, LifeCycleState::DEACTIVATING, false);
 }
 
-void assertAllManifestedNodesCheck(bool expected_success, SuperNodeMediator::SuperNodeInfo node, bool check_result,
-                                   string expected_error_code = "")
-{
-  std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check = [check_result](SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&) {
-    return check_result;
-  };
-  SuperNodeMediator::Supervisor supervisor;
-  string expected_node_name = node.name.empty()? "test-node": node.name;
-  node.name = expected_node_name;
-  supervisor.nodes.insert({ node.name, node });
-  pair<bool, map<string, string>> result = superNodeMediator.allManifestedNodesCheck(supervisor, check);
-  map<string, string> error_messages = result.second;
-  bool success = result.first;
-  ASSERT_EQ(success, expected_success) << error_messages.begin()->second;
-  if (!expected_error_code.empty())
-  {
-    ASSERT_EQ(error_messages.size(),1);
-    string node_name = error_messages.begin()->first;
-    string error_message = error_messages.begin()->second;
-    ASSERT_EQ(node_name, expected_node_name);
-    ASSERT_TRUE(error_message.rfind(expected_error_code, 0) == 0) << error_message;
-  }
-}
-
-TEST(Node, allManifestedNodesCheck_NonManifestIsSuccess)
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_NonManifestIsSuccess)
 {
   SuperNodeMediator::SuperNodeInfo node;
   node.manifested = false;
@@ -141,7 +157,7 @@ TEST(Node, allManifestedNodesCheck_NonManifestIsSuccess)
   assertAllManifestedNodesCheck(true, node, false);
 }
 
-TEST(Node, allManifestedNodesCheck_SuccessfulMnaifestedNode)
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_SuccessfulMnaifestedNode)
 {
   SuperNodeMediator::SuperNodeInfo node;
   node.manifested = true;
@@ -152,7 +168,7 @@ TEST(Node, allManifestedNodesCheck_SuccessfulMnaifestedNode)
   assertAllManifestedNodesCheck(true, node, true);
 }
 
-TEST(Node, allManifestedNodesCheck_NotOnlineReturnsFalse)
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_NotOnlineReturnsFalse)
 {
   SuperNodeMediator::SuperNodeInfo node;
   node.manifested = true;
@@ -160,7 +176,7 @@ TEST(Node, allManifestedNodesCheck_NotOnlineReturnsFalse)
   assertAllManifestedNodesCheck(false, node, true, "[U5JB]");
 }
 
-TEST(Node, allManifestedNodesCheck_CheckReturnsFalseIsFailure)
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_CheckReturnsFalseIsFailure)
 {
   SuperNodeMediator::SuperNodeInfo node;
   node.state = LifeCycleState::CLEANING_UP;
@@ -169,7 +185,7 @@ TEST(Node, allManifestedNodesCheck_CheckReturnsFalseIsFailure)
   assertAllManifestedNodesCheck(false, node, false, "[2OQ0]");
 }
 
-TEST(Node, allManifestedNodesCheck_ErrorStatusReturnsFalse)
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_ErrorStatusReturnsFalse)
 {
   SuperNodeMediator::SuperNodeInfo node;
   node.manifested = true;
@@ -178,8 +194,7 @@ TEST(Node, allManifestedNodesCheck_ErrorStatusReturnsFalse)
   assertAllManifestedNodesCheck(false, node, true, "[AA0A]");
 }
 
-[[deprecated]]
-TEST(Node, allManifestedNodesCheck_FlightControllerLifeCycleNotYetImplementedSkipsCheck)
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_FlightControllerLifeCycleNotYetImplementedSkipsCheck)
 {
   SuperNodeMediator::SuperNodeInfo node;
   node.manifested = true;
@@ -189,14 +204,14 @@ TEST(Node, allManifestedNodesCheck_FlightControllerLifeCycleNotYetImplementedSki
   assertAllManifestedNodesCheck(expected_success = true, node, check_result = false, "[WCK2]");
 }
 
-TEST(Node, parseManifest_EmptyManifest)
+TEST_F(SuperNodeMediatorTest, parseManifest_EmptyManifest)
 {
   SuperNodeMediator::Supervisor supervisor;
   superNodeMediator.parseManifest(supervisor, "");
   ASSERT_EQ(supervisor.manifest.size(), 0);
 }
 
-TEST(Node, parseManifest_SpacesStripped)
+TEST_F(SuperNodeMediatorTest, parseManifest_SpacesStripped)
 {
   SuperNodeMediator::Supervisor supervisor;
   superNodeMediator.parseManifest(supervisor, "first, second, third");
@@ -206,7 +221,7 @@ TEST(Node, parseManifest_SpacesStripped)
 }
 
 
-TEST(Node, parseManifest_TrailingCommaIsIgnored)
+TEST_F(SuperNodeMediatorTest, parseManifest_TrailingCommaIsIgnored)
 {
   SuperNodeMediator::Supervisor supervisor;
   superNodeMediator.parseManifest(supervisor, "first,");
@@ -215,7 +230,7 @@ TEST(Node, parseManifest_TrailingCommaIsIgnored)
   EXPECT_EQ(supervisor.manifest, expected);
 }
 
-TEST(Node, parseManifest_EmptyCommaInMiddleIsIgnored)
+TEST_F(SuperNodeMediatorTest, parseManifest_EmptyCommaInMiddleIsIgnored)
 {
   SuperNodeMediator::Supervisor supervisor;
   superNodeMediator.parseManifest(supervisor, "first,,second");
@@ -224,7 +239,7 @@ TEST(Node, parseManifest_EmptyCommaInMiddleIsIgnored)
   EXPECT_EQ(supervisor.manifest, expected);
 }
 
-TEST(Node, parseManifest_Single)
+TEST_F(SuperNodeMediatorTest, parseManifest_Single)
 {
   SuperNodeMediator::Supervisor supervisor;
   superNodeMediator.parseManifest(supervisor, "first");
@@ -232,7 +247,7 @@ TEST(Node, parseManifest_Single)
   ASSERT_EQ(supervisor.manifest.size(), 1);
   ASSERT_EQ(supervisor.manifest, expected);
 }
-TEST(Node, parseManifest_Double)
+TEST_F(SuperNodeMediatorTest, parseManifest_Double)
 {
   SuperNodeMediator::Supervisor supervisor;
   superNodeMediator.parseManifest(supervisor, "first,second");
@@ -241,14 +256,14 @@ TEST(Node, parseManifest_Double)
   ASSERT_EQ(supervisor.manifest, expected);
 }
 
-TEST(Node, nodesOnlineCount_EmptyNodesIsZero)
+TEST_F(SuperNodeMediatorTest, nodesOnlineCount_EmptyNodesIsZero)
 {
   SuperNodeMediator::Supervisor supervisor;
   int count = superNodeMediator.nodesOnlineCount(supervisor);
   ASSERT_EQ(count, 0);
 }
 
-TEST(Node, nodesOnlineCount_OneNotOnlineIsZero)
+TEST_F(SuperNodeMediatorTest, nodesOnlineCount_OneNotOnlineIsZero)
 {
   SuperNodeMediator::Supervisor supervisor;
   SuperNodeMediator::SuperNodeInfo node;
@@ -258,7 +273,7 @@ TEST(Node, nodesOnlineCount_OneNotOnlineIsZero)
   ASSERT_EQ(count, 0);
 }
 
-TEST(Node, nodesOnlineCount_OneOnlineIsOne)
+TEST_F(SuperNodeMediatorTest, nodesOnlineCount_OneOnlineIsOne)
 {
   SuperNodeMediator::Supervisor supervisor;
   SuperNodeMediator::SuperNodeInfo node;
@@ -269,7 +284,7 @@ TEST(Node, nodesOnlineCount_OneOnlineIsOne)
 }
 
 /**Combination of each of manifested and online testing both methods*/
-TEST(Node, nodesOnlineCount_ManifestedOnlinedMixed)
+TEST_F(SuperNodeMediatorTest, nodesOnlineCount_ManifestedOnlinedMixed)
 {
   SuperNodeMediator::Supervisor supervisor;
   {
@@ -304,7 +319,7 @@ TEST(Node, nodesOnlineCount_ManifestedOnlinedMixed)
 }
 
 
-TEST(Node, manifestedNodesNotOnline_RemovesNonManifestedNotOnline)
+TEST_F(SuperNodeMediatorTest, manifestedNodesNotOnline_RemovesNonManifestedNotOnline)
 {
   SuperNodeMediator::Supervisor supervisor;
   {
@@ -355,7 +370,7 @@ TEST(Node, manifestedNodesNotOnline_RemovesNonManifestedNotOnline)
   }
 }
 
-TEST(Node, setControllerState)
+TEST_F(SuperNodeMediatorTest, setControllerState)
 {
   SuperNodeMediator::Supervisor supervisor;
 
@@ -365,7 +380,7 @@ TEST(Node, setControllerState)
   ASSERT_EQ(supervisor.last_controller_state_received, state);
 }
 
-TEST(Node, setOperatorCommand)
+TEST_F(SuperNodeMediatorTest, setOperatorCommand)
 {
   SuperNodeMediator::Supervisor supervisor;
   OperatorCommand command;
@@ -379,59 +394,48 @@ TEST(Node, setOperatorCommand)
   ASSERT_EQ(supervisor.last_op_command_received, command);
 }
 
-void ASSERT_getStateTransition(const SuperState &current_state, const SuperState &expected_state, const OperatorCommand &operator_command = (OperatorCommand)-1, 
-  const ControllerState& controller_state = (ControllerState)-1)
-{
-  SuperNodeMediator::Supervisor supervisor;
-  supervisor.system_state = current_state;
-  supervisor.last_op_command_received = operator_command;
-  supervisor.last_controller_state_received = controller_state;
-  SuperNodeMediator::StateTransition t = superNodeMediator.getStateTransition(supervisor);
-  ASSERT_EQ(t.to_state, expected_state) << "StateTransition to_state not equal to expected_state";
-}
-
-TEST(Node, getStateTransition_BootingToReady)
+TEST_F(SuperNodeMediatorTest, getStateTransition_BootingToReady)
 {
   ASSERT_getStateTransition(SuperState::BOOTING, SuperState::READY);
 }
 
-TEST(Node, getStateTransition_ReadyToArming)
+TEST_F(SuperNodeMediatorTest, getStateTransition_ReadyToArming)
 {
   ASSERT_getStateTransition(SuperState::READY, SuperState::ARMING, OperatorCommand::ARM);
 }
 
-TEST(Node, getStateTransition_ArmingToArmed)
+TEST_F(SuperNodeMediatorTest, getStateTransition_ArmingToArmed)
 {
   ASSERT_getStateTransition(SuperState::ARMING, SuperState::ARMED);
 }
 
-TEST(Node, getStateTransition_ArmedToAutoWhenOperatorSendsLaunch)
+TEST_F(SuperNodeMediatorTest, getStateTransition_ArmedToAutoWhenOperatorSendsLaunch)
 {
   ASSERT_getStateTransition(SuperState::ARMED, SuperState::AUTO, OperatorCommand::LAUNCH);
 }
 
-TEST(Node, getStateTransition_ArmedToDisarmingWhenOperatorSendsCancel)
+TEST_F(SuperNodeMediatorTest, getStateTransition_ArmedToDisarmingWhenOperatorSendsCancel)
 {
   ASSERT_getStateTransition(SuperState::ARMED, SuperState::DISARMING, OperatorCommand::CANCEL);
 }
 
-TEST(Node, getStateTransition_AutoToDisarmingWhenControllerStateIsCompleted)
+TEST_F(SuperNodeMediatorTest, getStateTransition_AutoToDisarmingWhenControllerStateIsCompleted)
 {
   ASSERT_getStateTransition(SuperState::AUTO, SuperState::DISARMING, (OperatorCommand)NULL, ControllerState::COMPLETED);
 }
 
-TEST(Node, getStateTransition_DisarmingToReady)
+TEST_F(SuperNodeMediatorTest, getStateTransition_DisarmingToReady)
 {
   ASSERT_getStateTransition(SuperState::DISARMING, SuperState::READY);
 }
 
-TEST(Node, getStateTransition_AutoToManualWhenOperatorSendsManual)
+TEST_F(SuperNodeMediatorTest, getStateTransition_AutoToManualWhenOperatorSendsManual)
 {
   ASSERT_getStateTransition(SuperState::AUTO, SuperState::MANUAL, OperatorCommand::MANUAL);
 }
 
 
-TEST(Node, isValid_stateTransition)
+TEST_F(SuperNodeMediatorTest, isValid_stateTransition)
 {
   SuperNodeMediator::StateTransition t;
   ASSERT_FALSE(superNodeMediator.transitionIsValid(t));
@@ -440,7 +444,7 @@ TEST(Node, isValid_stateTransition)
   ASSERT_TRUE(superNodeMediator.transitionIsValid(t));
 }
 
-TEST(Node, invalidTransition)
+TEST_F(SuperNodeMediatorTest, invalidTransition)
 {
   SuperNodeMediator::StateTransition t = superNodeMediator.invalidTransition();
   ASSERT_FALSE(superNodeMediator.transitionIsValid(t));

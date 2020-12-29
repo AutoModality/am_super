@@ -87,7 +87,7 @@ endif(CUDA_FOUND)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES super_lib super_rostest_lib
+  LIBRARIES super_lib
   CATKIN_DEPENDS 
   am_utils
   diagnostic_msgs
@@ -133,11 +133,6 @@ add_library(super_lib
 target_link_libraries(super_lib ${catkin_LIBRARIES})
 add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
 
-## Rostest base class library 
-add_library(super_rostest_lib rostest/rostest_base.cpp)
-target_link_libraries(super_rostest_lib ${catkin_LIBRARIES})
-add_dependencies(super_rostest_lib ${catkin_EXPORTED_TARGETS})
-
 if(CUDA_FOUND)
 	add_executable(am_super ${am_super_cpp_files} ${cuda_cpp_files} )
 	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib cuda_utility)
@@ -168,14 +163,14 @@ add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
 
 # Mark libraries for installation
 # See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
- install(TARGETS super_lib super_rostest_lib
+ install(TARGETS super_lib
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
  )
 
 #Mark cpp header files for installation
-install(DIRECTORY include/super_lib include/super_rostest_lib
+install(DIRECTORY include/super_lib
   DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
@@ -213,8 +208,8 @@ if (CATKIN_ENABLE_TESTING)
 
   # For ros testing
   find_package(rostest REQUIRED)
-  add_rostest_gtest(primary_rostest rostest/primary/primary_rostest.test rostest/primary/primary_rostest.cpp ${SUPER_MEDIATOR_FILES})
-  target_link_libraries(primary_rostest ${catkin_LIBRARIES} super_lib super_rostest_lib)
+  add_rostest_gtest(primary_rostest rostest/primary/primary_rostest.test rostest/primary/primary_rostest.cpp rostest/rostest_base.cpp ${SUPER_MEDIATOR_FILES})
+  target_link_libraries(primary_rostest ${catkin_LIBRARIES} super_lib)
  
   add_rostest_gtest(auto_to_manual_rostest rostest/auto_to_manual/auto_to_manual_rostest.test rostest/auto_to_manual/auto_to_manual_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(auto_to_manual_rostest ${catkin_LIBRARIES} super_lib)

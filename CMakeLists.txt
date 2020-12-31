@@ -209,7 +209,7 @@ if (CATKIN_ENABLE_TESTING)
 
   # For ros testing
   find_package(rostest REQUIRED)
-  add_rostest_gtest(primary_rostest rostest/primary/primary_rostest.test rostest/primary/primary_rostest.cpp rostest/rostest_base.cpp ${SUPER_MEDIATOR_FILES})
+  add_rostest_gtest(primary_rostest rostest/primary/primary_rostest.test rostest/primary/primary_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(primary_rostest ${catkin_LIBRARIES} super_lib)
  
   add_rostest_gtest(auto_to_manual_rostest rostest/auto_to_manual/auto_to_manual_rostest.test rostest/auto_to_manual/auto_to_manual_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})

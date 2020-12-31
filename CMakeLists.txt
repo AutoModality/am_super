@@ -208,7 +208,7 @@ if (CATKIN_ENABLE_TESTING)
   endif()
 
   # For ros testing
-  find_package(rostest REQUIRED)
+  find_package(am_rostest REQUIRED)
   add_rostest_gtest(primary_rostest rostest/primary/primary_rostest.test rostest/primary/primary_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(primary_rostest ${catkin_LIBRARIES} super_lib)
  

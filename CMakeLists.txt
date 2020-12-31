@@ -15,6 +15,7 @@ find_package(catkin REQUIRED
   rospy
   std_msgs
   std_srvs
+  am_rostest
 )
 
 find_package(CUDA)

@@ -3,8 +3,8 @@ Section: misc
 Priority: extra
 Maintainer: AutoModality <dev@automodality.com>
 Build-Depends: debhelper (>= 9.0.0),
-    ros-melodic-am-utils, 
     ros-melodic-am-rostest,
+    ros-melodic-am-utils, 
     ros-melodic-catkin, 
     ros-melodic-diagnostic-updater,
     ros-melodic-rosbag, 

@@ -1,8 +1,9 @@
 Source: ros-melodic-am-super
 Section: misc
 Priority: extra
-Maintainer: info <info@automodality.com>
+Maintainer: AutoModality <dev@automodality.com>
 Build-Depends: debhelper (>= 9.0.0),
+    ros-melodic-am-rostest,
     ros-melodic-am-utils, 
     ros-melodic-catkin, 
     ros-melodic-diagnostic-updater,
@@ -10,6 +11,7 @@ Build-Depends: debhelper (>= 9.0.0),
     ros-melodic-roscpp, 
     ros-melodic-std-msgs, 
     ros-melodic-std-srvs,
+
 
 Homepage: https://github.com/AutoModality/am-super
 Standards-Version: 3.9.2
@@ -23,4 +25,4 @@ Depends: ${shlibs:Depends}, ${misc:Depends},
     ros-melodic-roscpp, 
     ros-melodic-std-msgs, 
     ros-melodic-std-srvs, 
-Description: Common code to assist with AutoModality libraries found in separate repositories.
+Description: Maintains the quality and LifeCycle of all AM nodes

@@ -2,9 +2,10 @@
 #include <memory>
 
 #include <ros/ros.h>
+#include <diagnostic_msgs/DiagnosticArray.h>
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/PointCloud2.h>
-
+#include <std_msgs/Int16.h>
 
 #include <am_super/baby_sitter.h>
 #include <am_super/super_state.h>
@@ -68,7 +69,11 @@ private:
   ros::Subscriber node_status_sub_;
   ros::Subscriber operator_command_sub_;
   ros::Subscriber controller_state_sub;
+  ros::Subscriber diagnostics_sub;
   ros::Timer heartbeat_timer_;
+
+  ros::Subscriber log_control_sub_;
+  BagLogger::BagLoggerLevel log_level_;
 
   /** manage logic for SuperState transitions */
   SuperStateMediator state_mediator_;
@@ -193,7 +198,15 @@ public:
     supervisor_.system_state = SuperState::BOOTING;
     supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::INIT;
 
-    BagLogger::instance()->startLogging("SU", SU_LOG_LEVEL);
+    /**
+     * amros log control
+     */
+    log_control_sub_ = nh_.subscribe(am::am_topics::CTRL_LOG_CONTROL, 10, &AMSuper::logControlCB, this);
+
+    // startup bagfile - gets closed after frist log control command
+    ROS_INFO_STREAM("start logging to ST, level " << SU_LOG_LEVEL);
+    BagLogger::instance()->startLogging("ST", SU_LOG_LEVEL);
+    log_level_ = intToLoggerLevel (SU_LOG_LEVEL);
 
     // subs should always come at the end
     
@@ -212,6 +225,8 @@ public:
     operator_command_sub_ = nh_.subscribe(am_super_topics::OPERATOR_COMMAND, 100, &AMSuper::operatorCommandCB, this);
 
     controller_state_sub = nh_.subscribe(am_super_topics::CONTROLLER_STATE, 100, &AMSuper::controllerStateCB, this);
+
+    diagnostics_sub = nh_.subscribe("/diagnostics", 100, &AMSuper::diagnosticsCB, this);
 
     heartbeat_timer_ = nh_.createTimer(ros::Duration(1.0), &AMSuper::heartbeatCB, this);
   }
@@ -458,6 +473,20 @@ private:
       // if all manifested nodes are running, report as info
       ROS_INFO_STREAM_THROTTLE(LOG_THROTTLE_S, ss.str());
     }
+
+    // log stats
+    fstream newfile;
+    newfile.open("/sys/bus/i2c/devices/7-0040/iio_device/in_power0_input",ios::in); //open a file to perform read operation using file object
+    if (newfile.is_open())
+    {   //checking whether the file is open
+       string tp;
+       getline(newfile, tp);
+       std_msgs::Int16 msg;
+       msg.data = std::stoi(tp);
+       LOG_MSG("/watts", msg, SU_LOG_LEVEL);
+       newfile.close(); //close the file object.
+    }
+
     AMLifeCycle::heartbeatCB(event);
   }
 
@@ -706,6 +735,46 @@ private:
     error_ms = (int)(1000.0 / hz * 3.0 + 0.5);
   }
   
+  void diagnosticsCB(const diagnostic_msgs::DiagnosticArray::ConstPtr &msg)
+  {
+      LOG_MSG("/diagnostics", msg, SU_LOG_LEVEL);
+  }
+
+  BagLogger::BagLoggerLevel intToLoggerLevel(int level)
+  {
+    switch (level)
+    {
+      case 1:
+        return BagLogger::NORM;
+        break;
+      case 2:
+        return BagLogger::FINE;
+        break;
+      case 3:
+        return BagLogger::EXTRA;
+        break;
+      case 4:
+        return BagLogger::ALL;
+        break;
+      default:
+        return BagLogger::OFF;
+        break;
+    }
+  }
+
+  void logControlCB(const brain_box_msgs::LogControl::ConstPtr &msg)
+   {
+     if (msg->enable)
+     {
+       ROS_INFO_STREAM("stop logging");
+       BagLogger::instance()->stopLogging();
+
+       ROS_INFO_STREAM("start logging to SU, level " << SU_LOG_LEVEL);
+       BagLogger::instance()->startLogging("SU", SU_LOG_LEVEL);
+       log_level_ = intToLoggerLevel (SU_LOG_LEVEL);
+     }
+   }
+
 };
 };
 

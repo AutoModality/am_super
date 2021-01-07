@@ -1,15 +1,22 @@
-#include "../rostest_transition.h" //FIXME: currently relative path
+#include <am_rostest_lib/am_rostest.h> 
 
-using namespace brain_box_msgs;
-
-class AbortToDisarming : public RostestTransition {};
+class AbortToDisarming : public RostestBase, am::AMLifeCycle
+{
+protected:
+  AbortToDisarming() : RostestBase(ros::this_node::getName()) {}
+};
 
 TEST_F(AbortToDisarming, testState_AbortToDisarming)
 {
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::ARM, RostestTransition::armed);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::LAUNCH, RostestTransition::in_auto);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::ABORT, RostestTransition::abort);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::LANDED, RostestTransition::disarming);
+  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  arm();
+  waitUntilMissionState(brain_box_msgs::VxState::ARMED);
+  launch();
+  waitUntilMissionState(brain_box_msgs::VxState::AUTO);
+  abort();
+  waitUntilMissionState(brain_box_msgs::VxState::ABORT);
+  landed();
+  waitUntilMissionState(brain_box_msgs::VxState::DISARMING);
 }
 
 int main(int argc, char** argv)

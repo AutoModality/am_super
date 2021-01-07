@@ -12,6 +12,7 @@ TEST_F(ArmedToReady, testState_ArmedToReady)
   arm();
   waitUntilMissionState(brain_box_msgs::VxState::ARMED);
   cancel();
+  waitUntilMissionState(brain_box_msgs::VxState::DISARMING);
   waitUntilMissionState(brain_box_msgs::VxState::READY);
 }
 

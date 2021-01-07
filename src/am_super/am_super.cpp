@@ -476,7 +476,7 @@ private:
 
     // log stats
     fstream newfile;
-    newfile.open("/sys/bus/i2c/devices/7-0040/iio_device/in_power2_input",ios::in); //open a file to perform read operation using file object
+    newfile.open("/sys/bus/i2c/devices/7-0040/iio_device/in_power0_input",ios::in); //open a file to perform read operation using file object
     if (newfile.is_open())
     {   //checking whether the file is open
        string tp;

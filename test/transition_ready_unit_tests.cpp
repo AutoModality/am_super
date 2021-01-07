@@ -33,12 +33,14 @@ protected:
   void ASSERT_TRANSITION_READY(SuperNodeMediator superNodeMediator, SuperState from, LifeCycleState node_state,
                               SuperNodeMediator::SuperFltCtrlState flt_ctrl_state, bool expected_ready,
                               SuperState expected_state, bool expected_resend_life_cycle_command,
-                              LifeCycleCommand life_cycle_command, OperatorCommand last_op_command_received = OperatorCommand::ARM)
+                              LifeCycleCommand life_cycle_command, OperatorCommand last_op_command_received = OperatorCommand::ARM,
+                              ControllerState last_controller_state_received = SuperNodeMediator::StateTransition::NO_CONTROLLER_STATE)
   {
     SuperNodeMediator::Supervisor supervisor;
     supervisor.system_state = from;
     supervisor.flt_ctrl_state = flt_ctrl_state;
     supervisor.last_op_command_received = last_op_command_received;
+    supervisor.last_controller_state_received = last_controller_state_received;
 
     {
       SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();
@@ -201,14 +203,16 @@ TEST_F(TransitionReady, TransitionReady_ManualToDisarmingOnOpLanded)
 {
   ASSERT_TRANSITION_READY(superNodeMediator, SuperState::MANUAL, LifeCycleState::ACTIVE, 
                         (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::DISARMING, 
-                          false, (LifeCycleCommand)NULL, OperatorCommand::LANDED);
+                          false, (LifeCycleCommand)NULL, SuperNodeMediator::StateTransition::NO_OPERATOR_COMMAND, 
+                          ControllerState::COMPLETED);
 }
 
-TEST_F(TransitionReady, TransitionReady_AbortToDisarmingOnOpLanded)
+TEST_F(TransitionReady, TransitionReady_AbortToDisarmingOnControllerStateCompleted)
 {
   ASSERT_TRANSITION_READY(superNodeMediator, SuperState::ABORT, LifeCycleState::ACTIVE, 
                         (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::DISARMING, 
-                          false, (LifeCycleCommand)NULL, OperatorCommand::LANDED);
+                          false, (LifeCycleCommand)NULL, SuperNodeMediator::StateTransition::NO_OPERATOR_COMMAND, 
+                          ControllerState::COMPLETED);
 }
 
 TEST_F(TransitionReady, DISABLED_transitionReady_AutoToAbortWhenDeactivated)

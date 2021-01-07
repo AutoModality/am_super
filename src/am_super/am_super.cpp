@@ -561,7 +561,7 @@ private:
    */
   void checkForSystemStateTransition()
   {
-    if(getState() == LifeCycleState::INACTIVE) //if super lifecycle is currently inactive
+    if(getState() == LifeCycleState::INACTIVE && supervisor_.system_state == SuperState::READY) //if super lifecycle is currently inactive
     {
       sendLifeCycleCommand(node_mediator_.getNodeName(), LifeCycleCommand::ACTIVATE); 
     }

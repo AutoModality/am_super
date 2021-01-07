@@ -1,20 +1,30 @@
-#include "../rostest_transition.h" //FIXME: currently relative path
+#include <am_rostest_lib/am_rostest.h>
 
-using namespace brain_box_msgs;
-
-class AutoToSemiAuto : public RostestTransition {};
-
-TEST_F(AutoToSemiAuto, testState_AutoToSemiAuto)
+class AutoToSemiAuto : public RostestBase, am::AMLifeCycle
 {
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::ARM, RostestTransition::armed);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::LAUNCH, RostestTransition::in_auto);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::PAUSE, RostestTransition::semi_auto);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::RESUME, RostestTransition::auto_after_semi_auto);
+protected:
+  AutoToSemiAuto() : RostestBase(ros::this_node::getName()) {}
+};
+
+TEST_F(AutoToSemiAuto, testState_SuccessfulFlight)
+{
+  waitUntil(LifeCycleState::CONFIGURING);
+  waitUntil(LifeCycleState::INACTIVE);
+  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  arm();
+  waitUntil(LifeCycleState::ACTIVE);
+  waitUntilMissionState(brain_box_msgs::VxState::ARMED);
+  launch();
+  waitUntilMissionState(brain_box_msgs::VxState::AUTO);
+  pause();
+  waitUntilMissionState(brain_box_msgs::VxState::SEMI_AUTO);
+  //the test launch file timeout acts as an assertion if any wait is blocked and unfinishing
 }
 
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
-  ros::init(argc, argv, "auto_to_semiauto_rostest");
+  ros::init(argc, argv, ros::this_node::getName());
+
   return RUN_ALL_TESTS();
 }

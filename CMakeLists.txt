@@ -212,31 +212,31 @@ if (CATKIN_ENABLE_TESTING)
   add_rostest_gtest(primary_rostest rostest/primary/primary_rostest.test rostest/primary/primary_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(primary_rostest ${catkin_LIBRARIES} super_lib)
  
-  add_rostest_gtest(auto_to_manual_rostest rostest/auto_to_manual/auto_to_manual_rostest.test rostest/auto_to_manual/auto_to_manual_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  add_rostest_gtest(auto_to_manual_rostest rostest/auto_to_manual/auto_to_manual_rostest.test rostest/auto_to_manual/auto_to_manual_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(auto_to_manual_rostest ${catkin_LIBRARIES} super_lib)
 
-  add_rostest_gtest(auto_to_semiauto_rostest rostest/auto_to_semiauto/auto_to_semiauto_rostest.test rostest/auto_to_semiauto/auto_to_semiauto_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  add_rostest_gtest(auto_to_semiauto_rostest rostest/auto_to_semiauto/auto_to_semiauto_rostest.test rostest/auto_to_semiauto/auto_to_semiauto_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(auto_to_semiauto_rostest ${catkin_LIBRARIES} super_lib)
 
-  add_rostest_gtest(armed_to_ready_rostest rostest/armed_to_ready/armed_to_ready_rostest.test rostest/armed_to_ready/armed_to_ready_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  add_rostest_gtest(armed_to_ready_rostest rostest/armed_to_ready/armed_to_ready_rostest.test rostest/armed_to_ready/armed_to_ready_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(armed_to_ready_rostest ${catkin_LIBRARIES} super_lib)
 
-  add_rostest_gtest(auto_to_abort_rostest rostest/auto_to_abort/auto_to_abort_rostest.test rostest/auto_to_abort/auto_to_abort_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  add_rostest_gtest(auto_to_abort_rostest rostest/auto_to_abort/auto_to_abort_rostest.test rostest/auto_to_abort/auto_to_abort_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(auto_to_abort_rostest ${catkin_LIBRARIES} super_lib)
 
-  add_rostest_gtest(ready_to_shutdown_rostest rostest/ready_to_shutdown/ready_to_shutdown_rostest.test rostest/ready_to_shutdown/ready_to_shutdown_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  add_rostest_gtest(ready_to_shutdown_rostest rostest/ready_to_shutdown/ready_to_shutdown_rostest.test rostest/ready_to_shutdown/ready_to_shutdown_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(ready_to_shutdown_rostest ${catkin_LIBRARIES} super_lib)
   
-  add_rostest_gtest(semi_auto_to_manual_rostest rostest/semi_auto_to_manual/semi_auto_to_manual_rostest.test rostest/semi_auto_to_manual/semi_auto_to_manual_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  add_rostest_gtest(semi_auto_to_manual_rostest rostest/semi_auto_to_manual/semi_auto_to_manual_rostest.test rostest/semi_auto_to_manual/semi_auto_to_manual_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(semi_auto_to_manual_rostest ${catkin_LIBRARIES} super_lib)
 
-  add_rostest_gtest(abort_to_manual_rostest rostest/abort_to_manual/abort_to_manual_rostest.test rostest/abort_to_manual/abort_to_manual_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  add_rostest_gtest(abort_to_manual_rostest rostest/abort_to_manual/abort_to_manual_rostest.test rostest/abort_to_manual/abort_to_manual_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(abort_to_manual_rostest ${catkin_LIBRARIES} super_lib)
 
-  add_rostest_gtest(manual_to_disarming_rostest rostest/manual_to_disarming/manual_to_disarming_rostest.test rostest/manual_to_disarming/manual_to_disarming_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  add_rostest_gtest(manual_to_disarming_rostest rostest/manual_to_disarming/manual_to_disarming_rostest.test rostest/manual_to_disarming/manual_to_disarming_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(manual_to_disarming_rostest ${catkin_LIBRARIES} super_lib)
 
-  add_rostest_gtest(abort_to_disarming_rostest rostest/abort_to_disarming/abort_to_disarming_rostest.test rostest/abort_to_disarming/abort_to_disarming_rostest.cpp rostest/rostest_transition.cpp ${SUPER_MEDIATOR_FILES})
+  add_rostest_gtest(abort_to_disarming_rostest rostest/abort_to_disarming/abort_to_disarming_rostest.test rostest/abort_to_disarming/abort_to_disarming_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(abort_to_disarming_rostest ${catkin_LIBRARIES} super_lib)
 
   # Create a target ${PROJECT_NAME}_coverage_report

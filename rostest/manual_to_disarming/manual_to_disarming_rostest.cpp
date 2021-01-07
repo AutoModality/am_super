@@ -1,20 +1,32 @@
-#include "../rostest_transition.h" //FIXME: currently relative path
+#include <am_rostest_lib/am_rostest.h>
 
-using namespace brain_box_msgs;
-
-class ManualToDisarming : public RostestTransition {};
-
-TEST_F(ManualToDisarming, testState_ManualToDisarming)
+class ManualToDisarming : public RostestBase, am::AMLifeCycle
 {
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::ARM, RostestTransition::armed);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::LAUNCH, RostestTransition::in_auto);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::MANUAL, RostestTransition::manual);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::LANDED, RostestTransition::disarming);
+protected:
+  ManualToDisarming() : RostestBase(ros::this_node::getName()) {}
+};
+
+TEST_F(ManualToDisarming, testState_SuccessfulFlight)
+{
+  waitUntil(LifeCycleState::CONFIGURING);
+  waitUntil(LifeCycleState::INACTIVE);
+  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  arm();
+  waitUntil(LifeCycleState::ACTIVE);
+  waitUntilMissionState(brain_box_msgs::VxState::ARMED);
+  launch();
+  waitUntilMissionState(brain_box_msgs::VxState::AUTO);
+  manual();
+  waitUntilMissionState(brain_box_msgs::VxState::MANUAL);
+  landed();
+  waitUntilMissionState(brain_box_msgs::VxState::DISARMING);
+  //the test launch file timeout acts as an assertion if any wait is blocked and unfinishing
 }
 
 int main(int argc, char** argv)
 {
   ::testing::InitGoogleTest(&argc, argv);
   ros::init(argc, argv, ros::this_node::getName());
+
   return RUN_ALL_TESTS();
 }

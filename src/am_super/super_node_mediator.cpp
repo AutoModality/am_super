@@ -42,7 +42,7 @@ SuperNodeMediator::SuperNodeMediator(const std::string& node_name):
     {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, StateTransition::NO_OPERATOR_COMMAND, ControllerState::COMPLETED}},
   }},
   {SuperState::MANUAL, {
-    {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkNodesActiveOrInactive, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::LANDED}},
+    {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkNodesActiveOrInactive, StateTransition::NO_LIFECYCLE_COMMAND, StateTransition::NO_OPERATOR_COMMAND, ControllerState::COMPLETED}},
   }}
 })
 {

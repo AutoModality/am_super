@@ -1,15 +1,22 @@
-#include "../rostest_transition.h" //FIXME: currently relative path
+#include <am_rostest_lib/am_rostest.h> 
 
-using namespace brain_box_msgs;
-
-class AbortToManual : public RostestTransition {};
-
-TEST_F(AbortToManual, testState_AbortToManual)
+class AbortToManual : public RostestBase, am::AMLifeCycle
 {
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::ARM, RostestTransition::armed);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::LAUNCH, RostestTransition::in_auto);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::ABORT, RostestTransition::abort);
-  RostestTransition::sendCommandUntilResponseReceived(OperatorCommand::MANUAL, RostestTransition::manual);
+protected:
+  AbortToManual() : RostestBase(ros::this_node::getName()) {}
+};
+
+TEST_F(AbortToManual, testState_AbortToDisarming)
+{
+  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  arm();
+  waitUntilMissionState(brain_box_msgs::VxState::ARMED);
+  launch();
+  waitUntilMissionState(brain_box_msgs::VxState::AUTO);
+  abort();
+  waitUntilMissionState(brain_box_msgs::VxState::ABORT);
+  manual();
+  waitUntilMissionState(brain_box_msgs::VxState::MANUAL);
 }
 
 int main(int argc, char** argv)

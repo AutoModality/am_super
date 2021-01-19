@@ -222,12 +222,12 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
     Supervisor& supervisor, std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
 {
   map<string, string> failed_nodes;
-
   bool success = true;
-  std::string error_message;
+  
   for (pair<string, SuperNodeInfo> nodePair : supervisor.nodes)
   {
     SuperNodeInfo node = nodePair.second;
+    std::string error_message;
     // only check manifested nodes, ignore others
     if (node.manifested)
     {
@@ -262,6 +262,9 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
       failed_nodes.insert(pair<string, string>(node.name, error_message));
     }
   }    // for each node
+  for(auto const& [node, message] : failed_nodes) {
+    ROS_WARN_STREAM(node << " error: " << message);
+  }
   return pair(success, failed_nodes);
 }
 

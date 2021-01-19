@@ -262,9 +262,6 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
       failed_nodes.insert(pair<string, string>(node.name, error_message));
     }
   }    // for each node
-  for(auto const& [node, message] : failed_nodes) {
-    ROS_WARN_STREAM(node << " error: " << message);
-  }
   return pair(success, failed_nodes);
 }
 

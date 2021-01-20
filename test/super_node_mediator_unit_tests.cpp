@@ -242,11 +242,62 @@ TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_MultipleNodes_FirstNodeFai
   //supervisor stores a map<string, SuperNodeInfo>
   supervisor.nodes.insert({"a", manifested_lifecycle_node("a", LifeCycleState::CONFIGURING)});
   supervisor.nodes.insert({"b", manifested_lifecycle_node("b", LifeCycleState::INACTIVE)});
-  supervisor.nodes.insert({"c", manifested_lifecycle_node("c", LifeCycleState::CONFIGURING)});
+  supervisor.nodes.insert({"c", manifested_lifecycle_node("c", LifeCycleState::INACTIVE)});
   supervisor.nodes.insert({"d", manifested_lifecycle_node("d", LifeCycleState::INACTIVE)});
 
   //a and c should fail
-  vector<string> expected_failed_nodes({"a", "c"});
+  vector<string> expected_failed_nodes({"a"});
+
+  assertAllManifestedNodesCheck(supervisor, SuperNodeMediator::checkReadyToArm, expected_failed_nodes, true);
+}
+
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_MultipleNodes_TwoNodesFail)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  supervisor.system_state = SuperState::BOOTING;
+
+  //supervisor stores a map<string, SuperNodeInfo>
+  supervisor.nodes.insert({"a", manifested_lifecycle_node("a", LifeCycleState::CONFIGURING)});
+  supervisor.nodes.insert({"b", manifested_lifecycle_node("b", LifeCycleState::CONFIGURING)});
+  supervisor.nodes.insert({"c", manifested_lifecycle_node("c", LifeCycleState::INACTIVE)});
+  supervisor.nodes.insert({"d", manifested_lifecycle_node("d", LifeCycleState::INACTIVE)});
+
+  //a and b should fail
+  vector<string> expected_failed_nodes({"a", "b"});
+
+  assertAllManifestedNodesCheck(supervisor, SuperNodeMediator::checkReadyToArm, expected_failed_nodes, true);
+}
+
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_MultipleNodes_AllNodesFail)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  supervisor.system_state = SuperState::BOOTING;
+
+  //supervisor stores a map<string, SuperNodeInfo>
+  supervisor.nodes.insert({"a", manifested_lifecycle_node("a", LifeCycleState::CONFIGURING)});
+  supervisor.nodes.insert({"b", manifested_lifecycle_node("b", LifeCycleState::CONFIGURING)});
+  supervisor.nodes.insert({"c", manifested_lifecycle_node("c", LifeCycleState::CONFIGURING)});
+  supervisor.nodes.insert({"d", manifested_lifecycle_node("d", LifeCycleState::CONFIGURING)});
+
+  //all should fail
+  vector<string> expected_failed_nodes({"a", "b", "c", "d"});
+
+  assertAllManifestedNodesCheck(supervisor, SuperNodeMediator::checkReadyToArm, expected_failed_nodes, true);
+}
+
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_MultipleNodes_AllNodesPass)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  supervisor.system_state = SuperState::BOOTING;
+
+  //supervisor stores a map<string, SuperNodeInfo>
+  supervisor.nodes.insert({"a", manifested_lifecycle_node("a", LifeCycleState::INACTIVE)});
+  supervisor.nodes.insert({"b", manifested_lifecycle_node("b", LifeCycleState::INACTIVE)});
+  supervisor.nodes.insert({"c", manifested_lifecycle_node("c", LifeCycleState::INACTIVE)});
+  supervisor.nodes.insert({"d", manifested_lifecycle_node("d", LifeCycleState::INACTIVE)});
+
+  //none should fail
+  vector<string> expected_failed_nodes({});
 
   assertAllManifestedNodesCheck(supervisor, SuperNodeMediator::checkReadyToArm, expected_failed_nodes, true);
 }

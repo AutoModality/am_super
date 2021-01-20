@@ -14,7 +14,7 @@ TEST_F(LifeCycleErrorTest, testStatus_Error)
 
   am::AMLifeCycle::error();
   waitUntilStatus(LifeCycleStatus::ERROR);
-  waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN);
+  waitUntil(LifeCycleState::ERROR_PROCESSING);
 }
 
 int main(int argc, char** argv)

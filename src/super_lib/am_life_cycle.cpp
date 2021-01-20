@@ -211,7 +211,7 @@ void AMLifeCycle::doDestroy(bool success)
 
 void AMLifeCycle::error()
 {
-  if (life_cycle_mediator_.error(life_cycle_info_))
+  if (life_cycle_mediator_.redundantError(life_cycle_info_))
   {
     ROS_DEBUG_STREAM("ignoring redundant error");
   }
@@ -219,6 +219,7 @@ void AMLifeCycle::error()
   {
     ROS_INFO_STREAM("current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
     setState(LifeCycleState::ERROR_PROCESSING);
+    setStatus(LifeCycleStatus::ERROR);
     onError();
   }
 }
@@ -226,7 +227,7 @@ void AMLifeCycle::error()
 void AMLifeCycle::onError()
 {
   logState();
-  doError(true);
+  doError(false);
 }
 
 void AMLifeCycle::doError(bool success)
@@ -335,7 +336,14 @@ LifeCycleStatus AMLifeCycle::getStatus() const
 
 bool AMLifeCycle::setStatus(const LifeCycleStatus status)
 {
-  return life_cycle_mediator_.setStatus(status, life_cycle_info_);
+  if (life_cycle_mediator_.setStatus(status, life_cycle_info_))
+  {
+    sendNodeUpdate();
+  }
+  else
+  {
+    ROS_ERROR_STREAM("illegal status: " << life_cycle_mediator_.statusToString(status));
+  }
 }
 
 //Is this being used?

@@ -184,7 +184,7 @@ class AMLifeCycleMediator
 
     bool redundantShutdown(const AMLifeCycleMediator::LifeCycleInfo& info);
 
-    bool error(const AMLifeCycleMediator::LifeCycleInfo& info);
+    bool redundantError(const AMLifeCycleMediator::LifeCycleInfo& info);
 
     bool illegalDestroy(const AMLifeCycleMediator::LifeCycleInfo& info);
 

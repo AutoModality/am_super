@@ -58,7 +58,7 @@ protected:
   {
     AMLifeCycleMediator::LifeCycleInfo info;
     info.state = state;
-    EXPECT_EQ(life_cycle_mediator_.error(info), expected);
+    EXPECT_EQ(life_cycle_mediator_.redundantError(info), expected);
   }
 
   bool EXPECT_EQ_ILLEGAL_DESTROY(const LifeCycleState& state, bool expected)

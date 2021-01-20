@@ -239,6 +239,9 @@ if (CATKIN_ENABLE_TESTING)
   add_rostest_gtest(abort_to_disarming_rostest rostest/abort_to_disarming/abort_to_disarming_rostest.test rostest/abort_to_disarming/abort_to_disarming_rostest.cpp ${SUPER_MEDIATOR_FILES})
   target_link_libraries(abort_to_disarming_rostest ${catkin_LIBRARIES} super_lib)
 
+  add_rostest_gtest(error_status_rostest rostest/error_status/error_status_rostest.test rostest/error_status/error_status_rostest.cpp ${SUPER_MEDIATOR_FILES})
+  target_link_libraries(error_status_rostest ${catkin_LIBRARIES} super_lib)
+
   # Create a target ${PROJECT_NAME}_coverage_report
   if(ENABLE_COVERAGE_TESTING)
     set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" )

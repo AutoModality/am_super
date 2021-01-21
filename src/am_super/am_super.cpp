@@ -342,6 +342,10 @@ private:
         ROS_INFO_STREAM(node_name << " changed status to = " << life_cycle_mediator_.statusToString(status));
         nr.status = status;
         nodes_changed = true;
+        if(status == LifeCycleStatus::ERROR)
+        {
+          supervisor_.status_error = true;
+        }
       }
       if (nr.pid != pid)
       {
@@ -567,8 +571,9 @@ private:
     }
     else
     {
-      // ask the mediator to check with the supervisor
+      
       SuperNodeMediator::TransitionInstructions transition_instructions = node_mediator_.transitionReady(supervisor_);
+
       if (transition_instructions.ready_for_transition)
       {
         setSystemState(transition_instructions.new_state);

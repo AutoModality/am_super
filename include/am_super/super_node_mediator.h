@@ -72,6 +72,9 @@ public:
     
     /** Last state of the controller received */
     ControllerState last_controller_state_received;
+
+    /** Signals if any of the manifested nodes status errored */
+    bool status_error = false;
   };
 
   /**Encapsulates properties and methods that relate to the transition of states
@@ -182,6 +185,9 @@ public:
    * @return the transition that we will attempt. If no transition was found, invalidTransition() is returned
    */
   StateTransition getStateTransition(const Supervisor &supervisor);
+
+  /** returns a state transition that should be attempted when a LifeCycleError has occured. */
+  StateTransition getErrorTransition();
 
   /**
    * @return Default StateTransition with all of its fields at default. A transition is valid if it's values aren't default

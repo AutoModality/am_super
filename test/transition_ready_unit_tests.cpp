@@ -34,13 +34,15 @@ protected:
                               SuperNodeMediator::SuperFltCtrlState flt_ctrl_state, bool expected_ready,
                               SuperState expected_state, bool expected_resend_life_cycle_command,
                               LifeCycleCommand life_cycle_command, OperatorCommand last_op_command_received = OperatorCommand::ARM,
-                              ControllerState last_controller_state_received = SuperNodeMediator::StateTransition::NO_CONTROLLER_STATE)
+                              ControllerState last_controller_state_received = SuperNodeMediator::StateTransition::NO_CONTROLLER_STATE,
+                              bool status_error = false)
   {
     SuperNodeMediator::Supervisor supervisor;
     supervisor.system_state = from;
     supervisor.flt_ctrl_state = flt_ctrl_state;
     supervisor.last_op_command_received = last_op_command_received;
     supervisor.last_controller_state_received = last_controller_state_received;
+    supervisor.status_error = status_error;
 
     {
       SuperNodeMediator::SuperNodeInfo node = manifested_online_node_fixture();
@@ -213,6 +215,24 @@ TEST_F(TransitionReady, TransitionReady_AbortToDisarmingOnControllerStateComplet
                         (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::DISARMING, 
                           false, (LifeCycleCommand)NULL, SuperNodeMediator::StateTransition::NO_OPERATOR_COMMAND, 
                           ControllerState::COMPLETED);
+}
+
+TEST_F(TransitionReady, TransitionReady_AnyStateToShutdownOnStatusError_AllNodesShuttingDownOrFinalized)
+{
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::BOOTING, LifeCycleState::FINALIZED, 
+                        (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::SHUTDOWN, 
+                          false, (LifeCycleCommand)NULL, SuperNodeMediator::StateTransition::NO_OPERATOR_COMMAND, 
+                          SuperNodeMediator::StateTransition::NO_CONTROLLER_STATE, true);
+
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::READY, LifeCycleState::SHUTTING_DOWN, 
+                        (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::SHUTDOWN, 
+                          false, (LifeCycleCommand)NULL, SuperNodeMediator::StateTransition::NO_OPERATOR_COMMAND, 
+                          SuperNodeMediator::StateTransition::NO_CONTROLLER_STATE, true);
+
+  ASSERT_TRANSITION_READY(superNodeMediator, SuperState::ARMED, LifeCycleState::SHUTTING_DOWN, 
+                        (SuperNodeMediator::SuperFltCtrlState)NULL, true, SuperState::SHUTDOWN, 
+                          false, (LifeCycleCommand)NULL, SuperNodeMediator::StateTransition::NO_OPERATOR_COMMAND, 
+                          SuperNodeMediator::StateTransition::NO_CONTROLLER_STATE, true);
 }
 
 TEST_F(TransitionReady, DISABLED_transitionReady_AutoToAbortWhenDeactivated)

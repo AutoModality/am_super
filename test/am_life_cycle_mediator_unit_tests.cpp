@@ -54,7 +54,7 @@ protected:
     EXPECT_EQ(life_cycle_mediator_.redundantShutdown(info), expected);
   }
 
-  bool EXPECT_EQ_ERROR(const LifeCycleState& state, bool expected)
+  bool EXPECT_EQ_REDUNDANT_ERROR(const LifeCycleState& state, bool expected)
   {
     AMLifeCycleMediator::LifeCycleInfo info;
     info.state = state;
@@ -264,20 +264,20 @@ TEST_F(AMLifeCycleMediatorTest, redundantShutdown)
   EXPECT_EQ_REDUNDANT_SHUTDOWN(LifeCycleState::INVALID, false);
 }
 
-TEST_F(AMLifeCycleMediatorTest, error)
+TEST_F(AMLifeCycleMediatorTest, redundantError)
 {
-  EXPECT_EQ_ERROR(LifeCycleState::ERROR_PROCESSING, true);
-  EXPECT_EQ_ERROR(LifeCycleState::FINALIZED, true);
-  EXPECT_EQ_ERROR(LifeCycleState::UNCONFIGURED, true);
+  EXPECT_EQ_REDUNDANT_ERROR(LifeCycleState::ERROR_PROCESSING, true);
+  EXPECT_EQ_REDUNDANT_ERROR(LifeCycleState::FINALIZED, true);
+  EXPECT_EQ_REDUNDANT_ERROR(LifeCycleState::UNCONFIGURED, true);
 
-  EXPECT_EQ_ERROR(LifeCycleState::ACTIVATING, false);
-  EXPECT_EQ_ERROR(LifeCycleState::ACTIVE, false);
-  EXPECT_EQ_ERROR(LifeCycleState::CLEANING_UP, false);
-  EXPECT_EQ_ERROR(LifeCycleState::CONFIGURING, false);
-  EXPECT_EQ_ERROR(LifeCycleState::DEACTIVATING, false);
-  EXPECT_EQ_ERROR(LifeCycleState::INACTIVE, false);
-  EXPECT_EQ_ERROR(LifeCycleState::INVALID, false);
-  EXPECT_EQ_ERROR(LifeCycleState::SHUTTING_DOWN, false);
+  EXPECT_EQ_REDUNDANT_ERROR(LifeCycleState::ACTIVATING, false);
+  EXPECT_EQ_REDUNDANT_ERROR(LifeCycleState::ACTIVE, false);
+  EXPECT_EQ_REDUNDANT_ERROR(LifeCycleState::CLEANING_UP, false);
+  EXPECT_EQ_REDUNDANT_ERROR(LifeCycleState::CONFIGURING, false);
+  EXPECT_EQ_REDUNDANT_ERROR(LifeCycleState::DEACTIVATING, false);
+  EXPECT_EQ_REDUNDANT_ERROR(LifeCycleState::INACTIVE, false);
+  EXPECT_EQ_REDUNDANT_ERROR(LifeCycleState::INVALID, false);
+  EXPECT_EQ_REDUNDANT_ERROR(LifeCycleState::SHUTTING_DOWN, false);
 }
 
 TEST_F(AMLifeCycleMediatorTest, illegalDestroy)

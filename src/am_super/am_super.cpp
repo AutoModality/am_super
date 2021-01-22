@@ -342,9 +342,10 @@ private:
         ROS_INFO_STREAM(node_name << " changed status to = " << life_cycle_mediator_.statusToString(status));
         nr.status = status;
         nodes_changed = true;
-        if(status == LifeCycleStatus::ERROR)
+        if(nr.manifested && nr.status == LifeCycleStatus::ERROR)
         {
           supervisor_.status_error = true;
+          ROS_ERROR_STREAM("Manifested node " << nr.name << " changed status to ERROR. Shutting down nodes..");
         }
       }
       if (nr.pid != pid)

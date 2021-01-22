@@ -264,7 +264,7 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
       else if (node.status == LifeCycleStatus::ERROR)
       {
         error_message = "[AA0A] check failed: node status is ERROR: " + node.name;
-        success = false;
+        //if check method passes and we are in error, we want to pass
       }
     }
     else

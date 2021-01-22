@@ -203,7 +203,7 @@ bool AMLifeCycleMediator::redundantShutdown(const AMLifeCycleMediator::LifeCycle
     info.state == LifeCycleState::FINALIZED;
 }
 
-bool AMLifeCycleMediator::error(const AMLifeCycleMediator::LifeCycleInfo& info)
+bool AMLifeCycleMediator::redundantError(const AMLifeCycleMediator::LifeCycleInfo& info)
 {
   return info.state == LifeCycleState::ERROR_PROCESSING || info.state == LifeCycleState::FINALIZED ||
     info.state == LifeCycleState::UNCONFIGURED;

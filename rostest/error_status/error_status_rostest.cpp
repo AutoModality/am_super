@@ -18,6 +18,7 @@ TEST_F(LifeCycleErrorTest, testStatus_Error)
   //LifeCycle State and Status should go error for this node
   waitUntilStatus(LifeCycleStatus::ERROR);
   waitUntil(LifeCycleState::ERROR_PROCESSING);
+  waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN);
 }
 
 int main(int argc, char** argv)

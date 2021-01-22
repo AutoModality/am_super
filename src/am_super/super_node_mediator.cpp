@@ -124,6 +124,11 @@ SuperNodeMediator::StateTransition SuperNodeMediator::getStateTransition(const S
   return invalidTransition();
 }
 
+SuperNodeMediator::StateTransition SuperNodeMediator::getErrorTransition()
+{
+  return {SuperState::SHUTDOWN, SuperNodeMediator::checkNodesShuttingDownOrFinalized, LifeCycleCommand::SHUTDOWN};
+}
+
 SuperNodeMediator::StateTransition SuperNodeMediator::invalidTransition()
 {
   return StateTransition();
@@ -143,8 +148,17 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
 
   // only check those states registered with state_transitions
   if (state_transitions_.count(supervisor.system_state))
-  {
-    StateTransition transition = getStateTransition(supervisor);
+  { 
+    StateTransition transition;
+
+    if(supervisor.status_error)
+    {
+      transition = getErrorTransition();
+    }
+    else
+    {
+      transition = getStateTransition(supervisor);
+    }
     // each state has a check method providing the logic that should cause transition (based on manifest nodes
     // lifecycle)
     // some transitions happen only when check fails (mostly to abort)

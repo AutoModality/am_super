@@ -1,6 +1,10 @@
 #include <gtest/gtest.h>  // googletest header file
 #include <am_super/super_node_mediator.h>
 #include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/join.hpp>
+#include <boost/range/algorithm/copy.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 using namespace std;
 using namespace am;
@@ -11,7 +15,19 @@ protected:
   const string SUPER_NODE_NAME = "my_super_node";
   SuperNodeMediator superNodeMediator;
 
+
+
   SuperNodeMediatorTest() : superNodeMediator(SUPER_NODE_NAME) {}
+
+  SuperNodeMediator::SuperNodeInfo manifested_lifecycle_node(string node_name, LifeCycleState state)
+  {
+    SuperNodeMediator::SuperNodeInfo node;
+    node.name = node_name;
+    node.online = true;
+    node.manifested = true;
+    node.state = state;
+    return node;
+  }
 
   void ASSERT_CHECK(std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check, LifeCycleState state, bool expected,
     OperatorCommand last_op_command_received = OperatorCommand::ARM, ControllerState last_controller_state_received = ControllerState::COMPLETED)
@@ -46,6 +62,20 @@ protected:
       ASSERT_EQ(node_name, expected_node_name);
       ASSERT_TRUE(error_message.rfind(expected_error_code, 0) == 0) << error_message;
     }
+  }
+
+  void assertAllManifestedNodesCheck(SuperNodeMediator::Supervisor supervisor,
+                                    std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check, 
+                                    vector<string> expected_failed_nodes, bool expected_success)
+  {
+    pair<bool, map<string, string>> result = superNodeMediator.allManifestedNodesCheck(supervisor, check);
+    vector<string> failed_nodes;
+    boost::copy(result.second | boost::adaptors::map_keys, std::back_inserter(failed_nodes));
+
+    std::sort(failed_nodes.begin(), failed_nodes.end());
+    std::sort(expected_failed_nodes.begin(), expected_failed_nodes.end());
+
+    ASSERT_EQ((failed_nodes == expected_failed_nodes), expected_success);
   }
 
   void ASSERT_getStateTransition(const SuperState &current_state, const SuperState &expected_state, const OperatorCommand &operator_command = (OperatorCommand)-1, 
@@ -202,6 +232,74 @@ TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_FlightControllerLifeCycleN
   node.name = "flight_controller";
   bool expected_success, check_result;
   assertAllManifestedNodesCheck(expected_success = true, node, check_result = false, "[WCK2]");
+}
+
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_MultipleNodes_FirstNodeFails)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  supervisor.system_state = SuperState::BOOTING;
+
+  //supervisor stores a map<string, SuperNodeInfo>
+  supervisor.nodes.insert({"a", manifested_lifecycle_node("a", LifeCycleState::CONFIGURING)});
+  supervisor.nodes.insert({"b", manifested_lifecycle_node("b", LifeCycleState::INACTIVE)});
+  supervisor.nodes.insert({"c", manifested_lifecycle_node("c", LifeCycleState::INACTIVE)});
+  supervisor.nodes.insert({"d", manifested_lifecycle_node("d", LifeCycleState::INACTIVE)});
+
+  //a and c should fail
+  vector<string> expected_failed_nodes({"a"});
+
+  assertAllManifestedNodesCheck(supervisor, SuperNodeMediator::checkReadyToArm, expected_failed_nodes, true);
+}
+
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_MultipleNodes_TwoNodesFail)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  supervisor.system_state = SuperState::BOOTING;
+
+  //supervisor stores a map<string, SuperNodeInfo>
+  supervisor.nodes.insert({"a", manifested_lifecycle_node("a", LifeCycleState::CONFIGURING)});
+  supervisor.nodes.insert({"b", manifested_lifecycle_node("b", LifeCycleState::CONFIGURING)});
+  supervisor.nodes.insert({"c", manifested_lifecycle_node("c", LifeCycleState::INACTIVE)});
+  supervisor.nodes.insert({"d", manifested_lifecycle_node("d", LifeCycleState::INACTIVE)});
+
+  //a and b should fail
+  vector<string> expected_failed_nodes({"a", "b"});
+
+  assertAllManifestedNodesCheck(supervisor, SuperNodeMediator::checkReadyToArm, expected_failed_nodes, true);
+}
+
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_MultipleNodes_AllNodesFail)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  supervisor.system_state = SuperState::BOOTING;
+
+  //supervisor stores a map<string, SuperNodeInfo>
+  supervisor.nodes.insert({"a", manifested_lifecycle_node("a", LifeCycleState::CONFIGURING)});
+  supervisor.nodes.insert({"b", manifested_lifecycle_node("b", LifeCycleState::CONFIGURING)});
+  supervisor.nodes.insert({"c", manifested_lifecycle_node("c", LifeCycleState::CONFIGURING)});
+  supervisor.nodes.insert({"d", manifested_lifecycle_node("d", LifeCycleState::CONFIGURING)});
+
+  //all should fail
+  vector<string> expected_failed_nodes({"a", "b", "c", "d"});
+
+  assertAllManifestedNodesCheck(supervisor, SuperNodeMediator::checkReadyToArm, expected_failed_nodes, true);
+}
+
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_MultipleNodes_AllNodesPass)
+{
+  SuperNodeMediator::Supervisor supervisor;
+  supervisor.system_state = SuperState::BOOTING;
+
+  //supervisor stores a map<string, SuperNodeInfo>
+  supervisor.nodes.insert({"a", manifested_lifecycle_node("a", LifeCycleState::INACTIVE)});
+  supervisor.nodes.insert({"b", manifested_lifecycle_node("b", LifeCycleState::INACTIVE)});
+  supervisor.nodes.insert({"c", manifested_lifecycle_node("c", LifeCycleState::INACTIVE)});
+  supervisor.nodes.insert({"d", manifested_lifecycle_node("d", LifeCycleState::INACTIVE)});
+
+  //none should fail
+  vector<string> expected_failed_nodes({});
+
+  assertAllManifestedNodesCheck(supervisor, SuperNodeMediator::checkReadyToArm, expected_failed_nodes, true);
 }
 
 TEST_F(SuperNodeMediatorTest, parseManifest_EmptyManifest)

@@ -101,15 +101,10 @@ bool AMLifeCycleMediator::setStatus(const LifeCycleStatus& status, LifeCycleInfo
   if (status < AMLifeCycleMediator::FIRST_STATUS || status > AMLifeCycleMediator::LAST_STATUS) 
     return false;
 
-  if(status == info.status)
-    return true;
-
-  //Error status should persist throughout flight regardless if we are now OK
   if(info.status != LifeCycleStatus::ERROR)
   {
     info.status = status;
   }
-  
   return true;
 }
 LifeCycleStatus AMLifeCycleMediator::getStatus(const LifeCycleInfo& info) const

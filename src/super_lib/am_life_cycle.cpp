@@ -336,10 +336,16 @@ LifeCycleStatus AMLifeCycle::getStatus() const
 
 bool AMLifeCycle::setStatus(const LifeCycleStatus status)
 {
-  if (life_cycle_mediator_.setStatus(status, life_cycle_info_))
+  if(life_cycle_info_.status == LifeCycleStatus::ERROR && status != LifeCycleStatus::ERROR)
+  {
+    ROS_WARN_STREAM_THROTTLE(getThrottle(), "requested to change status from ERROR to " << life_cycle_mediator_.statusToString(status));
+  }
+
+  else if (life_cycle_mediator_.setStatus(status, life_cycle_info_))
   {
     sendNodeUpdate();
   }
+
   else
   {
     ROS_ERROR_STREAM("illegal status: " << life_cycle_mediator_.statusToString(status));

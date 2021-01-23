@@ -89,6 +89,15 @@ TEST_F(AMLifeCycleMediatorTest, getAndSetState_ALL)
   }
 }
 
+TEST_F(AMLifeCycleMediatorTest, setStatus_NoChangeInStatusIfInError)
+{
+  AMLifeCycleMediator::LifeCycleInfo info;
+  info.status = LifeCycleStatus::ERROR;
+  bool success = life_cycle_mediator.setStatus(LifeCycleStatus::OK, info);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(LifeCycleStatus::ERROR, info.status);
+}
+
 TEST_F(AMLifeCycleMediatorTest, commandTestStringConversion)
 {
   vector<LifeCycleCommand> allCommands = AMLifeCycleMediator::getLifeCycleCommands();

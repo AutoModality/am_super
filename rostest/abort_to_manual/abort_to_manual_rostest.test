@@ -1,7 +1,6 @@
 <launch>
-    <node pkg="am_super" type="am_super" name="am_super" output="screen">
-        <rosparam command="load" file="$(dirname)/abort_to_manual_rostest.yaml"/>
-    </node>
-    <test test-name="abort_to_manual_rostest" pkg="am_super" type="abort_to_manual_rostest" time-limit="20">
-    </test>
+    <include file="$(find am_super)/launch/am_super.launch" />
+    <test test-name="abort_to_manual_rostest" pkg="am_super" type="abort_to_manual_rostest" time-limit="20"/>
+    <rosparam param="/am_super/manifest">abort_to_manual_rostest</rosparam>
+    <rosparam param="/abort_to_manual_rostest/target_node_name">abort_to_manual_rostest</rosparam>
 </launch>

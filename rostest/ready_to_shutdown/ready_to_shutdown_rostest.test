@@ -1,7 +1,6 @@
 <launch>
-    <node pkg="am_super" type="am_super" name="am_super" output="screen">
-        <rosparam command="load" file="$(dirname)/ready_to_shutdown_rostest.yaml"/>
-    </node>
-    <test test-name="ready_to_shutdown_rostest" pkg="am_super" type="ready_to_shutdown_rostest" time-limit="20">
-    </test>
+    <include file="$(find am_super)/launch/am_super.launch" />
+    <test test-name="ready_to_shutdown_rostest" pkg="am_super" type="ready_to_shutdown_rostest" time-limit="20"/>
+    <rosparam param="/am_super/manifest">ready_to_shutdown_rostest</rosparam>
+    <rosparam param="/ready_to_shutdown_rostest/target_node_name">ready_to_shutdown_rostest</rosparam>
 </launch>

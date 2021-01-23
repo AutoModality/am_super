@@ -1,7 +1,6 @@
 <launch>
-    <node pkg="am_super" type="am_super" name="am_super" output="screen">
-        <rosparam command="load" file="$(dirname)/manual_to_disarming_rostest.yaml"/>
-    </node>
-    <test test-name="manual_to_disarming_rostest" pkg="am_super" type="manual_to_disarming_rostest" time-limit="20">
-    </test>
+    <include file="$(find am_super)/launch/am_super.launch" />
+    <test test-name="manual_to_disarming_rostest" pkg="am_super" type="manual_to_disarming_rostest" time-limit="20"/>
+    <rosparam param="/am_super/manifest">manual_to_disarming_rostest</rosparam>
+    <rosparam param="/manual_to_disarming_rostest/target_node_name">manual_to_disarming_rostest</rosparam>
 </launch>

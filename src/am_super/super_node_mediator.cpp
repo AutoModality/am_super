@@ -198,7 +198,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
 
 bool SuperNodeMediator::forceTransition(StateTransition transition)
 {
-  return transition.to_state == SuperState::MANUAL;
+  return transition.to_state == SuperState::MANUAL || transition.to_state == SuperState::SHUTDOWN;
 }
 
 bool SuperNodeMediator::lifeCycleNotYetImplemented(string node_name)

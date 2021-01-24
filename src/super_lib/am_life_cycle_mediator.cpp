@@ -101,7 +101,10 @@ bool AMLifeCycleMediator::setStatus(const LifeCycleStatus& status, LifeCycleInfo
   if (status < AMLifeCycleMediator::FIRST_STATUS || status > AMLifeCycleMediator::LAST_STATUS) 
     return false;
 
-  info.status = status;
+  if(info.status != LifeCycleStatus::ERROR)
+  {
+    info.status = status;
+  }
   return true;
 }
 LifeCycleStatus AMLifeCycleMediator::getStatus(const LifeCycleInfo& info) const

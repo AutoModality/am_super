@@ -198,7 +198,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
 
 bool SuperNodeMediator::forceTransition(StateTransition transition)
 {
-  return transition.to_state == SuperState::MANUAL;
+  return transition.to_state == SuperState::MANUAL || transition.to_state == SuperState::SHUTDOWN;
 }
 
 bool SuperNodeMediator::lifeCycleNotYetImplemented(string node_name)
@@ -264,7 +264,7 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
       else if (node.status == LifeCycleStatus::ERROR)
       {
         error_message = "[AA0A] check failed: node status is ERROR: " + node.name;
-        success = false;
+        //if check method passes and we are in error, we want to pass
       }
     }
     else

@@ -215,13 +215,13 @@ TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_CheckReturnsFalseIsFailure
   assertAllManifestedNodesCheck(false, node, false, "[2OQ0]");
 }
 
-TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_ErrorStatusReturnsFalse)
+TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_ErrorStatusReturnsTrueButHasErrorMessage)
 {
   SuperNodeMediator::SuperNodeInfo node;
   node.manifested = true;
   node.online = true;
   node.status = LifeCycleStatus::ERROR;
-  assertAllManifestedNodesCheck(false, node, true, "[AA0A]");
+  assertAllManifestedNodesCheck(true, node, true, "[AA0A]");
 }
 
 TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_FlightControllerLifeCycleNotYetImplementedSkipsCheck)

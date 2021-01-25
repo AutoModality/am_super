@@ -80,33 +80,34 @@ TEST_F(SuperStateMediatorTest, allowsTransition_ReadyToArmingAndShutdownAllowed)
 
 TEST_F(SuperStateMediatorTest, allowsTransition_ArmingToArmedAndReadyAllowed)
 {
-  std::vector<SuperState> allowed{ SuperState::ARMED, SuperState::READY };
+  std::vector<SuperState> allowed{ SuperState::ARMED, SuperState::READY, SuperState::SHUTDOWN};
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::ARMING, allowed);
 }
 
 TEST_F(SuperStateMediatorTest, allowsTransition_ArmedToAutoAndDisarmingAllowed)
 {
-  std::vector<SuperState> allowed{ SuperState::DISARMING, SuperState::AUTO };
+  std::vector<SuperState> allowed{ SuperState::DISARMING, SuperState::AUTO, SuperState::SHUTDOWN};
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::ARMED, allowed);
 }
 
 TEST_F(SuperStateMediatorTest, allowsTransition_HoldToExceptionStates)
 {
-  std::vector<SuperState> allowed{ SuperState::ABORT, SuperState::MANUAL };
+  std::vector<SuperState> allowed{ SuperState::ABORT, SuperState::MANUAL, SuperState::SHUTDOWN};
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::HOLD, allowed);
 }
 
 TEST_F(SuperStateMediatorTest, allowsTransition_AbortToDisarmingAndManualAllowed)
 {
-  std::vector<SuperState> allowed{ SuperState::DISARMING, SuperState::MANUAL };
+  std::vector<SuperState> allowed{ SuperState::DISARMING, SuperState::MANUAL, SuperState::SHUTDOWN};
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::ABORT, allowed);
 }
 
-TEST_F(SuperStateMediatorTest, allowsTransition_OnlyManualToDisarmingIsAllowed)
+TEST_F(SuperStateMediatorTest, allowsTransition_ManualToDisarmingAndShutdownIsAllowed)
 {
-  ASSERT_SINGLE_STATE_ALLOWED(SuperState::MANUAL, SuperState::DISARMING);
+  std::vector<SuperState> allowed{SuperState::DISARMING, SuperState::SHUTDOWN};
+  ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::MANUAL, allowed);
 }
 
 TEST_F(SuperStateMediatorTest, allowsTransition_ShutdownToOffAllowed)
@@ -125,13 +126,13 @@ TEST_F(SuperStateMediatorTest, allowsTransition_InvalidStateHandled)
 TEST_F(SuperStateMediatorTest, allowsTransition_AutoToManyAllowed)
 {
   std::vector<SuperState> allowed{ SuperState::HOLD, SuperState::ABORT, SuperState::DISARMING, SuperState::SEMI_AUTO,
-                                   SuperState::MANUAL };
+                                   SuperState::MANUAL, SuperState::SHUTDOWN };
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::AUTO, allowed);
 }
 TEST_F(SuperStateMediatorTest, allowsTransition_SemiAutoToManyAllowed)
 {
-  std::vector<SuperState> allowed{ SuperState::AUTO, SuperState::HOLD, SuperState::ABORT, SuperState::MANUAL };
+  std::vector<SuperState> allowed{ SuperState::AUTO, SuperState::HOLD, SuperState::ABORT, SuperState::MANUAL, SuperState::SHUTDOWN };
 
   ASSERT_MULTIPLE_STATES_ALLOWED(SuperState::SEMI_AUTO, allowed);
 }

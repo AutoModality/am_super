@@ -281,6 +281,11 @@ public:
    */
   bool transitionIsValid(const StateTransition&);
 
+  /**
+   * @returns true - if we are allowed to transition to this state regardless of the state we are currently in
+   */
+  bool forceTransition(const SuperState& to_state);
+
 private:
   /** name of supervisor node */
   const std::string SUPER_NODE_NAME;
@@ -295,7 +300,7 @@ private:
   /** @brief temporary hack to allow manifested nodes to not halt transitions.*/
   bool lifeCycleNotYetImplemented(string node_name);
 
-  bool forceTransition(StateTransition transition);
+  
 };
 }
 

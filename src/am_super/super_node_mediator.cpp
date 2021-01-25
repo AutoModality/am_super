@@ -170,7 +170,7 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
 
       //transition to new state if checks passed or forced
       bool checks_passed = check_results.first;
-      if (checks_passed || forceTransition(transition))
+      if (checks_passed || forceTransition(transition.to_state))
       {
         transition_instructions.ready_for_transition = true;
         transition_instructions.new_state = transition.to_state;
@@ -196,9 +196,9 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
 }
 
 
-bool SuperNodeMediator::forceTransition(StateTransition transition)
+bool SuperNodeMediator::forceTransition(const SuperState& to_state)
 {
-  return transition.to_state == SuperState::MANUAL || transition.to_state == SuperState::SHUTDOWN;
+  return to_state == SuperState::MANUAL || to_state == SuperState::SHUTDOWN;
 }
 
 bool SuperNodeMediator::lifeCycleNotYetImplemented(string node_name)

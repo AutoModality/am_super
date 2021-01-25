@@ -215,7 +215,7 @@ if (CATKIN_ENABLE_TESTING)
     ready_to_shutdown semi_auto_to_manual)
   foreach(TEST_NAME ${TEST_NAMES})
     add_rostest_gtest(${TEST_NAME}_rostest rostest/${TEST_NAME}/${TEST_NAME}_rostest.test rostest/${TEST_NAME}/${TEST_NAME}_rostest.cpp)
-  target_link_libraries(${TEST_NAME}_rostest ${catkin_LIBRARIES} super_lib)
+    target_link_libraries(${TEST_NAME}_rostest ${catkin_LIBRARIES} super_lib)
   endforeach()
 
   # Create a target ${PROJECT_NAME}_coverage_report

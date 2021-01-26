@@ -3,7 +3,7 @@
 class ReadyToShutdown : public RostestBase, am::AMLifeCycle
 {
 protected:
-  ReadyToShutdown() : RostestBase(ros::this_node::getName()) {}
+  ReadyToShutdown() : RostestBase() {}
 };
 
 TEST_F(ReadyToShutdown, testState_SuccessfulFlight)

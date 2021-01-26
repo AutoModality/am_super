@@ -1,7 +1,14 @@
 <launch>
-    <node pkg="am_super" type="am_super" name="am_super" output="screen">
-        <rosparam command="load" file="$(dirname)/ready_to_shutdown_rostest.yaml"/>
-    </node>
-    <test test-name="ready_to_shutdown_rostest" pkg="am_super" type="ready_to_shutdown_rostest" time-limit="20">
-    </test>
+  <!-- constant value to reference test name -->
+  <arg name="TEST_NAME" value="ready_to_shutdown_rostest"/>
+
+  <!-- include super node and pass in this test node as manifest -->
+  <include file="$(find am_super)/launch/am_super.launch">
+    <arg name="manifest_param" value="$(arg TEST_NAME)"/>
+  </include>
+
+  <!-- create node with test name and pass in the name as target_node_name -->
+  <test test-name="$(arg TEST_NAME)" pkg="am_super" type="$(arg TEST_NAME)" time-limit="20">
+    <param name="target_node_name" value="$(arg TEST_NAME)"/>
+  </test>
 </launch>

@@ -3,7 +3,7 @@
 class ArmedToReady : public RostestBase, am::AMLifeCycle
 {
 protected:
-  ArmedToReady() : RostestBase() {}
+  ArmedToReady() : RostestBase(ros::this_node::getName()) {}
 };
 
 TEST_F(ArmedToReady, testState_ArmedToReady)

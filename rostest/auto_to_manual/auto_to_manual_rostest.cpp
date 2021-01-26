@@ -3,7 +3,7 @@
 class AutoToManual : public RostestBase, am::AMLifeCycle
 {
 protected:
-  AutoToManual() : RostestBase() {}
+  AutoToManual() : RostestBase(ros::this_node::getName()) {}
 };
 
 TEST_F(AutoToManual, testState_SuccessfulFlight)

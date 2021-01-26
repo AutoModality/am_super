@@ -3,7 +3,7 @@
 class SemiAutoToAuto : public RostestBase, am::AMLifeCycle
 {
 protected:
-  SemiAutoToAuto() : RostestBase() {}
+  SemiAutoToAuto() : RostestBase(ros::this_node::getName()) {}
 };
 
 TEST_F(SemiAutoToAuto, testState_SuccessfulFlight)

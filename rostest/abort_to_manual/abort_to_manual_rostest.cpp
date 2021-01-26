@@ -3,7 +3,7 @@
 class AbortToManual : public RostestBase, am::AMLifeCycle
 {
 protected:
-  AbortToManual() : RostestBase() {}
+  AbortToManual() : RostestBase(ros::this_node::getName()) {}
 };
 
 TEST_F(AbortToManual, testState_AbortToDisarming)

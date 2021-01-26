@@ -3,7 +3,7 @@
 class AutoToAbort : public RostestBase, am::AMLifeCycle
 {
 protected:
-  AutoToAbort() : RostestBase() {}
+  AutoToAbort() : RostestBase(ros::this_node::getName()) {}
 };
 
 TEST_F(AutoToAbort, testState_SuccessfulFlight)

@@ -3,7 +3,7 @@
 class LifeCycleErrorTest : public RostestBase, public am::AMLifeCycle
 {
 protected:
-  LifeCycleErrorTest() : RostestBase(ros::this_node::getName()) {}
+  LifeCycleErrorTest() : RostestBase() {}
 };
 
 TEST_F(LifeCycleErrorTest, testStatus_Error)

@@ -3,7 +3,7 @@
 class ManualToDisarming : public RostestBase, am::AMLifeCycle
 {
 protected:
-  ManualToDisarming() : RostestBase(ros::this_node::getName()) {}
+  ManualToDisarming() : RostestBase() {}
 };
 
 TEST_F(ManualToDisarming, testState_SuccessfulFlight)

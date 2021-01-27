@@ -1,7 +1,8 @@
-<?xml version="1.0" ?>
 <launch>
-    <node pkg="am_super" type="am_super" name="am_super" output="screen">
-    	<rosparam command="load" file="$(find am_super)/launch/am_super.yaml"/>    	
-    </node>
+  <!-- pass manifest from arg into super -->
+  <arg name="manifest_param" default=""/>
+  <node pkg="am_super" type="am_super" name="am_super" output="screen">
+    <param name="manifest" value="$(arg manifest_param)"/>
+  </node>
 </launch>
 

@@ -1,40 +1,21 @@
 #include <am_rostest_lib/am_rostest.h>
 
-class LifeCycleErrorTest : public RostestBase, public am::AMLifeCycle
+class LifeCycleErrorTestWithoutStats : public RostestBase, public am::AMLifeCycle
 {
 protected:
-  class TestStat
-  {
-  public:
-    friend class LifeCycleErrorTest;
-
-    AMStat stat1 = AMStat("s1", "Stat 1", 0, 1);
-
-
-    TestStat(AMStatList &stat_list)
-    {
-      stat_list.add(&stat1);
-    }
-  };
-
-  TestStat stats_;
-
-  LifeCycleErrorTest() : 
-    stats_(stats_list_),
-    RostestBase() 
+  LifeCycleErrorTestWithoutStats() : RostestBase() 
   {}
 };
 
-TEST_F(LifeCycleErrorTest, testStatus_Error)
+TEST_F(LifeCycleErrorTestWithoutStats, testStatus_Error)
 {
   waitUntil(LifeCycleState::CONFIGURING);
   waitUntil(LifeCycleState::INACTIVE);
   waitUntilMissionState(brain_box_msgs::VxState::READY);
   
-  //stat value initially 0, exceed 0 for warn and 1 for error according to TestStat
-  stats_.stat1++;
+  setStatus(LifeCycleStatus::WARN);
   waitUntilStatus(LifeCycleStatus::WARN);
-  stats_.stat1++;
+  setStatus(LifeCycleStatus::ERROR);
   waitUntilStatus(LifeCycleStatus::ERROR);
 
   waitUntil(LifeCycleState::ERROR_PROCESSING);

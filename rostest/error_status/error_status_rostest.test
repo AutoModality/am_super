@@ -1,7 +1,6 @@
 <launch>
-    <node pkg="am_super" type="am_super" name="am_super" output="screen">
-        <rosparam command="load" file="$(dirname)/error_status_rostest.yaml"/>
-    </node>
-    <test test-name="error_status_rostest" pkg="am_super" type="error_status_rostest" time-limit="20">
-    </test>
+  <!-- include test file and pass in this test node name -->
+  <include file="$(find am_super)/rostest/am_super_rostest.test">
+    <arg name="test_name" value="error_status_rostest"/>
+  </include>
 </launch>

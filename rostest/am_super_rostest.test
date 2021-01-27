@@ -1,0 +1,14 @@
+<launch>
+  <arg name="test_name"/>
+
+  <!-- include super node and pass in this test node as manifest -->
+  <include file="$(find am_super)/launch/am_super.launch">
+    <arg name="manifest_param" value="$(arg test_name)"/>
+  </include>
+
+  <!-- create node with test name and pass in the name as target_node_name -->
+  <test test-name="$(arg test_name)" pkg="am_super" type="$(arg test_name)" time-limit="20">
+    <param name="target_node_name" value="$(arg test_name)"/>
+  </test>
+
+</launch>

@@ -1,14 +1,6 @@
 <launch>
-  <!-- constant value to reference test name -->
-  <arg name="TEST_NAME" value="ready_to_shutdown_rostest"/>
-
-  <!-- include super node and pass in this test node as manifest -->
-  <include file="$(find am_super)/launch/am_super.launch">
-    <arg name="manifest_param" value="$(arg TEST_NAME)"/>
+  <!-- include test file and pass in this test node name -->
+  <include file="$(find am_super)/rostest/am_super_rostest.test">
+    <arg name="test_name" value="ready_to_shutdown_rostest"/>
   </include>
-
-  <!-- create node with test name and pass in the name as target_node_name -->
-  <test test-name="$(arg TEST_NAME)" pkg="am_super" type="$(arg TEST_NAME)" time-limit="20">
-    <param name="target_node_name" value="$(arg TEST_NAME)"/>
-  </test>
 </launch>

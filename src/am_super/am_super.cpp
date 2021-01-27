@@ -606,8 +606,9 @@ private:
   {
     ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << " --> "
                                                                             << state_mediator_.stateToString(state));
-
-    bool legal = state_mediator_.allowsTransition(supervisor_.system_state, state);
+    bool legal = true;
+    if(!node_mediator_.forceTransition(state))
+      legal = state_mediator_.allowsTransition(supervisor_.system_state, state);
 
     if (!legal)
     {

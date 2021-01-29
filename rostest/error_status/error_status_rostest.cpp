@@ -36,8 +36,7 @@ TEST_F(LifeCycleErrorTest, testStatus_Error)
   waitUntilStatus(LifeCycleStatus::WARN);
   stats_.stat1++;
   waitUntilStatus(LifeCycleStatus::ERROR);
-
-  waitUntil(LifeCycleState::ERROR_PROCESSING);
+  
   waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN);
 }
 

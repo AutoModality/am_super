@@ -13,12 +13,10 @@ TEST_F(LifeCycleErrorTestWithoutStats, testStatus_Error)
   waitUntil(LifeCycleState::INACTIVE);
   waitUntilMissionState(brain_box_msgs::VxState::READY);
   
-  setStatus(LifeCycleStatus::WARN);
-  waitUntilStatus(LifeCycleStatus::WARN);
-  setStatus(LifeCycleStatus::ERROR);
+  error();
   waitUntilStatus(LifeCycleStatus::ERROR);
-
   waitUntil(LifeCycleState::ERROR_PROCESSING);
+  
   waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN);
 }
 

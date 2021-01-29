@@ -219,6 +219,7 @@ void AMLifeCycle::error()
   {
     ROS_INFO_STREAM("current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
     setState(LifeCycleState::ERROR_PROCESSING);
+    setStatus(LifeCycleStatus::ERROR);
     onError();
   }
 }
@@ -335,13 +336,6 @@ LifeCycleStatus AMLifeCycle::getStatus() const
 
 bool AMLifeCycle::setStatus(const LifeCycleStatus status)
 {
-  //if this is the first time we receive error status
-  if(life_cycle_info_.status != LifeCycleStatus::ERROR && status == LifeCycleStatus::ERROR)
-  {
-    //transition into ERROR_PROCESSING and process error (error processing currently always transitions into FINALIZED)
-    error();
-  }
-  
   //if we are in error and want to leave it
   if(life_cycle_info_.status == LifeCycleStatus::ERROR && status != LifeCycleStatus::ERROR)
   {

@@ -217,13 +217,13 @@ if (CATKIN_ENABLE_TESTING)
                  auto_to_abort 
                  auto_to_manual 
                  auto_to_semiauto 
+                 error_configure_tolerance
                  error_status 
                  error_status_without_stats 
-                 error_configure_tolerance
                  manual_to_disarming 
                  primary
-                ready_to_shutdown 
-                semi_auto_to_manual
+                 ready_to_shutdown 
+                 semi_auto_to_manual
   )
   foreach(TEST_NAME ${TEST_NAMES})
     add_rostest_gtest(${TEST_NAME}_rostest rostest/${TEST_NAME}/${TEST_NAME}_rostest.test rostest/${TEST_NAME}/${TEST_NAME}_rostest.cpp)

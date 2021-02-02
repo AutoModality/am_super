@@ -8,6 +8,9 @@
 
 namespace am
 {
+/**
+ * Specialized collection assisting with managing multiple stats simultaneously.
+ */
 class AMStatList
 {
 protected:

@@ -211,8 +211,20 @@ if (CATKIN_ENABLE_TESTING)
   find_package(rostest REQUIRED)
 
   #follow test naming convention of files in a folder and the cpp and launch have the test name with _rostest
-  set(TEST_NAMES abort_to_disarming abort_to_manual armed_to_ready auto_to_abort auto_to_manual auto_to_semiauto error_status error_status_without_stats manual_to_disarming primary
-    ready_to_shutdown semi_auto_to_manual)
+  set(TEST_NAMES abort_to_disarming 
+                 abort_to_manual 
+                 armed_to_ready 
+                 auto_to_abort 
+                 auto_to_manual 
+                 auto_to_semiauto 
+                 error_status 
+                 error_status_without_stats 
+                 error_configure_tolerance
+                 manual_to_disarming 
+                 primary
+                ready_to_shutdown 
+                semi_auto_to_manual
+  )
   foreach(TEST_NAME ${TEST_NAMES})
     add_rostest_gtest(${TEST_NAME}_rostest rostest/${TEST_NAME}/${TEST_NAME}_rostest.test rostest/${TEST_NAME}/${TEST_NAME}_rostest.cpp)
     target_link_libraries(${TEST_NAME}_rostest ${catkin_LIBRARIES} super_lib)

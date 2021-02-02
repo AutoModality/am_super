@@ -5,6 +5,13 @@
 
 namespace am
 {
+
+/**
+ * Additive statics reporting minimum/maximum thresholds where the value is reset 
+ * upon every Life Cycle heartbeat of 1 second. This is used for frequency validation
+ * like rostopic hz shows.
+ *
+ */ 
 class AMStatReset : public AMStat
 {
 protected:

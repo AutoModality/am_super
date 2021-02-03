@@ -86,13 +86,7 @@ void AMLifeCycle::lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr m
                    std::bind(&AMLifeCycle::onCleanup, this));
         break;
       case LifeCycleCommand::CONFIGURE:
-        //mark the configuration start time once 
-        if(getState() != LifeCycleState::CONFIGURING)
-        {
-          configure_start_time_=ros::Time().now();
-        }
-        transition("configure", LifeCycleState::UNCONFIGURED, LifeCycleState::CONFIGURING, LifeCycleState::INACTIVE,
-                   std::bind(&AMLifeCycle::onConfigure, this));
+        configure();
         break;
       case LifeCycleCommand::CREATE:
         ROS_WARN_STREAM("illegal command " << life_cycle_mediator_.commandToString(LifeCycleCommand::CREATE));
@@ -195,6 +189,17 @@ void AMLifeCycle::logState()
 void AMLifeCycle::doDeactivate(bool success)
 {
   doTransition("deactivation", success, LifeCycleState::INACTIVE, LifeCycleState::ACTIVE);
+}
+
+void AMLifeCycle::configure()
+{
+  //mark the configuration start time once 
+  if(getState() != LifeCycleState::CONFIGURING)
+  {
+    configure_start_time_=ros::Time().now();
+  }
+  transition("configure", LifeCycleState::UNCONFIGURED, LifeCycleState::CONFIGURING, LifeCycleState::INACTIVE,
+  std::bind(&AMLifeCycle::onConfigure, this));
 }
 
 void AMLifeCycle::destroy()

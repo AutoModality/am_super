@@ -51,6 +51,16 @@ class AMLifeCycle
                     LifeCycleState new_state, std::function<void(void)> on_function);
     void doTransition(std::string transition_name, bool success, LifeCycleState success_state,
                       LifeCycleState failure_state);
+    
+    //internal methods called to begin the transition.  See on* for corresponding definitions.
+    void configure();
+    void activate();
+    void deactivate();
+    void shutdown();
+    void destroy();
+    void cleanup();
+    void sendNodeUpdate();
+
   protected:
     std::string node_name_;
 
@@ -75,11 +85,12 @@ class AMLifeCycle
      */
     virtual ~AMLifeCycle();
 
+    //on* overriden by implementing node to do what is needed to satisfy the objective of the method
+    //do* is called by the implementing node when the objective attempt has completed and status is to be reported
     /**
      * @brief Function to be defined by the user.
      *        Called at the end of transition from INACTIVE to ACTIVE.
      */
-    void activate();
     virtual void onActivate();
     void doActivate(bool success);
 
@@ -87,7 +98,6 @@ class AMLifeCycle
      * @brief Function to be defined by the user.
      *        Called at the end of transition from INACTIVE to UNCONFIGURED.
      */
-    void cleanup();
     virtual void onCleanup();
     void doCleanup(bool success);
 
@@ -95,7 +105,6 @@ class AMLifeCycle
      * @brief Function to be defined by the user.
      *        Called at the end of transition from UNCONFIGURED to INACTIVE.
      */
-    void configure();
     virtual void onConfigure();
     void doConfigure(bool success);
     
@@ -108,7 +117,6 @@ class AMLifeCycle
      * @brief Function to be defined by the user.
      *        Called at the end of transition from ACTIVE to INACTIVE.
      */
-    void deactivate();
     virtual void onDeactivate();
     void doDeactivate(bool success);
 
@@ -116,15 +124,18 @@ class AMLifeCycle
      * @brief Function to be defined by the user.
      *        Called at the end of transition from FINALIZED to power off.
      */
-    virtual void destroy();
     virtual void onDestroy();
     void doDestroy(bool success);
+
+    /**Called by all when an error has happened.  Will set the status to ERROR and state to ERROR_PROCESSING
+     * which will eventually lead to FINALIZED.
+     */
+    void error();
 
     /**
      * @brief Function to be defined by the user.
      *        Called at any time and transitions to UNCONFIGURED or FINALIZED.
      */
-    void error();
     virtual void onError();
     void doError(bool success);
 
@@ -132,13 +143,12 @@ class AMLifeCycle
      * @brief Function to be defined by the user.
      *        Called at the end of transition from INACTIVE to FINALIZED.
      */
-    void shutdown();
     virtual void onShutdown();
     void doShutdown(bool success);
 
     virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw);
     virtual void heartbeatCB(const ros::TimerEvent& event);
-    void sendNodeUpdate();
+
     void lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg);
 
     /**Specific parts of the lifecycle where nodes have responsibilities.*/

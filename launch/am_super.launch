@@ -4,4 +4,3 @@
     	<rosparam command="load" file="$(find am_super)/launch/am_super.yaml"/>    	
     </node>
 </launch>
-

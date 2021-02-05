@@ -3,7 +3,7 @@
 class LifeCycleNodeTest : public RostestBase, am::AMLifeCycle
 {
 protected:
-  LifeCycleNodeTest() : RostestBase(ros::this_node::getName()) {}
+  LifeCycleNodeTest() : RostestBase() {}
 };
 
 TEST_F(LifeCycleNodeTest, testState_SuccessfulFlight)

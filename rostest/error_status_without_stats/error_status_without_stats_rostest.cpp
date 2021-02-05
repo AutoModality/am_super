@@ -1,19 +1,23 @@
 #include <am_rostest_lib/am_rostest.h>
 
-class ReadyToShutdown : public RostestBase, am::AMLifeCycle
+class LifeCycleErrorTestWithoutStats : public RostestBase, public am::AMLifeCycle
 {
 protected:
-  ReadyToShutdown() : RostestBase() {}
+  LifeCycleErrorTestWithoutStats() : RostestBase() 
+  {}
 };
 
-TEST_F(ReadyToShutdown, testState_SuccessfulFlight)
+TEST_F(LifeCycleErrorTestWithoutStats, testStatus_Error)
 {
   waitUntil(LifeCycleState::CONFIGURING);
   waitUntil(LifeCycleState::INACTIVE);
   waitUntilMissionState(brain_box_msgs::VxState::READY);
-  RostestBase::shutdown(); //since lifeCycle also has a shutdown, need to be specific
+  
+  error();
+  waitUntilStatus(LifeCycleStatus::ERROR);
+  waitUntil(LifeCycleState::ERROR_PROCESSING);
+  
   waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN);
-  //the test launch file timeout acts as an assertion if any wait is blocked and unfinishing
 }
 
 int main(int argc, char** argv)

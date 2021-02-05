@@ -26,6 +26,9 @@ class AMLifeCycle
 
     void setState(const LifeCycleState state);
 
+    /* if status is valid, then set this status to status */
+    bool setStatus(const LifeCycleStatus status);
+
     void transition(std::string transition_name, LifeCycleState initial_state, LifeCycleState transition_state,
                     LifeCycleState new_state, std::function<void(void)> on_function);
     void doTransition(std::string transition_name, bool success, LifeCycleState success_state,
@@ -113,7 +116,7 @@ class AMLifeCycle
 
     LifeCycleState getState() const;
     LifeCycleStatus getStatus() const;
-    bool setStatus(const LifeCycleStatus status);
+    
     double getThrottleS() const;
     void setThrottleS(const double throttleS);
     double getThrottle();

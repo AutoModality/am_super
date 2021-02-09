@@ -17,5 +17,23 @@ protected:
 
 TEST_F(AMStatTest, compoundStatus)
 {
+  LifeCycleStatus status = LifeCycleStatus::OK;
 
+  stat_.compoundStatus(status, LifeCycleStatus::OK);
+  ASSERT_EQ(status, LifeCycleStatus::OK);
+
+  stat_.compoundStatus(status, LifeCycleStatus::WARN);
+  ASSERT_EQ(status, LifeCycleStatus::WARN);
+
+  stat_.compoundStatus(status, LifeCycleStatus::OK);
+  ASSERT_EQ(status, LifeCycleStatus::WARN);
+
+  stat_.compoundStatus(status, LifeCycleStatus::ERROR);
+  ASSERT_EQ(status, LifeCycleStatus::ERROR);
+
+  stat_.compoundStatus(status, LifeCycleStatus::OK);
+  ASSERT_EQ(status, LifeCycleStatus::ERROR);
+
+  stat_.compoundStatus(status, LifeCycleStatus::WARN);
+  ASSERT_EQ(status, LifeCycleStatus::ERROR);
 }

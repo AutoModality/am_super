@@ -8,10 +8,10 @@ class AMStatTest : public ::testing::Test
 {
 protected:
   AMStat stat_;
-  string short_name = "s1";
-  string long_name = "Stat 1";
-  uint32_t max_warn = 5;
-  uint32_t max_error = 10;
+  const string short_name = "s1";
+  const string long_name = "Stat 1";
+  const uint32_t max_warn = 5;
+  const uint32_t max_error = 10;
   AMStatTest(): stat_("s1", "Stat 1", 5, 10) {}
 };
 
@@ -43,4 +43,14 @@ TEST_F(AMStatTest, reset)
   stat_ = 3;
   stat_.reset();
   ASSERT_EQ(stat_.getCount(), 3);
+}
+
+TEST_F(AMStatTest, getShortName)
+{
+  ASSERT_EQ(short_name, stat_.getShortName());
+}
+
+TEST_F(AMStatTest, getLongName)
+{
+  ASSERT_EQ(long_name, stat_.getLongName());
 }

@@ -15,24 +15,7 @@ protected:
   AMStatTest(): stat_("s1", "Stat 1", 5, 10) {}
 };
 
-TEST_F(AMStatTest, constructor)
+TEST_F(AMStatTest, compoundStatus)
 {
-  ASSERT_EQ(stat_.getCount(), 0);
-  ASSERT_EQ(stat_.getShortName(), short_name);
-  ASSERT_EQ(stat_.getLongName(), long_name);
-  ASSERT_EQ(stat_.getMaxWarn(), max_warn);
-  ASSERT_EQ(stat_.getMaxError(), max_error);
-}
 
-TEST_F(AMStatTest, process_OK)
-{
-  LifeCycleStatus status = stat_.process(1, 1);
-  ASSERT_EQ(status, LifeCycleStatus::OK);
-}
-
-TEST_F(AMStatTest, process_WARN)
-{
-  stat_ = 6;
-  LifeCycleStatus status = stat_.process(1, 1);
-  ASSERT_EQ(status, LifeCycleStatus::WARN);
 }

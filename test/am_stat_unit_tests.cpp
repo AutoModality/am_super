@@ -38,6 +38,18 @@ TEST_F(AMStatTest, compoundStatus)
   ASSERT_EQ(status, LifeCycleStatus::ERROR);
 }
 
+TEST_F(AMStatTest, operators)
+{
+  const int VALUE = 1;
+
+  stat_ = VALUE;
+  ASSERT_EQ(stat_.getCount(), VALUE);
+  stat_++;
+  ASSERT_EQ(stat_.getCount(), VALUE + 1);
+  stat_ += 2;
+  ASSERT_EQ(stat_.getCount(), VALUE + 3);
+}
+
 TEST_F(AMStatTest, reset)
 {
   stat_ = 3;
@@ -53,4 +65,11 @@ TEST_F(AMStatTest, getShortName)
 TEST_F(AMStatTest, getLongName)
 {
   ASSERT_EQ(long_name, stat_.getLongName());
+}
+
+TEST_F(AMStatTest, add)
+{
+  stat_ = 3;
+  stat_.add(2);
+  ASSERT_EQ(stat_.getCount(), 5);
 }

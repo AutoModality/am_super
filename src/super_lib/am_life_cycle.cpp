@@ -321,7 +321,14 @@ void AMLifeCycle::addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw
 {
   stats_list_.addStatistics(dsw);
   LifeCycleStatus status = stats_list_.process(throttle_info_.warn_throttle_s, throttle_info_.error_throttle_s);
-  setStatus(status);
+  if(life_cycle_mediator_.statusError(status))
+  {
+    error();
+  }
+  else
+  {
+    setStatus(status);
+  }
   dsw.summary((uint8_t)status, "update");
 }
 

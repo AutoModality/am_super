@@ -5,6 +5,10 @@
 
 namespace am
 {
+
+/** Calculates the recent average, min and max of a value, over the past second since it
+ * is reset upon the Life Cycle heartbeat.
+ */
 class AMStatAve : public AMStatReset
 {
 protected:

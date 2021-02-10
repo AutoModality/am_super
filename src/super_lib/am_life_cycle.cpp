@@ -18,8 +18,9 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
   std::string init_state_str;
   //FIXME: This string should come from the enum
   std::string default_state = "UNCONFIGURED";
-  ros::param::param<std::string>("~init_state", init_state_str, default_state);
-  ROS_INFO_STREAM("init_state = " << init_state_str);
+  param<std::string>("init_state", init_state_str, default_state);
+  param<int>("configure_tolerance_s", configure_tolerance_s, 10);
+
   LifeCycleState init_state;
   if (life_cycle_mediator_.stringToState(init_state_str, init_state))
   {
@@ -48,6 +49,8 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
     node_name_ = ros::this_node::getName();
   }
 
+
+
   // subs should always come at the end
   /**
    * node status via LifeCycle
@@ -55,10 +58,19 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
   lifecycle_sub_ = nh_.subscribe("/node_lifecycle", 100, &AMLifeCycle::lifecycleCB, this);
 
   heartbeat_timer_ = nh_.createTimer(ros::Duration(1.0), &AMLifeCycle::heartbeatCB, this);
+
 }
 
 AMLifeCycle::~AMLifeCycle()
 {
+}
+
+template<typename T>
+bool AMLifeCycle::param(const std::string& param_name, T& param_val, const T& default_val) const
+{
+    bool result = nh_.param<T>(param_name, param_val, default_val);
+    ROS_INFO_STREAM(param_name << " = " << param_val);
+    return result;
 }
 
 void AMLifeCycle::lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg)
@@ -79,8 +91,7 @@ void AMLifeCycle::lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr m
                    std::bind(&AMLifeCycle::onCleanup, this));
         break;
       case LifeCycleCommand::CONFIGURE:
-        transition("configure", LifeCycleState::UNCONFIGURED, LifeCycleState::CONFIGURING, LifeCycleState::INACTIVE,
-                   std::bind(&AMLifeCycle::onConfigure, this));
+        configure();
         break;
       case LifeCycleCommand::CREATE:
         ROS_WARN_STREAM("illegal command " << life_cycle_mediator_.commandToString(LifeCycleCommand::CREATE));
@@ -157,13 +168,15 @@ void AMLifeCycle::doCleanup(bool success)
   logState();
 }
 
+
 void AMLifeCycle::onConfigure()
-{
+{ 
   doConfigure(true);
 }
 
 void AMLifeCycle::doConfigure(bool success)
 {
+
   doTransition("configuration", success, LifeCycleState::INACTIVE, LifeCycleState::UNCONFIGURED);
 }
 
@@ -181,6 +194,17 @@ void AMLifeCycle::logState()
 void AMLifeCycle::doDeactivate(bool success)
 {
   doTransition("deactivation", success, LifeCycleState::INACTIVE, LifeCycleState::ACTIVE);
+}
+
+void AMLifeCycle::configure()
+{
+  //mark the configuration start time once 
+  if(getState() != LifeCycleState::CONFIGURING)
+  {
+    configure_start_time_=ros::Time().now();
+  }
+  transition("configure", LifeCycleState::UNCONFIGURED, LifeCycleState::CONFIGURING, LifeCycleState::INACTIVE,
+  std::bind(&AMLifeCycle::onConfigure, this));
 }
 
 void AMLifeCycle::destroy()
@@ -209,15 +233,34 @@ void AMLifeCycle::doDestroy(bool success)
   // TODO: how do we call node destructor and exit main()? raise some type of ROS error?
 }
 
+bool AMLifeCycle::withinConfigureTolerance()
+{
+  bool tolerated = false;
+  //outside of configuring, we have no tolerance
+  if(life_cycle_info_.state == LifeCycleState::CONFIGURING)
+  {
+    ros::Duration duration_since_configure = ros::Time::now() - configure_start_time_;
+    ROS_WARN_STREAM("duration since " << duration_since_configure << " start time " << configure_start_time_);
+    if (duration_since_configure <= ros::Duration(configure_tolerance_s) )
+    {
+      tolerated = true;
+    }
+  }
+  return tolerated;
+}
 void AMLifeCycle::error()
 {
   if (life_cycle_mediator_.redundantError(life_cycle_info_))
   {
-    ROS_DEBUG_STREAM("ignoring redundant error");
+    ROS_DEBUG_STREAM("Error called again, but previously reported. [NLW9]");
+  }
+  else if(withinConfigureTolerance())
+  {
+    ROS_WARN_STREAM_THROTTLE(throttle_info_.warn_throttle_s,"Ignoring error during configure tolerance. [NNLW]");
   }
   else
   {
-    ROS_INFO_STREAM("current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
+    ROS_INFO_STREAM("Error called while in: " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << " [QALE]");
     setState(LifeCycleState::ERROR_PROCESSING);
     setStatus(LifeCycleStatus::ERROR);
     onError();
@@ -293,6 +336,8 @@ void AMLifeCycle::sendNodeUpdate()
   msg.value = "";
   state_pub_.publish(msg);
 }
+
+
 void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
 {
   updater_.force_update();
@@ -312,6 +357,11 @@ void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
 LifeCycleState AMLifeCycle::getState() const
 {
   return life_cycle_mediator_.getState(life_cycle_info_);
+}
+
+const std::string_view& AMLifeCycle::getStateName()
+{
+  return life_cycle_mediator_.stateToString(getState());
 }
 
 void AMLifeCycle::setState(const LifeCycleState state)
@@ -352,6 +402,12 @@ bool AMLifeCycle::setStatus(const LifeCycleStatus status)
     ROS_ERROR_STREAM("illegal status: " << life_cycle_mediator_.statusToString(status));
   }
 }
+
+const std::string_view& AMLifeCycle::getStatusName()
+{
+  return life_cycle_mediator_.statusToString(getStatus());
+}
+
 
 //Is this being used?
 void AMLifeCycle::setThrottleS(const double throttleS)

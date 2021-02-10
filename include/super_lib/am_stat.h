@@ -11,6 +11,18 @@
 
 namespace am
 {
+/**
+ * Additive statistic looking for max thresholds exceeded during the entire Life Cycle.
+ * 
+ * This is the base statistic that looks for max thresholds for warnings and errors compared to the value. 
+ * The value is set or incremented using standard operators (=, +=, ++).
+ *
+ * See others:
+ * 
+ * - AMStatReset has min/max thresholds for frequency checking. 
+ * - AMStatAve is the average of value over count.   
+ * 
+ */
 class AMStat
 {
 protected:

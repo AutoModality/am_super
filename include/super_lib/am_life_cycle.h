@@ -85,6 +85,12 @@ class AMLifeCycle
      */
     virtual ~AMLifeCycle();
 
+    template<typename T>
+
+    /** Exactly like ros::param, but logs INFO level showing the actual value assigned. 
+     */
+    bool param(const std::string& param_name, T& param_val, const T& default_val) const;
+
     //on* overriden by implementing node to do what is needed to satisfy the objective of the method
     //do* is called by the implementing node when the objective attempt has completed and status is to be reported
     /**

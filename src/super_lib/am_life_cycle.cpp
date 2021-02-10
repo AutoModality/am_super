@@ -18,11 +18,8 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
   std::string init_state_str;
   //FIXME: This string should come from the enum
   std::string default_state = "UNCONFIGURED";
-  ros::param::param<std::string>("~init_state", init_state_str, default_state);
-  ROS_INFO_STREAM("init_state = " << init_state_str);
-
-  ros::param::param<int>("~/configure_tolerance_s", configure_tolerance_s, 10);
-  ROS_INFO_STREAM("configure_tolerance_s = " << configure_tolerance_s);
+  param<std::string>("init_state", init_state_str, default_state);
+  param<int>("configure_tolerance_s", configure_tolerance_s, 10);
 
   LifeCycleState init_state;
   if (life_cycle_mediator_.stringToState(init_state_str, init_state))
@@ -66,6 +63,14 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
 
 AMLifeCycle::~AMLifeCycle()
 {
+}
+
+template<typename T>
+bool AMLifeCycle::param(const std::string& param_name, T& param_val, const T& default_val) const
+{
+    bool result = nh_.param<T>(param_name, param_val, default_val);
+    ROS_INFO_STREAM(param_name << " = " << param_val);
+    return result;
 }
 
 void AMLifeCycle::lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg)

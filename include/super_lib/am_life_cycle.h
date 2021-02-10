@@ -13,6 +13,19 @@
 
 namespace am
 {
+/**
+ * Parent for all nodes wishing to report their state for collective management.  
+ * The LifeCycle is generalized to represent all nodes regardless of application.
+ * 
+ * Each node reports is own state, but also receives commands requesting transition.
+ * 
+ * Implementing nodes should override methods appropriate to satisfy the needs of the node.
+ * 
+ * Read more about ROS2 LifeCycle and view the handy diagram.
+ * 
+ * https://automodality.atlassian.net/wiki/spaces/AMROS/pages/901546330/AM+Node+LifeCycle
+ * 
+ */
 class AMLifeCycle
 {
   public:
@@ -24,6 +37,11 @@ class AMLifeCycle
     AMLifeCycleMediator::LifeCycleInfo life_cycle_info_;
     AMLifeCycleMediator::ThrottleInfo throttle_info_;
 
+
+    /**The moment configuration is requested for this node. Used with 
+     * max_configure_seconds_ to allow startup error tolerance.*/
+    ros::Time configure_start_time_;
+
     void setState(const LifeCycleState state);
 
     /* if status is valid, then set this status to status */
@@ -33,8 +51,21 @@ class AMLifeCycle
                     LifeCycleState new_state, std::function<void(void)> on_function);
     void doTransition(std::string transition_name, bool success, LifeCycleState success_state,
                       LifeCycleState failure_state);
+    
+    //internal methods called to begin the transition.  See on* for corresponding definitions.
+    void configure();
+    void activate();
+    void deactivate();
+    void shutdown();
+    void destroy();
+    void cleanup();
+    void sendNodeUpdate();
+
   protected:
     std::string node_name_;
+
+    /**Maximum time errors will be ignored during configuration. */ 
+    int configure_tolerance_s;
 
     diagnostic_updater::Updater updater_;
     AMStatList stats_list_;
@@ -43,6 +74,7 @@ class AMLifeCycle
     ros::Timer heartbeat_timer_;
     ros::Publisher state_pub_;
     ros::Subscriber lifecycle_sub_;
+
     /**
      * @brief Default constructor
      */
@@ -53,11 +85,18 @@ class AMLifeCycle
      */
     virtual ~AMLifeCycle();
 
+    template<typename T>
+
+    /** Exactly like ros::param, but logs INFO level showing the actual value assigned. 
+     */
+    bool param(const std::string& param_name, T& param_val, const T& default_val) const;
+
+    //on* overriden by implementing node to do what is needed to satisfy the objective of the method
+    //do* is called by the implementing node when the objective attempt has completed and status is to be reported
     /**
      * @brief Function to be defined by the user.
      *        Called at the end of transition from INACTIVE to ACTIVE.
      */
-    void activate();
     virtual void onActivate();
     void doActivate(bool success);
 
@@ -65,7 +104,6 @@ class AMLifeCycle
      * @brief Function to be defined by the user.
      *        Called at the end of transition from INACTIVE to UNCONFIGURED.
      */
-    void cleanup();
     virtual void onCleanup();
     void doCleanup(bool success);
 
@@ -73,15 +111,18 @@ class AMLifeCycle
      * @brief Function to be defined by the user.
      *        Called at the end of transition from UNCONFIGURED to INACTIVE.
      */
-    void configure();
     virtual void onConfigure();
     void doConfigure(bool success);
+    
+    /**
+     * @brief true if configuring and within the time allowed to configure
+     */
+    bool withinConfigureTolerance();
 
     /**
      * @brief Function to be defined by the user.
      *        Called at the end of transition from ACTIVE to INACTIVE.
      */
-    void deactivate();
     virtual void onDeactivate();
     void doDeactivate(bool success);
 
@@ -89,15 +130,18 @@ class AMLifeCycle
      * @brief Function to be defined by the user.
      *        Called at the end of transition from FINALIZED to power off.
      */
-    virtual void destroy();
     virtual void onDestroy();
     void doDestroy(bool success);
+
+    /**Called by all when an error has happened.  Will set the status to ERROR and state to ERROR_PROCESSING
+     * which will eventually lead to FINALIZED.
+     */
+    void error();
 
     /**
      * @brief Function to be defined by the user.
      *        Called at any time and transitions to UNCONFIGURED or FINALIZED.
      */
-    void error();
     virtual void onError();
     void doError(bool success);
 
@@ -105,18 +149,23 @@ class AMLifeCycle
      * @brief Function to be defined by the user.
      *        Called at the end of transition from INACTIVE to FINALIZED.
      */
-    void shutdown();
     virtual void onShutdown();
     void doShutdown(bool success);
 
     virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw);
     virtual void heartbeatCB(const ros::TimerEvent& event);
-    void sendNodeUpdate();
+
     void lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg);
 
+    /**Specific parts of the lifecycle where nodes have responsibilities.*/
     LifeCycleState getState() const;
+    /**Simple indication of health */
     LifeCycleStatus getStatus() const;
-    
+    /** @brief string represenation of LifeCycleState*/
+    const std::string_view& getStateName();
+    /** @brief string representation of LifeCycleStatus*/
+    const std::string_view& getStatusName();
+
     double getThrottleS() const;
     void setThrottleS(const double throttleS);
     double getThrottle();

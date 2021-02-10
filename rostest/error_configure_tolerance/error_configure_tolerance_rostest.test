@@ -1,0 +1,6 @@
+<launch>
+  <!-- include test file and pass in this test node name -->
+  <include file="$(find am_super)/rostest/am_super_rostest.test">
+    <arg name="test_name" value="error_configure_tolerance_rostest"/>
+  </include>
+</launch>

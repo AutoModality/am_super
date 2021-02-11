@@ -73,6 +73,11 @@ public:
     }
     return ss.str();
   }
+
+  bool hasStats() const
+  {
+    return stat_list_.empty();
+  }
 };
 
 };  // namespace am

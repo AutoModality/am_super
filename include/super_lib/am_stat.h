@@ -37,6 +37,8 @@ protected:
   bool validate_min = false;
   /**indicates if max values are assigned */
   bool validate_max = false;
+  /**indicates if this stat has received a value since constructed. Using integer for counting samples may overflow*/
+  bool sample_received = false;
 private:
   AMStat();
 
@@ -68,7 +70,7 @@ public:
 
   virtual LifeCycleStatus process(double warn_throttle_s, double error_throttle_s)
   {
-    LifeCycleStatus status = LifeCycleStatus::OK;
+    LifeCycleStatus status = sample_received ? LifeCycleStatus::OK : LifeCycleStatus::ERROR;
 
     if(validate_max)
     {
@@ -131,23 +133,27 @@ public:
   virtual void add(uint32_t adder)
   {
     value_ += adder;
+    sample_received = true;
   }
 
   AMStat& operator++(int)
   {
     value_++;
+    sample_received = true;
     return *this;
   }
 
   AMStat& operator+=(int adder)
   {
     value_ += adder;
+    sample_received = true;
     return *this;
   }
 
   AMStat& operator=(uint32_t assignment)
   {
     value_ = assignment;
+    sample_received = true;
     return *this;
   }
 

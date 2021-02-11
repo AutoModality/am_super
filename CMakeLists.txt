@@ -221,6 +221,7 @@ if (CATKIN_ENABLE_TESTING)
                  error_status 
                  error_status_without_stats 
                  manual_to_disarming 
+                 param
                  primary
                  ready_to_shutdown 
                  semi_auto_to_manual

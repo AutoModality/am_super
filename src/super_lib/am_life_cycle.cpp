@@ -171,7 +171,17 @@ void AMLifeCycle::doCleanup(bool success)
 
 void AMLifeCycle::onConfigure()
 { 
-  doConfigure(true);
+  if(stats_list_.hasStats())
+  {
+    if(stats_list_.process(throttle_info_.warn_throttle_s, throttle_info_.error_throttle_s) == LifeCycleStatus::OK)
+    {
+      doConfigure(true);
+    }
+  }
+  else
+  {
+    doConfigure(true);
+  }
 }
 
 void AMLifeCycle::doConfigure(bool success)

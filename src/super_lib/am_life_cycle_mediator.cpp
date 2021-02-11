@@ -126,6 +126,11 @@ LifeCycleState AMLifeCycleMediator::getState(const LifeCycleInfo& info) const
   return info.state;
 }
 
+bool AMLifeCycleMediator::statusError(const LifeCycleStatus& status) const
+{
+  return status == LifeCycleStatus::ERROR;
+}
+
 const std::vector<LifeCycleCommand> AMLifeCycleMediator::getLifeCycleCommands()
 {
   std::vector<LifeCycleCommand> all;

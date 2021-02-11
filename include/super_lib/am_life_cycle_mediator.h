@@ -79,6 +79,15 @@ class AMLifeCycleMediator
     LifeCycleState getState(const LifeCycleInfo& info) const;
 
     /**
+     * @brief Flag for if status is error
+     * 
+     * @param status current status
+     * 
+     * @returns true - status is error, false otherwise
+     */ 
+    bool statusError(const LifeCycleStatus& status) const;
+
+    /**
      * @brief Converts a LifeCycleCommand into its proper string representation. 
      * If the LifeCycleCommand is not a valid one, returns ""
      * 

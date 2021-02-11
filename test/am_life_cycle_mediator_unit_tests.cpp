@@ -5,24 +5,22 @@
 using namespace am;
 using namespace std;
 
-AMLifeCycleMediator life_cycle_mediator_;
-
 class AMLifeCycleMediatorTest : public ::testing::Test
 {
 protected: 
-  AMLifeCycleMediator life_cycle_mediator;
+  AMLifeCycleMediator life_cycle_mediator_;
 
   void EXPECT_LIFE_CYCLE_STATUS(LifeCycleStatus expected_status,bool expected_success)
   {
     AMLifeCycleMediator::LifeCycleInfo info;
-    bool success = life_cycle_mediator.setStatus(expected_status, info);
+    bool success = life_cycle_mediator_.setStatus(expected_status, info);
     ASSERT_EQ(expected_success, success);
 
     if(success)
     {
-      LifeCycleStatus actual = life_cycle_mediator.getStatus(info);
-      EXPECT_EQ(expected_status, actual) << life_cycle_mediator.statusToString(expected_status) << " not equal to " 
-      << life_cycle_mediator.statusToString(actual);
+      LifeCycleStatus actual = life_cycle_mediator_.getStatus(info);
+      EXPECT_EQ(expected_status, actual) << life_cycle_mediator_.statusToString(expected_status) << " not equal to " 
+      << life_cycle_mediator_.statusToString(actual);
     }
   }
 
@@ -69,6 +67,18 @@ protected:
   }
 };
 
+TEST_F(AMLifeCycleMediatorTest, statusError_LCStatusError)
+{
+  ASSERT_TRUE(life_cycle_mediator_.statusError(LifeCycleStatus::ERROR)) << "statusError() should return true given LCStatus ERROR";
+}
+
+TEST_F(AMLifeCycleMediatorTest, statusError_NotLCStatusError)
+{
+  ASSERT_FALSE(life_cycle_mediator_.statusError(LifeCycleStatus::OK)) << "statusError() should only return true given LCStatus ERROR";
+  ASSERT_FALSE(life_cycle_mediator_.statusError(LifeCycleStatus::WARN)) << "statusError() should only return true given LCStatus ERROR";
+  ASSERT_FALSE(life_cycle_mediator_.statusError((LifeCycleStatus)-4)) << "statusError() should only return true given LCStatus ERROR";
+}
+
 TEST_F(AMLifeCycleMediatorTest, getAndSetStatus_ALL)
 {
   vector<LifeCycleStatus> all = AMLifeCycleMediator::getLifeCycleStatuses();
@@ -93,7 +103,7 @@ TEST_F(AMLifeCycleMediatorTest, setStatus_NoChangeInStatusIfInError)
 {
   AMLifeCycleMediator::LifeCycleInfo info;
   info.status = LifeCycleStatus::ERROR;
-  bool success = life_cycle_mediator.setStatus(LifeCycleStatus::OK, info);
+  bool success = life_cycle_mediator_.setStatus(LifeCycleStatus::OK, info);
   EXPECT_TRUE(success);
   EXPECT_EQ(LifeCycleStatus::ERROR, info.status);
 }

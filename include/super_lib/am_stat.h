@@ -70,19 +70,21 @@ public:
   {
     LifeCycleStatus status = LifeCycleStatus::OK;
 
-    if (validate_max && value_ > max_error_)
+    if(validate_max)
     {
-      ROS_ERROR_STREAM_THROTTLE(error_throttle_s, long_name_ << " exceeding max_error: " << value_
-                                                             << " (max:" << max_error_ << ")");
-      compoundStatus(status, LifeCycleStatus::ERROR);
+      if (value_ > max_error_)
+      {
+        ROS_ERROR_STREAM_THROTTLE(error_throttle_s, long_name_ << " exceeding max_error: " << value_
+                                                              << " (max:" << max_error_ << ")");
+        compoundStatus(status, LifeCycleStatus::ERROR);
+      }
+      else if (value_ > max_warn_)
+      {
+        ROS_WARN_STREAM_THROTTLE(warn_throttle_s, long_name_ << " exceeding max_warn: " << value_ << " (max:" << max_warn_
+                                                            << ")");
+        compoundStatus(status, LifeCycleStatus::WARN);
+      }
     }
-    else if (validate_max && value_ > max_warn_)
-    {
-      ROS_WARN_STREAM_THROTTLE(warn_throttle_s, long_name_ << " exceeding max_warn: " << value_ << " (max:" << max_warn_
-                                                           << ")");
-      compoundStatus(status, LifeCycleStatus::WARN);
-    }
-
     if(validate_min)
     {
 

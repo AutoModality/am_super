@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <super_lib/am_stat.h>
 #include <super_lib/am_stat_reset.h>
+#include <super_lib/am_stat_list.h>
 
 using namespace am;
 using namespace std;
@@ -14,6 +15,7 @@ class AMStatTest : public ::testing::Test
 protected:
   AMStat stat_;
   AMStatReset stat_reset_;
+  AMStatList stat_list_;
 
   AMStatTest(): 
     stat_(short_name, long_name, max_warn, max_error), 
@@ -135,4 +137,11 @@ TEST_F(AMStatTest, add)
   stat_ = 3;
   stat_.add(2);
   ASSERT_EQ(stat_.getValue(), 5);
+}
+
+TEST_F(AMStatTest, stat_list_hasStats)
+{
+  ASSERT_FALSE(stat_list_.hasStats());
+  stat_list_.add(&stat_);
+  ASSERT_TRUE(stat_list_.hasStats());
 }

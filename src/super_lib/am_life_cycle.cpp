@@ -178,6 +178,7 @@ void AMLifeCycle::onConfigure()
       doConfigure(true);
     }
   }
+  //if there are no stats and request to configure, then configure
   else
   {
     doConfigure(true);

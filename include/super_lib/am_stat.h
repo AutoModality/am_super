@@ -31,7 +31,12 @@ protected:
   uint32_t value_ = 0;
   uint32_t max_warn_ = std::numeric_limits<uint32_t>::max();
   uint32_t max_error_ = std::numeric_limits<uint32_t>::max();
-
+  uint32_t min_warn_ = 0;
+  uint32_t min_error_ = 0;
+  /**indicates if min values are assigned */
+  bool validate_min = false;
+  /**indicates if max values are assigned */
+  bool validate_max = false;
 private:
   AMStat();
 
@@ -45,9 +50,17 @@ public:
   AMStat(const std::string& short_name, const std::string& long_name, uint32_t max_warn, uint32_t max_error)
     : AMStat(short_name, long_name)
   {
-    max_warn_ = max_warn;
-    max_error_ = max_error;
+    setMaxWarn(max_warn);
+    setMaxError(max_error);
   }
+
+  AMStat(const std::string& short_name, const std::string& long_name, uint32_t min_error, uint32_t min_warn,
+              uint32_t max_warn, uint32_t max_error)
+      : AMStat(short_name, long_name,max_warn,max_error)
+  {
+    setMinError(min_error);
+    setMinWarn(min_warn);
+  } 
 
   virtual ~AMStat()
   {
@@ -57,17 +70,34 @@ public:
   {
     LifeCycleStatus status = LifeCycleStatus::OK;
 
-    if (value_ > max_error_)
+    if (validate_max && value_ > max_error_)
     {
       ROS_ERROR_STREAM_THROTTLE(error_throttle_s, long_name_ << " exceeding max_error: " << value_
                                                              << " (max:" << max_error_ << ")");
       compoundStatus(status, LifeCycleStatus::ERROR);
     }
-    else if (value_ > max_warn_)
+    else if (validate_max && value_ > max_warn_)
     {
       ROS_WARN_STREAM_THROTTLE(warn_throttle_s, long_name_ << " exceeding max_warn: " << value_ << " (max:" << max_warn_
                                                            << ")");
       compoundStatus(status, LifeCycleStatus::WARN);
+    }
+
+    if(validate_min)
+    {
+
+      if (value_ < min_error_)
+      {
+        ROS_ERROR_STREAM_THROTTLE(error_throttle_s, long_name_ << " exceeding min_error: " << value_
+                                                              << " (min:" << min_error_ << ")");
+        compoundStatus(status, LifeCycleStatus::ERROR);
+      }
+      else if (value_ < min_warn_)
+      {
+        ROS_WARN_STREAM_THROTTLE(warn_throttle_s, long_name_ << " exceeding min_warn: " << value_ << " (min:" << min_warn_
+                                                            << ")");
+        compoundStatus(status, LifeCycleStatus::WARN);
+      }
     }
 
     return status;
@@ -113,12 +143,21 @@ public:
     return *this;
   }
 
-  void operator=(uint32_t assignment)
+  AMStat& operator=(uint32_t assignment)
   {
     value_ = assignment;
+    return *this;
   }
 
+  /** Confusing name for return the value.  Use getValue() instead*/
+  [[deprecated]]
   uint32_t getCount() const
+  {
+    return value_;
+  }
+
+  /**The current value for the stat */
+  uint32_t getValue() const
   {
     return value_;
   }
@@ -142,6 +181,7 @@ public:
   void setMaxError(uint32_t max_error)
   {
     max_error_ = max_error;
+    validate_max=true;
   }
 
   uint32_t getMaxWarn() const
@@ -151,9 +191,40 @@ public:
 
   void setMaxWarn(uint32_t max_warn)
   {
+    validate_max=true;
     max_warn_ = max_warn;
   }
 
+  void setWarnError(uint32_t min_error, uint32_t min_warn, uint32_t max_warn, uint32_t max_error)
+  {
+    setMinError(min_error);
+    setMinWarn(min_warn);
+    setMaxWarn(max_warn);
+    setMaxError(max_error);
+  }
+
+  uint32_t getMinError() const
+  {
+    return min_error_;
+  }
+
+  void setMinError(uint32_t min_error)
+  {
+    validate_min=true;
+    min_error_ = min_error;
+  }
+
+  uint32_t getMinWarn() const
+  {
+    return min_warn_;
+  }
+
+  void setMinWarn(uint32_t min_warn)
+  {
+    validate_min=true;
+    min_warn_ = min_warn;
+  }
+  
   const std::string& getShortName() const
   {
     return short_name_;

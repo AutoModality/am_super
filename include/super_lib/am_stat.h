@@ -34,9 +34,11 @@ protected:
   uint32_t min_warn_ = 0;
   uint32_t min_error_ = 0;
   /**indicates if min values are assigned */
-  bool validate_min = false;
+  bool validate_min_ = false;
   /**indicates if max values are assigned */
-  bool validate_max = false;
+  bool validate_max_ = false;
+  /**indicates if this stat has received a value since constructed.*/
+  bool sample_received_ = false;
 private:
   AMStat();
 
@@ -68,9 +70,9 @@ public:
 
   virtual LifeCycleStatus process(double warn_throttle_s, double error_throttle_s)
   {
-    LifeCycleStatus status = LifeCycleStatus::OK;
+    LifeCycleStatus status = sample_received_ ? LifeCycleStatus::OK : LifeCycleStatus::ERROR;
 
-    if(validate_max)
+    if(validate_max_)
     {
       if (value_ > max_error_)
       {
@@ -85,9 +87,9 @@ public:
         compoundStatus(status, LifeCycleStatus::WARN);
       }
     }
-    if(validate_min)
-    {
 
+    if(validate_min_)
+    {
       if (value_ < min_error_)
       {
         ROS_ERROR_STREAM_THROTTLE(error_throttle_s, long_name_ << " exceeding min_error: " << value_
@@ -131,23 +133,27 @@ public:
   virtual void add(uint32_t adder)
   {
     value_ += adder;
+    sample_received_ = true;
   }
 
   AMStat& operator++(int)
   {
     value_++;
+    sample_received_ = true;
     return *this;
   }
 
   AMStat& operator+=(int adder)
   {
     value_ += adder;
+    sample_received_ = true;
     return *this;
   }
 
   AMStat& operator=(uint32_t assignment)
   {
     value_ = assignment;
+    sample_received_ = true;
     return *this;
   }
 
@@ -183,7 +189,7 @@ public:
   void setMaxError(uint32_t max_error)
   {
     max_error_ = max_error;
-    validate_max=true;
+    validate_max_=true;
   }
 
   uint32_t getMaxWarn() const
@@ -193,7 +199,7 @@ public:
 
   void setMaxWarn(uint32_t max_warn)
   {
-    validate_max=true;
+    validate_max_=true;
     max_warn_ = max_warn;
   }
 
@@ -212,7 +218,7 @@ public:
 
   void setMinError(uint32_t min_error)
   {
-    validate_min=true;
+    validate_min_=true;
     min_error_ = min_error;
   }
 
@@ -223,7 +229,7 @@ public:
 
   void setMinWarn(uint32_t min_warn)
   {
-    validate_min=true;
+    validate_min_=true;
     min_warn_ = min_warn;
   }
   
@@ -231,6 +237,23 @@ public:
   {
     return short_name_;
   }
+
+
+  const bool isValidatingMax() const 
+  {
+    return validate_max_;
+  }
+
+  const bool isValidatingMin() const
+  {
+    return validate_min_;
+  }
+
+  const bool isSampleReceived() const
+  {
+    return sample_received_;
+  }
+
 
   static void compoundStatus(LifeCycleStatus& status, const LifeCycleStatus new_status)
   {

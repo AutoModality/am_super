@@ -73,6 +73,11 @@ public:
     }
     return ss.str();
   }
+  /** simple method to indicate if we are using stats for a node */
+  bool hasStats() const 
+  {
+    return !stat_list_.empty();
+  }
 };
 
 };  // namespace am

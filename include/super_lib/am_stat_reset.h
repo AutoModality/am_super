@@ -35,6 +35,7 @@ public:
   
   AMStatReset& operator=(uint32_t assignment)
   {
+    sample_received_ = true;
     value_ = assignment;
     return *this;
   }

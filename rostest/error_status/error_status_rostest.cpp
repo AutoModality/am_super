@@ -28,13 +28,19 @@ protected:
 TEST_F(LifeCycleErrorTest, testStatus_Error)
 {
   waitUntil(LifeCycleState::CONFIGURING);
-  waitUntil(LifeCycleState::INACTIVE);
-  waitUntilMissionState(brain_box_msgs::VxState::READY);
+
+  /** stats will not pass until a sample is received. but node will not go status::ERROR
+   * until configuration tolerance times out, which will cause us to enter ERROR_PROCESSING 
+   * and setstatus to ERROR, resulting in shutting down */
+  stats_.stat1 = 0;
+  waitUntilStatus(LifeCycleStatus::OK);
   
-  //stat value initially 0, exceed 0 for warn and 1 for error according to TestStat
+  //exceed 0 for warn and 1 for error according to TestStat
   stats_.stat1++;
   waitUntilStatus(LifeCycleStatus::WARN);
   stats_.stat1++;
+
+  //wait for tolerance to time out, then catch error
   waitUntilStatus(LifeCycleStatus::ERROR);
   waitUntil(LifeCycleState::ERROR_PROCESSING);
   

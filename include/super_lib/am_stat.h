@@ -238,6 +238,23 @@ public:
     return short_name_;
   }
 
+
+  const bool isValidatingMax() const 
+  {
+    return validate_max_;
+  }
+
+  const bool isValidatingMin() const
+  {
+    return validate_min_;
+  }
+
+  const bool isSampleReceived() const
+  {
+    return sample_received_;
+  }
+
+
   static void compoundStatus(LifeCycleStatus& status, const LifeCycleStatus new_status)
   {
     if (new_status == LifeCycleStatus::ERROR)

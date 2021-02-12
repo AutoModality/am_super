@@ -133,10 +133,13 @@ class AMLifeCycle
     virtual void onDestroy();
     void doDestroy(bool success);
 
-    /**Called by all when an error has happened.  Will set the status to ERROR and state to ERROR_PROCESSING
+    /**
+     * Called by all when an error has happened.  Will set the status to ERROR and state to ERROR_PROCESSING
      * which will eventually lead to FINALIZED.
+     * @param error_code provides a reference for the developer to correlate log output to the originating error.
+     * @param forced terminal error that will not allow any tolerance
      */
-    void error();
+    void error(std::string error_code="NNLW",bool forced = false);
 
     /**
      * @brief Function to be defined by the user.

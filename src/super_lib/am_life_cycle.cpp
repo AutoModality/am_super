@@ -251,7 +251,6 @@ bool AMLifeCycle::withinConfigureTolerance()
   if(life_cycle_info_.state == LifeCycleState::CONFIGURING)
   {
     ros::Duration duration_since_configure = ros::Time::now() - configure_start_time_;
-    ROS_WARN_STREAM("duration since " << duration_since_configure << " start time " << configure_start_time_);
     if (duration_since_configure <= ros::Duration(configure_tolerance_s) )
     {
       tolerated = true;
@@ -259,19 +258,20 @@ bool AMLifeCycle::withinConfigureTolerance()
   }
   return tolerated;
 }
-void AMLifeCycle::error()
+void AMLifeCycle::error(std::string error_code, bool forced)
 {
-  if (life_cycle_mediator_.redundantError(life_cycle_info_))
+  std::string error_code_message=" [" + error_code + "]";
+  if (!forced && life_cycle_mediator_.redundantError(life_cycle_info_))
   {
-    ROS_DEBUG_STREAM("Error called again, but previously reported. [NLW9]");
+    ROS_WARN_STREAM("Error called again, but previously reported." << error_code_message);
   }
-  else if(withinConfigureTolerance())
+  else if(!forced && withinConfigureTolerance())
   {
-    ROS_WARN_STREAM_THROTTLE(throttle_info_.warn_throttle_s,"Ignoring error during configure tolerance. [NNLW]");
+    ROS_WARN_STREAM_THROTTLE(throttle_info_.warn_throttle_s,"Ignoring error during configure tolerance of " << configure_tolerance_s << error_code_message);
   }
   else
   {
-    ROS_INFO_STREAM("Error called while in: " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << " [QALE]");
+    ROS_ERROR_STREAM("Error called while in: " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << error_code_message);
     setState(LifeCycleState::ERROR_PROCESSING);
     setStatus(LifeCycleStatus::ERROR);
     onError();
@@ -334,7 +334,7 @@ void AMLifeCycle::addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw
   LifeCycleStatus status = stats_list_.process(throttle_info_.warn_throttle_s, throttle_info_.error_throttle_s);
   if(life_cycle_mediator_.statusError(status))
   {
-    error();
+    error("PQAE");
   }
   else
   {

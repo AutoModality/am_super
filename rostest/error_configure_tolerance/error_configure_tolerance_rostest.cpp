@@ -36,7 +36,7 @@ TEST_F(LifeCycleErrorCofingureToleranceTest, testError_Tolerance)
   //first prove that reporting error will be ignored during tolerance
   while (seconds_configuring < max_seconds_to_wait && ros::ok() )
   {
-    error();
+    error("NKO0");
     ros::spinOnce();
     loop_rate.sleep();
     seconds_configuring++;
@@ -48,7 +48,7 @@ TEST_F(LifeCycleErrorCofingureToleranceTest, testError_Tolerance)
   
   while(!nodeStatusReceived(ros::this_node::getName(),LifeCycleStatus::ERROR) && ros::ok())
   {
-    error();
+    error("NAE2");
     ros::spinOnce();
     loop_rate.sleep();
     ROS_WARN_STREAM("Reporting error during state ");

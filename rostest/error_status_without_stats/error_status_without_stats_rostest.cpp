@@ -13,7 +13,7 @@ TEST_F(LifeCycleErrorTestWithoutStats, testStatus_Error)
   waitUntil(LifeCycleState::INACTIVE);
   waitUntilMissionState(brain_box_msgs::VxState::READY);
   
-  error();
+  error("HEOL");
   waitUntilStatus(LifeCycleStatus::ERROR);
   waitUntil(LifeCycleState::ERROR_PROCESSING);
   

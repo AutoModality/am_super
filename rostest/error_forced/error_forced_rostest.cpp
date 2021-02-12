@@ -1,0 +1,29 @@
+#include <am_rostest_lib/am_rostest.h>
+
+/** Indicating a forced error should go into error reporting regardless of the state. 
+ */
+class LifeCycleErrorTest : public RostestBase, public am::AMLifeCycle
+{
+protected:
+
+  LifeCycleErrorTest() : 
+    RostestBase() 
+  {}
+};
+
+TEST_F(LifeCycleErrorTest, testStatus_Error)
+{
+  waitUntil(LifeCycleState::UNCONFIGURED);
+  ASSERT_EQ(LifeCycleStatus::OK,getStatus());
+  error("NNAQ",true);
+  waitUntil(LifeCycleState::ERROR_PROCESSING);
+  waitUntilStatus(LifeCycleStatus::ERROR);
+}
+
+int main(int argc, char** argv)
+{
+  ::testing::InitGoogleTest(&argc, argv);
+  ros::init(argc, argv, ros::this_node::getName());
+
+  return RUN_ALL_TESTS();
+}

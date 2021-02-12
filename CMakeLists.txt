@@ -218,6 +218,7 @@ if (CATKIN_ENABLE_TESTING)
                  auto_to_manual 
                  auto_to_semiauto 
                  error_configure_tolerance
+                 error_forced 
                  error_status 
                  error_status_without_stats 
                  manual_to_disarming 

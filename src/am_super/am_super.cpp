@@ -583,9 +583,10 @@ private:
       {
         LifeCycleCommand command = transition_instructions.life_cycle_command;
         std::string failed_nodes_string = boost::algorithm::join(transition_instructions.failed_nodes, ", ");
-        ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state)
+        std::string failed_nodes_reasons_string = boost::algorithm::join(transition_instructions.failed_nodes_reasons, ", ");
+        ROS_INFO_STREAM_THROTTLE(5,state_mediator_.stateToString(supervisor_.system_state)
                         << ": sending " << life_cycle_mediator_.commandToString(command) << " to "
-                        << failed_nodes_string);
+                        << failed_nodes_string << " because " << failed_nodes_reasons_string);
 
         for(string failed_node_name : transition_instructions.failed_nodes)
         {

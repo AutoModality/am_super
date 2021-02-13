@@ -17,9 +17,18 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
 {
   std::string init_state_str;
   //FIXME: This string should come from the enum
+  // always prefix with life_cycle in the parent to avoid namespace collisions with child and clarity in definition
+  // param would be: `/am_child_node/life_cycle/some_param` so no conflict with `/am_child_node/some_param`
+  std::string param_prefix="life_cycle/";
+  
+  //deprecated - prefix with life_cycle instead
   std::string default_state = "UNCONFIGURED";
   param<std::string>("init_state", init_state_str, default_state);
+  param<std::string>(param_prefix + "init_state", init_state_str, default_state);
+  
+  //deprecated - prefix with life_cycle instead
   param<int>("configure_tolerance_s", configure_tolerance_s, 10);
+  param<int>(param_prefix + "configure_tolerance_s", configure_tolerance_s, configure_tolerance_s);
 
   LifeCycleState init_state;
   if (life_cycle_mediator_.stringToState(init_state_str, init_state))
@@ -251,7 +260,6 @@ bool AMLifeCycle::withinConfigureTolerance()
   if(life_cycle_info_.state == LifeCycleState::CONFIGURING)
   {
     ros::Duration duration_since_configure = ros::Time::now() - configure_start_time_;
-    ROS_WARN_STREAM("duration since " << duration_since_configure << " start time " << configure_start_time_);
     if (duration_since_configure <= ros::Duration(configure_tolerance_s) )
     {
       tolerated = true;
@@ -259,19 +267,21 @@ bool AMLifeCycle::withinConfigureTolerance()
   }
   return tolerated;
 }
-void AMLifeCycle::error()
+void AMLifeCycle::error(std::string error_code, bool forced)
 {
-  if (life_cycle_mediator_.redundantError(life_cycle_info_))
+  std::string error_code_message=" [" + error_code + "] ";
+  if (!forced && life_cycle_mediator_.redundantError(life_cycle_info_))
   {
-    ROS_DEBUG_STREAM("Error called again, but previously reported. [NLW9]");
+    ROS_WARN_STREAM("Error called again, but previously reported." << error_code_message);
   }
-  else if(withinConfigureTolerance())
+  else if(!forced && withinConfigureTolerance())
   {
-    ROS_WARN_STREAM_THROTTLE(throttle_info_.warn_throttle_s,"Ignoring error during configure tolerance. [NNLW]");
+    ROS_WARN_STREAM_THROTTLE(throttle_info_.warn_throttle_s,"Ignoring error" << error_code_message << "during configure tolerance of " << configure_tolerance_s << " seconds [GFRT]");
   }
   else
   {
-    ROS_INFO_STREAM("Error called while in: " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << " [QALE]");
+    std::string forced_prefix = forced?"Forced ":"";
+    ROS_ERROR_STREAM(forced_prefix << "Error" << error_code_message << "called while in: " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << " [R45Y]" );
     setState(LifeCycleState::ERROR_PROCESSING);
     setStatus(LifeCycleStatus::ERROR);
     onError();
@@ -334,7 +344,7 @@ void AMLifeCycle::addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw
   LifeCycleStatus status = stats_list_.process(throttle_info_.warn_throttle_s, throttle_info_.error_throttle_s);
   if(life_cycle_mediator_.statusError(status))
   {
-    error();
+    error("PQAE");
   }
   else
   {

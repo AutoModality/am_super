@@ -255,8 +255,8 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
       }
       else if (lifeCycleNotYetImplemented(node.name))
       {
-        //error_message = "[WCK2] check skipped: node LifeCycle not yet implemented: " + node.name;
-        //not a failure to allow temporary transition 
+        error_message = "[WCK2] check skipped: node LifeCycle not yet implemented: " + node.name;
+        //not a failure to allow temporary transition until implemented
       }
       else if (!check(node, *this))
       {

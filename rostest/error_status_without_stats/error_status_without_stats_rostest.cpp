@@ -14,7 +14,7 @@ TEST_F(LifeCycleErrorTestWithoutStats, testStatus_Error)
   waitUntilMissionState(brain_box_msgs::VxState::READY);
   
   error("HEOL");
-  waitUntilStatus(LifeCycleStatus::ERROR);
+  waitUntil(LifeCycleStatus::ERROR,"QNA0");
   waitUntil(LifeCycleState::ERROR_PROCESSING);
   
   waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN);

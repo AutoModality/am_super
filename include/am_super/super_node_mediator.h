@@ -141,6 +141,8 @@ public:
 
     /** List of node names that should receive the life_cycle_command */
     std::vector<string> failed_nodes;
+    /** List of reasons nodes aren't transitioning */
+    std::vector<string> failed_nodes_reasons;
   };
 
   /** Returns the name of the node that is using the mediator */

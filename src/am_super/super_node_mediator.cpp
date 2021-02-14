@@ -180,8 +180,11 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
       if (!checks_passed)
       {
         vector<string> failed_nodes;
+        vector<string> failed_nodes_reasons;
         boost::copy(check_results.second | boost::adaptors::map_keys, std::back_inserter(failed_nodes));
+        boost::copy(check_results.second | boost::adaptors::map_values, std::back_inserter(failed_nodes_reasons));
         transition_instructions.failed_nodes = failed_nodes;
+        transition_instructions.failed_nodes_reasons = failed_nodes_reasons;
 
         // some check failures send lifecycle commands to encourage nodes to progress so the state can change
         if (transitionHasLifecycleCommand(transition))
@@ -253,7 +256,7 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
       else if (lifeCycleNotYetImplemented(node.name))
       {
         error_message = "[WCK2] check skipped: node LifeCycle not yet implemented: " + node.name;
-        //not a failure to allow temporary transition 
+        //not a failure to allow temporary transition until implemented
       }
       else if (!check(node, *this))
       {

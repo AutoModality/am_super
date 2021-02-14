@@ -105,6 +105,11 @@ public:
           compoundStatus(status, LifeCycleStatus::WARN);
         }
       }
+
+      if(!validate_max_ && !validate_min_)
+      {
+          ROS_WARN_STREAM_THROTTLE(error_throttle_s, long_name_ << " lacks validation since min/max is not set");        
+      }
     }
     else
     {

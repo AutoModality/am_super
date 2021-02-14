@@ -17,7 +17,7 @@ TEST_F(LifeCycleErrorTest, testStatus_Error)
   ASSERT_EQ(LifeCycleStatus::OK,getStatus());
   error("NNAQ",true);
   waitUntil(LifeCycleState::ERROR_PROCESSING);
-  waitUntilStatus(LifeCycleStatus::ERROR);
+  waitUntil(LifeCycleStatus::ERROR,"IUIU");
 }
 
 int main(int argc, char** argv)

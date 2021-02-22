@@ -184,13 +184,13 @@ void AMLifeCycle::onConfigure()
   if(stats_list_.hasStats())
   {
     LifeCycleStatus status = stats_list_.process(throttle_info_.warn_throttle_s, throttle_info_.error_throttle_s);
-    if(status == LifeCycleStatus::OK)
+    if(status != LifeCycleStatus::ERROR)
     {
       doConfigure(true);
     }
     else if (!withinConfigureTolerance())
     {
-      ROS_WARN_STREAM_THROTTLE(1, life_cycle_mediator_.statusToString(status) << " status, blocked by stats past configure tolerance: " << stats_list_.getStatsStr());
+      ROS_WARN_STREAM_THROTTLE(5, stats_list_.getStatsStr() << " blocked by stats past configure tolerance with status " << life_cycle_mediator_.statusToString(status) );
     }
   }
   //if there are no stats and request to configure, then configure

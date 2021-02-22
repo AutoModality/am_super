@@ -17,16 +17,28 @@ class AMStatReset : public AMStat
 
 private:
   AMStatReset();
-
+  void init()
+  {
+    sample_required_ = true;
+  }
 public:
-  AMStatReset(const std::string& short_name, const std::string& long_name) : AMStat(short_name, long_name){}
+  AMStatReset(const std::string& short_name, const std::string& long_name) : AMStat(short_name, long_name)
+  {
+    init();
+  }
 
   AMStatReset(const std::string& short_name, const std::string& long_name, uint32_t max_warn, uint32_t max_error)
-    : AMStat(short_name, long_name, max_warn, max_error){}
+    : AMStat(short_name, long_name, max_warn, max_error)
+    {
+      init();
+    }
 
   AMStatReset(const std::string& short_name, const std::string& long_name, uint32_t min_error, uint32_t min_warn,
               uint32_t max_warn, uint32_t max_error)
-    : AMStat(short_name, long_name,min_error,min_warn, max_warn, max_error){}
+    : AMStat(short_name, long_name,min_error,min_warn, max_warn, max_error)
+    {
+      init();
+    }
 
   void reset() override
   {

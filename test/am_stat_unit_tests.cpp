@@ -174,6 +174,11 @@ TEST_F(AMStatTest, isSampleReceived_operatorPlusPlus)
 
 }
 
+TEST_F(AMStatTest, isSampleRequired)
+{
+  ASSERT_FALSE(stat_max_.isSampleRequired());
+  ASSERT_TRUE(stat_reset_.isSampleRequired());
+}
 
 TEST_F(AMStatTest, isSampleReceived_operatorPlusEquals)
 {

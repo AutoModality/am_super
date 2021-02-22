@@ -35,10 +35,9 @@ protected:
   uint32_t min_error_ = 0;
   /**indicates if min values are assigned */
   bool validate_min_ = false;
-  /**indicates if max values are assigned */
   bool validate_max_ = false;
-  /**indicates if this stat has received a value since constructed.*/
   bool sample_received_ = false;
+  bool sample_required_ = false;
 private:
   AMStat();
 
@@ -71,8 +70,8 @@ public:
   virtual LifeCycleStatus process(double warn_throttle_s, double error_throttle_s)
   {
     LifeCycleStatus status = LifeCycleStatus::OK;
-
-    if(sample_received_)
+  
+    if(!sample_required_ || sample_received_)
     {
       if(validate_max_)
       {
@@ -113,6 +112,7 @@ public:
     }
     else
     {
+      //sample is required and not yet received
       status = LifeCycleStatus::ERROR;
       ROS_ERROR_STREAM_THROTTLE(error_throttle_s, long_name_ << " no samples received [NAQE] ");      
     }
@@ -250,21 +250,29 @@ public:
   }
 
 
+  /**indicates if max values are assigned */
   const bool isValidatingMax() const 
   {
     return validate_max_;
   }
 
+  /**indicates if min values are assigned */
   const bool isValidatingMin() const
   {
     return validate_min_;
   }
 
+  /**indicates if this stat has received a value since constructed.*/
   const bool isSampleReceived() const
   {
     return sample_received_;
   }
 
+  /**indicates if no samples received results in an error*/
+  const bool isSampleRequired() const
+  {
+    return sample_required_;
+  }
 
   static void compoundStatus(LifeCycleStatus& status, const LifeCycleStatus new_status)
   {

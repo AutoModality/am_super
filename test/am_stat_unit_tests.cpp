@@ -176,9 +176,16 @@ TEST_F(AMStatTest, isSampleReceived_operatorPlusPlus)
 
 TEST_F(AMStatTest, isSampleRequired)
 {
+  //confirm the defaults
   ASSERT_FALSE(stat_max_.isSampleRequired());
   ASSERT_TRUE(stat_reset_.isSampleRequired());
+  //now prove the opposite can be assigned
+  stat_max_.setSampleRequired(true);
+  stat_reset_.setSampleRequired(false);
+  ASSERT_TRUE(stat_max_.isSampleRequired());
+  ASSERT_FALSE(stat_reset_.isSampleRequired());  
 }
+
 
 TEST_F(AMStatTest, isSampleReceived_operatorPlusEquals)
 {

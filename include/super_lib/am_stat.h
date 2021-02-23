@@ -274,6 +274,11 @@ public:
     return sample_required_;
   }
 
+  void setSampleRequired(bool sample_required)
+  {
+    sample_required_ = sample_required;
+  }
+
   static void compoundStatus(LifeCycleStatus& status, const LifeCycleStatus new_status)
   {
     if (new_status == LifeCycleStatus::ERROR)

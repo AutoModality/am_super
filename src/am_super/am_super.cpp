@@ -3,6 +3,7 @@
 
 #include <ros/ros.h>
 #include <diagnostic_msgs/DiagnosticArray.h>
+#include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <std_msgs/Int16.h>
@@ -70,6 +71,7 @@ private:
   ros::Subscriber operator_command_sub_;
   ros::Subscriber controller_state_sub;
   ros::Subscriber diagnostics_sub;
+  ros::Subscriber current_enu_sub;
   ros::Timer heartbeat_timer_;
 
   ros::Subscriber log_control_sub_;
@@ -227,6 +229,8 @@ public:
     controller_state_sub = nh_.subscribe(am_super_topics::CONTROLLER_STATE, 100, &AMSuper::controllerStateCB, this);
 
     diagnostics_sub = nh_.subscribe("/diagnostics", 100, &AMSuper::diagnosticsCB, this);
+
+    current_enu_sub = nh_.subscribe(am_topics::CTRL_VX_VEHICLE_CURRENTENU, 100, &AMSuper::currentENUCB, this);
 
     heartbeat_timer_ = nh_.createTimer(ros::Duration(1.0), &AMSuper::heartbeatCB, this);
   }
@@ -746,6 +750,11 @@ private:
   void diagnosticsCB(const diagnostic_msgs::DiagnosticArray::ConstPtr &msg)
   {
       LOG_MSG("/diagnostics", msg, SU_LOG_LEVEL);
+  }
+
+  void currentENUCB(const nav_msgs::Odometry::ConstPtr &msg)
+  {
+      LOG_MSG(am_topics::CTRL_VX_VEHICLE_CURRENTENU, msg, SU_LOG_LEVEL);
   }
 
   BagLogger::BagLoggerLevel intToLoggerLevel(int level)

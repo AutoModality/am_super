@@ -228,16 +228,8 @@ if (CATKIN_ENABLE_TESTING)
                  semi_auto_to_manual
   )
   foreach(TEST_NAME ${TEST_NAMES})
-    add_rostest_gtest(${TEST_NAME}_rostest rostest/${TEST_NAME}/${TEST_NAME}_rostest.test rostest/${TEST_NAME}/${TEST_NAME}_rostest.cpp)
-    target_link_libraries(${TEST_NAME}_rostest ${catkin_LIBRARIES} super_lib)
+    set(PROJECT_TEST_NAME  ${TEST_NAME}_${PROJECT_NAME}_rostest)
+    add_rostest_gtest(${PROJECT_TEST_NAME} rostest/${TEST_NAME}/${TEST_NAME}_rostest.test rostest/${TEST_NAME}/${TEST_NAME}_rostest.cpp)
+    target_link_libraries(${PROJECT_TEST_NAME} ${catkin_LIBRARIES} super_lib)
   endforeach()
-
-  # Create a target ${PROJECT_NAME}_coverage_report
-  if(ENABLE_COVERAGE_TESTING)
-    set(COVERAGE_EXCLUDES "*/${PROJECT_NAME}/test*" )
-    add_code_coverage(
-      NAME ${PROJECT_NAME}_coverage_report
-      DEPENDENCIES tests
-    )
-  endif()
 endif()

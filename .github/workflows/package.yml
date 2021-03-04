@@ -15,14 +15,6 @@ jobs:
       - uses: AutoModality/action-clean@v1.1.0
       - uses: actions/checkout@v2
       - uses: rlespinasse/github-slug-action@3.1.0 # for GITHUB_REF_SLUG
-      # - name: Restore Cache
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: |
-      #       catkin_ws
-      #     # different caches for different architectures and control files
-      #     # first element in matrix.os is the architecture, by convention
-      #     key: ${{ matrix.os[0] }}-${{ env.GITHUB_REF_SLUG }}-${{ hashFiles('debian/control') }}
       - name: Package
         id: package
         uses: AutoModality/action-package-debian-ros@v5-amros
@@ -30,8 +22,6 @@ jobs:
           branch: ${{ env.GITHUB_REF_SLUG }}
           build-number: ${{ github.run_number }}
           release-repo-entitlement: ${{ secrets.CLOUDSMITH_READ_RELEASE_ENTITLEMENT }}
-      - name: The generated package
-        run: echo "The artifact is ${{ steps.package.outputs.artifact-path }}"
       - name: Deploy
         id: deploy
         uses: AutoModality/action-cloudsmith@0.2.0
@@ -44,21 +34,6 @@ jobs:
           distro: 'ubuntu'
           release: 'bionic'
           file: '${{ steps.package.outputs.artifact-path }}'
-      - name: Repo Name
-        if: contains( matrix.os, 'x64' )
-        run: echo "REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")" >> $GITHUB_ENV
-      - name: Test Results
-        if: contains( matrix.os, 'x64' )
-        id: xunit-viewer
-        uses: AutoModality/action-xunit-viewer@v1
-        with: 
-          results: catkin_ws/build/${{env.REPOSITORY_NAME}}/test_results/${{env.REPOSITORY_NAME}}
-      - name: Attach Test Reports
-        if: contains( matrix.os, 'x64' )
-        uses: actions/upload-artifact@v1
-        with:
-          name: ${{ steps.xunit-viewer.outputs.report-name }}
-          path: ${{ steps.xunit-viewer.outputs.report-dir }}
   draft-pr:
     runs-on: ubuntu-18.04
     needs: package

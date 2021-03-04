@@ -1,0 +1,20 @@
+name: Test
+on: push
+jobs:
+  test:
+    runs-on: [x64, self-hosted,linux,build]
+    steps:
+      - uses: AutoModality/action-clean@v1.1.0
+      - uses: actions/checkout@v2
+      - name: Test
+        run: amros dev docker run --test
+      - name: Attach Test Reports
+        uses: actions/upload-artifact@v1
+        if: always() #test failures report an error code, but good to attach results
+        with:
+          name: test_results
+          path: test_results.tar.gz
+
+
+
+        

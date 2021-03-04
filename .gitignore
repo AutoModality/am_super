@@ -41,3 +41,4 @@ build
 .catkin_tools
 *.deb
 *.ddeb
+test_results.tar.gz

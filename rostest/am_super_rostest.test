@@ -1,12 +1,13 @@
 <launch>
   <arg name="test_name"/>
+  <arg name="rostest_name" value="$(arg test_name)_rostest"/>
   <!-- include super node and pass in this test node as manifest -->
   <include file="$(find am_super)/launch/am_super.launch"/>
-  <rosparam param="/am_super/manifest" subst_value="True">$(arg test_name)</rosparam>
+  <rosparam param="/am_super/manifest" subst_value="True">$(arg rostest_name)</rosparam>
 
   <!-- create node with test name and pass in the name as target_node_name -->
-  <test test-name="$(arg test_name)_rostest" pkg="am_super" type="$(arg test_name)_am_super_rostest" time-limit="20">
-    <param name="target_node_name" value="$(arg test_name)"/>
+  <test test-name="$(arg rostest_name)" pkg="am_super" type="$(arg test_name)_am_super_rostest" time-limit="20">
+    <param name="target_node_name" value="$(arg rostest_name)"/>
   </test>
 
 </launch>

@@ -12,22 +12,3 @@ jobs:
         uses: AutoModality/action-package-debian-ros@v5-ros
         with:
           release-repo-entitlement: ${{ secrets.CLOUDSMITH_READ_RELEASE_ENTITLEMENT }}
-      - name: Repo Name
-        if: always()
-        run: echo "REPOSITORY_NAME=$(echo "$GITHUB_REPOSITORY" | awk -F / '{print $2}' | sed -e "s/:refs//")" >> $GITHUB_ENV
-      - name: Test Results
-        if: always()
-        id: xunit-viewer
-        uses: AutoModality/action-xunit-viewer@v1
-        with: 
-          results: catkin_ws/build/${{env.REPOSITORY_NAME}}/test_results/${{env.REPOSITORY_NAME}}
-      - name: Attach Test Reports
-        if: always()
-        uses: actions/upload-artifact@v1
-        with:
-          name: ${{ steps.xunit-viewer.outputs.report-name }}
-          path: ${{ steps.xunit-viewer.outputs.report-dir }}
-      - uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-

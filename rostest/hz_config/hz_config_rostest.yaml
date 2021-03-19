@@ -1,0 +1,13 @@
+hz_config_rostest:
+  config_target_ten:
+    hz:
+      target: 10
+
+  config_no_target:
+    hz:
+      error:
+        min: 8
+        max: 12
+      warn:
+        min: 9
+        max: 11

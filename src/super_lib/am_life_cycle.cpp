@@ -365,24 +365,26 @@ void AMLifeCycle::addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw
   dsw.summary((uint8_t)status, "update");
 }
 
-  AMStatReset& AMLifeCycle::configureHzStats(AMStatReset& stats, const std::string prefix, const int target_default)
-  {
-      int hz_target;
-      int hz_min_error;
-      int hz_min_warn;
-      int hz_max_warn;
-      int hz_max_error;
-      std::string hz_prefix=prefix + "/hz/";
-      param<int>(hz_prefix + "target", hz_target, target_default);
-      //give 5% tolerance in either direction for warning, 10% for error.  Override default values as desired
-      const int range_multiplier = std::ceil(hz_target * 0.05);
-      param<int>(hz_prefix + "min_error", hz_min_error, std::max(0,hz_target - 2 * range_multiplier));
-      param<int>(hz_prefix + "min_warn",  hz_min_warn,  std::max(0,hz_target -1* range_multiplier));
-      param<int>(hz_prefix + "max_warn",  hz_max_warn,  hz_target +1* range_multiplier);
-      param<int>(hz_prefix + "max_error", hz_max_error, hz_target +2* range_multiplier);
-      stats.setWarnError(hz_min_error, hz_min_warn, hz_max_warn, hz_max_error); 
-      return stats;       
-  }
+AMStatReset& AMLifeCycle::configureHzStats(AMStatReset& stats, const int target_default)
+{
+    int hz_target;
+    int hz_min_error;
+    int hz_min_warn;
+    int hz_max_warn;
+    int hz_max_error;
+    const std::string prefix = stats.getShortName();
+    std::string hz_prefix=prefix + "/hz/";
+    param<int>(hz_prefix + "target", hz_target, target_default);
+    //give 5% tolerance in either direction for warning, 10% for error.  Override default values as desired
+    const int warning_offset = std::ceil(hz_target * 0.05);
+    const int error_offset =  2 * warning_offset;
+    param<int>(hz_prefix + "error/min", hz_min_error, std::max(0,hz_target - error_offset));
+    param<int>(hz_prefix + "warn/min",  hz_min_warn,  std::max(0,hz_target - warning_offset));
+    param<int>(hz_prefix + "warn/max",  hz_max_warn,  hz_target + warning_offset);
+    param<int>(hz_prefix + "error/max", hz_max_error, hz_target + error_offset);
+    stats.setWarnError(hz_min_error, hz_min_warn, hz_max_warn, hz_max_error); 
+    return stats;       
+}
 void AMLifeCycle::sendNodeUpdate()
 {
   brain_box_msgs::LifeCycleState msg;

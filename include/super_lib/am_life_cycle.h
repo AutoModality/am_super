@@ -161,13 +161,25 @@ class AMLifeCycle
 
     /** Initialize the stats that reset once per second providing the equivalent of rostopic hz to ensure frequency of 
      * publishing.   Allows for overriding values in roslaunch configurations. 
+     * Provide the target, which is the approximate value you expect to receive. The warnings and errors will be 
+     * provided with tolerance on both sides of the target. 
+     * 
      * The default tolerance for warnings is 5% and for errors is 10%.  Override the specific values as desired.
      * 
+     * stats_short_name:
+     *  hz:
+     *   target: 50
+     *   error:
+     *    min: 10
+     *    max: 100
+     *   warn:
+     *    min: 20
+     *    max: 90
+     * 
      * @param stats to be configured
-     * @param prefix identifying the specific stats being tracked. it will be used in configuration yamls. 
      * @param target_default provided in code for the value that will be provided unless overridden in yamls
      * */
-    AMStatReset& configureHzStats(AMStatReset& stats, const std::string prefix, const int target_default);
+    AMStatReset& configureHzStats(AMStatReset& stats, const int target_default);
 
     virtual void heartbeatCB(const ros::TimerEvent& event);
 

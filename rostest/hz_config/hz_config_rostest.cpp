@@ -6,11 +6,14 @@ class HzConfigTest : public RostestBase, am::AMLifeCycle
 protected:
 
   AMStatReset hz_stats_target_ten_ = AMStatReset("default_target_ten", "Test HZ");
+  AMStatReset hz_stats_target_one_ = AMStatReset("default_target_one", "Test HZ");
   AMStatReset hz_stats_target_one_hundred_ = AMStatReset("default_target_one_hundred", "Test HZ");
   AMStatReset hz_stats_config_target_ten_ = AMStatReset("config_target_ten", "Test HZ");
   AMStatReset hz_stats_config_no_target_ = AMStatReset("config_no_target", "Test HZ");
+  
   HzConfigTest() : RostestBase() {
     configureHzStats(hz_stats_target_ten_,10);
+    configureHzStats(hz_stats_target_one_,1);
     configureHzStats(hz_stats_target_one_hundred_,100);
     configureHzStats(hz_stats_config_target_ten_,999);
     configureHzStats(hz_stats_config_no_target_,999);
@@ -24,6 +27,13 @@ TEST_F(HzConfigTest, test_default_target_ten)
   ASSERT_EQ(9,hz_stats_target_ten_.getMinWarn());
   ASSERT_EQ(11,hz_stats_target_ten_.getMaxWarn());
   ASSERT_EQ(12,hz_stats_target_ten_.getMaxError());
+}
+TEST_F(HzConfigTest, hz_stats_target_one_)
+{
+  ASSERT_EQ(0,hz_stats_target_one_.getMinError()) << "Shouldn't go below zero";
+  ASSERT_EQ(0,hz_stats_target_one_.getMinWarn()) << "shouldn't go below zero";
+  ASSERT_EQ(2,hz_stats_target_one_.getMaxWarn());
+  ASSERT_EQ(3,hz_stats_target_one_.getMaxError());
 }
 
 

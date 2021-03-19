@@ -8,6 +8,7 @@
 #include <diagnostic_msgs/DiagnosticStatus.h>
 
 #include <super_lib/am_stat_list.h>
+#include <super_lib/am_stat_reset.h>
 #include <super_lib/am_life_cycle_types.h>
 #include <super_lib/am_life_cycle_mediator.h>
 
@@ -155,7 +156,19 @@ class AMLifeCycle
     virtual void onShutdown();
     void doShutdown(bool success);
 
+    /**Initialize statistics by adding to the list*/
     virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw);
+
+    /** Initialize the stats that reset once per second providing the equivalent of rostopic hz to ensure frequency of 
+     * publishing.   Allows for overriding values in roslaunch configurations. 
+     * The default tolerance for warnings is 5% and for errors is 10%.  Override the specific values as desired.
+     * 
+     * @param stats to be configured
+     * @param prefix identifying the specific stats being tracked. it will be used in configuration yamls. 
+     * @param target_default provided in code for the value that will be provided unless overridden in yamls
+     * */
+    AMStatReset& configureHzStats(AMStatReset& stats, const std::string prefix, const int target_default);
+
     virtual void heartbeatCB(const ros::TimerEvent& event);
 
     void lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg);

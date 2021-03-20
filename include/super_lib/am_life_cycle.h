@@ -164,22 +164,26 @@ class AMLifeCycle
      * Provide the target, which is the approximate value you expect to receive. The warnings and errors will be 
      * provided with tolerance on both sides of the target. 
      * 
-     * The default tolerance for warnings is 5% and for errors is 10%.  Override the specific values as desired.
+     * Configurations key use the stats short name.
      * 
-     * stats_short_name:
+     * setting a target will also set a min/max 5% warn and 10% error
+     * no target allows for just min or just max or both.
+     * 
+     * stats_target_sets_min_max:
      *  hz:
-     *   target: 50
+     *   target: 100 # sets min_error=90,min_warn=95,max_warn=105,max_error=110
+     * 
+     * stats_only_min:
+     *  hz:
      *   error:
-     *    min: 10
-     *    max: 100
+     *     min: 50
      *   warn:
-     *    min: 20
-     *    max: 90
+     *     min: 60
+     * 
      * 
      * @param stats to be configured
-     * @param target_default provided in code for the value that will be provided unless overridden in yamls
      * */
-    AMStatReset& configureHzStats(AMStatReset& stats, const int target_default);
+    AMStatReset& configureHzStats(AMStatReset& stats);
 
     virtual void heartbeatCB(const ros::TimerEvent& event);
 

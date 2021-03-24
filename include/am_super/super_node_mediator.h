@@ -47,6 +47,23 @@ public:
     ros::Time last_contact;  // last time a message was received from the node
   };
 
+ /**
+  * Describes the platform configuration for the hardware running AMROS.
+  *  maker-model-app
+  * Some variants are just the maker, some maker-model.
+  * Sometimes a variant may provide just the app, indiciating the app could be flown on different platforms.
+  */ 
+  struct PlatformVariant
+  {
+    /** the manufacture of the drone (DJI, ACSL)*/
+    std::string maker;
+    /** The product name of the drone specific to the maker (m210,m300,mini,pf2)*/
+    std::string model;
+    /** The application configuration for the mission (bridge, subt, etc). */
+    std::string app;
+
+  };
+
   struct Supervisor
   {
     /** map of all nodes in the system*/
@@ -287,6 +304,14 @@ public:
    * @returns true - if we are allowed to transition to this state regardless of the state we are currently in
    */
   bool forceTransition(const SuperState& to_state);
+
+  /**
+   * @returns true if the running platform has matching components for that required
+   */
+  bool isCorrectPlatform(const PlatformVariant required, PlatformVariant actual);
+
+  /** Given the string in the configurations, the variant is returned with the components filled in */
+  PlatformVariant platformConfigToVariant(const std::string config);
 
 private:
   /** name of supervisor node */

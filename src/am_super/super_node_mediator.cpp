@@ -345,4 +345,27 @@ bool SuperNodeMediator::transitionHasControllerState(const StateTransition& tran
   return transition.controller_state != StateTransition::NO_CONTROLLER_STATE;
 }
 
+SuperNodeMediator::PlatformVariant SuperNodeMediator::platformConfigToVariant(const std::string config)
+{
+  std::vector<std::string> results;
+  boost::split(results, config, [](char c){return c == '-';});
+  PlatformVariant variant;
+  if (results.size() > 0){
+    variant.maker = results.at(0);
+  }
+  if (results.size() > 1){
+    variant.model = results.at(1);
+  }
+  if (results.size() > 2)
+  {
+    variant.app = results.at(2);
+  }
+}
+
+  bool SuperNodeMediator::isCorrectPlatform(const SuperNodeMediator::PlatformVariant required, 
+                                            const SuperNodeMediator::PlatformVariant actual)
+  {
+    return false;
+  }
+
 }

@@ -547,3 +547,35 @@ TEST_F(SuperNodeMediatorTest, invalidTransition)
   SuperNodeMediator::StateTransition t = superNodeMediator.invalidTransition();
   ASSERT_FALSE(superNodeMediator.transitionIsValid(t));
 }
+
+void assertPlatformVariant(SuperNodeMediator::PlatformVariant expected, SuperNodeMediator::PlatformVariant actual)
+{
+  ASSERT_EQ(expected.maker,actual.maker);
+  ASSERT_EQ(expected.model,actual.model);
+  ASSERT_EQ(expected.app,actual.app);
+}
+
+TEST_F(SuperNodeMediatorTest, platformConfigToVariant_makerOnly)
+{
+  SuperNodeMediator::PlatformVariant expected;
+  SuperNodeMediator::PlatformVariant actual = superNodeMediator.platformConfigToVariant("dji");
+  expected.maker="dji";
+  assertPlatformVariant(expected,actual);
+}
+
+TEST_F(SuperNodeMediatorTest, platformConfigToVariant_makerModel)
+{
+  ASSERT_TRUE(false);
+}
+
+TEST_F(SuperNodeMediatorTest, platformConfigToVariant_appOnly)
+{
+  ASSERT_TRUE(false);
+}
+
+TEST_F(SuperNodeMediatorTest, platformConfigToVariant_makerModelApp)
+{
+  ASSERT_TRUE(false);
+}
+
+

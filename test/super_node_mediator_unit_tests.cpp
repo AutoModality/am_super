@@ -613,3 +613,10 @@ TEST_F(SuperNodeMediatorTest, isCorrectPlatform_wrongAppIsFalse)
   ASSERT_FALSE(superNodeMediator.isCorrectPlatform(expected,actual));
 }
 
+
+TEST_F(SuperNodeMediatorTest, isCorrectPlatform_emptyRequirementsIsTrue)
+{
+  SuperNodeMediator::PlatformVariant expected;
+  SuperNodeMediator::PlatformVariant actual = superNodeMediator.platformConfigToVariant("dji-m300-culvert");
+  ASSERT_TRUE(superNodeMediator.isCorrectPlatform(expected,actual));
+}

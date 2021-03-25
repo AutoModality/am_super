@@ -366,7 +366,10 @@ SuperNodeMediator::PlatformVariant SuperNodeMediator::platformConfigToVariant(co
   bool SuperNodeMediator::isCorrectPlatform(const SuperNodeMediator::PlatformVariant &required, 
                                             const SuperNodeMediator::PlatformVariant &actual)
   {
+    //if all is empty, then its a pass
     bool pass = true;
+
+    //maker can be solo, but model must always be with maker
     if(!required.maker.empty())
     {
       pass = pass && required.maker == actual.maker;
@@ -375,10 +378,12 @@ SuperNodeMediator::PlatformVariant SuperNodeMediator::platformConfigToVariant(co
         pass = pass && required.model == actual.model;
       }
     }
+    //app is optional, but can be by itself
     if(!required.app.empty())
     {
       pass = pass && required.app == actual.app;
     }
+    
     return pass;
   }
 

@@ -633,6 +633,19 @@ private:
   }
 
   /**
+   * Verify the basic requirements are being met:
+   * - platform required matches actual platform
+   */  
+  void onConfigure()
+  {
+    if(!node_mediator_.isCorrectPlatform(supervisor_.required_platform,supervisor_.actual_platform))
+    {
+      ROS_ERROR_STREAM("Platform Required ")
+      error("NSK2",true);
+    }
+  }
+
+  /**
    * send led color message based on raw values
    */
   void sendLEDMessage(int r, int g, int b, float period = 0.0)

@@ -348,7 +348,7 @@ bool SuperNodeMediator::transitionHasControllerState(const StateTransition& tran
 SuperNodeMediator::PlatformVariant SuperNodeMediator::platformConfigToVariant(const std::string config)
 {
   std::vector<std::string> results;
-  boost::split(results, config, [](char c){return c == '-';});
+  boost::split(results, config, [](char c){return c == '_';});
   PlatformVariant variant;
   if (results.size() > 0){
     variant.maker = results.at(0);
@@ -363,28 +363,47 @@ SuperNodeMediator::PlatformVariant SuperNodeMediator::platformConfigToVariant(co
   return variant;
 }
 
-  bool SuperNodeMediator::isCorrectPlatform(const SuperNodeMediator::PlatformVariant &required, 
-                                            const SuperNodeMediator::PlatformVariant &actual)
+std::string platformVariantToConfig(const SuperNodeMediator::PlatformVariant variant)
+{
+  std::stringstream config;
+  const std::string dilimeter = "_"; //must match character in parser method
+  if(!variant.maker.empty())
   {
-    //if all is empty, then its a pass
-    bool pass = true;
-
-    //maker can be solo, but model must always be with maker
-    if(!required.maker.empty())
-    {
-      pass = pass && required.maker == actual.maker;
-      if(!required.model.empty())
+    config << variant.maker;
+    if(!variant.model.empty())
+    { 
+      config << dilimeter << variant.model;
+      if(!variant.app.empty())
       {
-        pass = pass && required.model == actual.model;
+        config << dilimeter << variant.app;
       }
     }
-    //app is optional, but can be by itself
-    if(!required.app.empty())
-    {
-      pass = pass && required.app == actual.app;
-    }
-    
-    return pass;
   }
+  return config.str();
+}
+
+bool SuperNodeMediator::isCorrectPlatform(const SuperNodeMediator::PlatformVariant &required, 
+                                          const SuperNodeMediator::PlatformVariant &actual)
+{
+  //if all is empty, then its a pass
+  bool pass = true;
+
+  //maker can be solo, but model must always be with maker
+  if(!required.maker.empty())
+  {
+    pass = pass && required.maker == actual.maker;
+    if(!required.model.empty())
+    {
+      pass = pass && required.model == actual.model;
+    }
+  }
+  //app is optional, but can be by itself
+  if(!required.app.empty())
+  {
+    pass = pass && required.app == actual.app;
+  }
+  
+  return pass;
+}
 
 }

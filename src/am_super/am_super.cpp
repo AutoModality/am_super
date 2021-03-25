@@ -640,7 +640,7 @@ private:
   {
     if(!node_mediator_.isCorrectPlatform(supervisor_.required_platform,supervisor_.actual_platform))
     {
-      ROS_ERROR_STREAM("Platform Required ")
+      ROS_ERROR_STREAM("Required platform " << node_mediator_.platformVariantToConfig())
       error("NSK2",true);
     }
   }

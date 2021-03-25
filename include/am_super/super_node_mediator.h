@@ -308,7 +308,7 @@ public:
   /**
    * @returns true if the running platform has matching components for that required
    */
-  bool isCorrectPlatform(const PlatformVariant required, PlatformVariant actual);
+  bool isCorrectPlatform(const PlatformVariant &required, const PlatformVariant &actual);
 
   /** Given the string in the configurations, the variant is returned with the components filled in */
   PlatformVariant platformConfigToVariant(const std::string config);

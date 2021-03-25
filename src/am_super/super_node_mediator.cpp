@@ -363,10 +363,23 @@ SuperNodeMediator::PlatformVariant SuperNodeMediator::platformConfigToVariant(co
   return variant;
 }
 
-  bool SuperNodeMediator::isCorrectPlatform(const SuperNodeMediator::PlatformVariant required, 
-                                            const SuperNodeMediator::PlatformVariant actual)
+  bool SuperNodeMediator::isCorrectPlatform(const SuperNodeMediator::PlatformVariant &required, 
+                                            const SuperNodeMediator::PlatformVariant &actual)
   {
-    return false;
+    bool pass = true;
+    if(!required.maker.empty())
+    {
+      pass = pass && required.maker == actual.maker;
+      if(!required.model.empty())
+      {
+        pass = pass && required.model == actual.model;
+      }
+    }
+    if(!required.app.empty())
+    {
+      pass = pass && required.app == actual.app;
+    }
+    return pass;
   }
 
 }

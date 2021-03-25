@@ -224,15 +224,6 @@ TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_ErrorStatusReturnsTrueButH
   assertAllManifestedNodesCheck(true, node, true, "[AA0A]");
 }
 
-TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_FlightControllerLifeCycleNotYetImplementedSkipsCheck)
-{
-  SuperNodeMediator::SuperNodeInfo node;
-  node.manifested = true;
-  node.online = true;
-  node.name = "flight_controller";
-  bool expected_success, check_result;
-  assertAllManifestedNodesCheck(expected_success = true, node, check_result = false, "[WCK2]");
-}
 
 TEST_F(SuperNodeMediatorTest, allManifestedNodesCheck_MultipleNodes_FirstNodeFails)
 {

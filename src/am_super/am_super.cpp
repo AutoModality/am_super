@@ -272,12 +272,6 @@ private:
   {
     const brain_box_msgs::NodeStatus::ConstPtr& rmsg = event.getMessage();
 
-    /*
-     * legacy messages don't carry any state or status info so just process as ACTIVE/OK
-     */
-    processState(rmsg->node_name, LifeCycleState::INACTIVE, LifeCycleStatus::OK, rmsg->status, rmsg->value,
-                 rmsg->process_id, event.getReceiptTime());
-
     // TODO: topic name should come from vb_util_lib::topics.
     LOG_MSG("/process/status", rmsg, SU_LOG_LEVEL);
   }

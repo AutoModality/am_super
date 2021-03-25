@@ -514,7 +514,7 @@ private:
   {
     std::stringstream ss;
     genSystemState(ss);
-    ROS_INFO_STREAM(ss.str());
+    ROS_INFO_STREAM_THROTTLE(LOG_THROTTLE_S, ss.str());
   }
 
   /**

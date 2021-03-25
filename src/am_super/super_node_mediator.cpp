@@ -360,6 +360,7 @@ SuperNodeMediator::PlatformVariant SuperNodeMediator::platformConfigToVariant(co
   {
     variant.app = results.at(2);
   }
+  return variant;
 }
 
   bool SuperNodeMediator::isCorrectPlatform(const SuperNodeMediator::PlatformVariant required, 

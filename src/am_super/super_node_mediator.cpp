@@ -340,11 +340,11 @@ bool SuperNodeMediator::transitionHasControllerState(const StateTransition& tran
   return transition.controller_state != StateTransition::NO_CONTROLLER_STATE;
 }
 
-SuperNodeMediator::PlatformVariant SuperNodeMediator::platformConfigToVariant(const std::string config)
+void SuperNodeMediator::platformConfigToVariant(const std::string config,
+                                                SuperNodeMediator::PlatformVariant &variant)
 {
   std::vector<std::string> results;
   boost::split(results, config, [](char c){return c == '_';});
-  PlatformVariant variant;
   if (results.size() > 0){
     variant.maker = results.at(0);
   }
@@ -355,7 +355,6 @@ SuperNodeMediator::PlatformVariant SuperNodeMediator::platformConfigToVariant(co
   {
     variant.app = results.at(2);
   }
-  return variant;
 }
 
 std::string SuperNodeMediator::platformVariantToConfig(const SuperNodeMediator::PlatformVariant &variant)

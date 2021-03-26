@@ -11,9 +11,16 @@ protected:
 
 TEST_F(PlatformRequiredPassTest, requiredPlatformInLaunchFile)
 {
- waitUntil(LifeCycleState::CONFIGURING,"NWO2");
- waitUntil(LifeCycleState::INACTIVE,"NN29");
- waitUntilMissionState(brain_box_msgs::VxState::READY,"89UI");
+  std::string platform_required_param;
+  ros::param::param<string>("/am_super/platform/required", platform_required_param, "missing");
+  ASSERT_EQ(platform_required_param,"test");
+  
+  std::string platform_actual_param;
+  ros::param::param<string>("/am_super/platform/actual", platform_actual_param, "missing");
+  ASSERT_EQ(platform_actual_param,"test");
+  waitUntil(LifeCycleState::CONFIGURING,"NWO2");
+  waitUntil(LifeCycleState::INACTIVE,"NN29");
+  waitUntilMissionState(brain_box_msgs::VxState::READY,"89UI");
 }
 
 int main(int argc, char** argv)

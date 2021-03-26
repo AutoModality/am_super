@@ -92,13 +92,6 @@ public:
 
     /** Signals if any of the manifested nodes status errored */
     bool status_error = false;
-
-    /** If provided, super will enforce the actual platform matches the requirement using isCorrectPlatform*/
-    PlatformVariant required_platform;
-
-    /** The platform running the launch configurations.  Must satisfy isCorrectPlatform using required_platform
-    */
-    PlatformVariant actual_platform;
   };
 
   /**Encapsulates properties and methods that relate to the transition of states
@@ -318,7 +311,7 @@ public:
   bool isCorrectPlatform(const PlatformVariant &required, const PlatformVariant &actual);
 
   /** Given the string in the configurations, the variant is returned with the components filled in */
-  PlatformVariant platformConfigToVariant(const std::string config);
+  void platformConfigToVariant(const std::string config, PlatformVariant &variant);
 
   /** Converts the platform struct into a single string, separated by underscores
    * {maker}_{model}_{app}

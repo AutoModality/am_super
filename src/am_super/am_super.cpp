@@ -615,13 +615,19 @@ private:
    */  
   void onConfigure()
   {
-    if(!node_mediator_.isCorrectPlatform(supervisor_.required_platform,supervisor_.actual_platform))
+        
+    SuperNodeMediator::PlatformVariant required_platform;
+    SuperNodeMediator::PlatformVariant actual_platform;
+    configurePlatformRequirements(required_platform,actual_platform);
+    ROS_WARN_STREAM("required" << required_platform.maker);
+    ROS_WARN_STREAM("actual" << actual_platform.maker);
+    if(!node_mediator_.isCorrectPlatform(required_platform,actual_platform))
     {
-      ROS_ERROR_STREAM("Platform required: " 
-                        << node_mediator_.platformVariantToConfig(supervisor_.required_platform)
-                        << " actual: " 
-                        << node_mediator_.platformVariantToConfig(supervisor_.required_platform)
-                        << "[PO90]");
+      ROS_ERROR_STREAM("Platform required: `" 
+                        << node_mediator_.platformVariantToConfig(required_platform)
+                        << "` actual: `" 
+                        << node_mediator_.platformVariantToConfig(actual_platform)
+                        << "` [PO90]");
       error("NSK2",true); //force failure since this is not recoverable
     }
     else
@@ -630,6 +636,36 @@ private:
     }
   }
 
+  /** load the platform configurations from the launch file and populate the variants provided.
+   */
+  void configurePlatformRequirements(SuperNodeMediator::PlatformVariant &required_platform,
+                                     SuperNodeMediator::PlatformVariant &actual_platform)
+  {
+    //actual platform is required or we fail 
+    std::string not_provided = "none";
+    std::string actual_platform_param;
+    param("platform/actual",actual_platform_param,not_provided);
+    if(actual_platform_param == not_provided)
+    {
+      ROS_ERROR_STREAM("param `/am_super/platform/actual` must provide the platform running");
+      error("NNS9",true);
+      return;
+    }
+
+    //compare actual platform to required platform, if provided
+    std::string required_platform_param;
+    param("platform/required",required_platform_param,not_provided);
+    if(required_platform_param != not_provided)
+    {
+      node_mediator_.platformConfigToVariant(required_platform_param,required_platform);
+      node_mediator_.platformConfigToVariant(actual_platform_param,actual_platform);
+    }
+    else
+    {
+      ROS_WARN("platform requirements not set");
+    }
+
+  }
   /**
    * send led color message based on raw values
    */

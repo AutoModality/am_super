@@ -9,11 +9,19 @@ protected:
 
 };
 
-TEST_F(PlatformRequiredFailTest, requiredPlatformInLaunchFile)
+TEST_F(PlatformRequiredFailTest, requiredPlatformDifferentThanActual)
 {
- waitUntil(LifeCycleState::CONFIGURING,"UIYT");
- waitUntil(LifeCycleState::ERROR_PROCESSING,"23SS");
- waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN,"HYUJ");
+  std::string platform_required_param;
+  ros::param::param<string>("/am_super/platform/required", platform_required_param, "missing");
+  ASSERT_EQ(platform_required_param,"test");
+  
+  std::string platform_actual_param;
+  ros::param::param<string>("/am_super/platform/actual", platform_actual_param, "missing");
+  ASSERT_EQ(platform_actual_param,"not_test");
+  
+  waitUntil(LifeCycleState::CONFIGURING,"UIYT");
+  waitUntil(LifeCycleState::FINALIZED,"23SS");
+  waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN,"HYUJ");
 }
 
 int main(int argc, char** argv)

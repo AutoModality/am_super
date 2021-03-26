@@ -1,15 +1,15 @@
 #include <am_rostest_lib/am_rostest.h>
 
-class PlatformAppRequiredPassTest : public RostestBase, am::AMLifeCycle
+class PlatformAppRequiredFailTest : public RostestBase, am::AMLifeCycle
 {
 protected:
 
-  PlatformAppRequiredPassTest() : RostestBase() {
+  PlatformAppRequiredFailTest() : RostestBase() {
   }
 
 };
 
-TEST_F(PlatformAppRequiredPassTest, requiredPlatformInLaunchFile)
+TEST_F(PlatformAppRequiredFailTest, requiredPlatformInLaunchFile)
 {
   std::string missing = "missing";
   
@@ -19,14 +19,14 @@ TEST_F(PlatformAppRequiredPassTest, requiredPlatformInLaunchFile)
 
   std::string platform_app_required_param;
   ros::param::param<string>("/am_super/platform/app/required", platform_app_required_param, missing);
-  ASSERT_EQ(platform_app_required_param,"test");
+  ASSERT_EQ(platform_app_required_param,"other");
   
   std::string platform_actual_param;
   ros::param::param<string>("/am_super/platform/actual", platform_actual_param, missing);
   ASSERT_EQ(platform_actual_param,"maker_model_test");
-  waitUntil(LifeCycleState::CONFIGURING,"XXSS");
-  waitUntil(LifeCycleState::INACTIVE,"SSXX");
-  waitUntilMissionState(brain_box_msgs::VxState::READY,"XSXS");
+  waitUntil(LifeCycleState::CONFIGURING,"LL88");
+  waitUntil(LifeCycleState::FINALIZED,"88LL");
+  waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN,"L8L8");
 }
 
 int main(int argc, char** argv)

@@ -538,3 +538,124 @@ TEST_F(SuperNodeMediatorTest, invalidTransition)
   SuperNodeMediator::StateTransition t = superNodeMediator.invalidTransition();
   ASSERT_FALSE(superNodeMediator.transitionIsValid(t));
 }
+
+void assertPlatformVariant(SuperNodeMediator::PlatformVariant &expected, SuperNodeMediator::PlatformVariant &actual)
+{
+  ASSERT_EQ(expected.maker,actual.maker);
+  ASSERT_EQ(expected.model,actual.model);
+  ASSERT_EQ(expected.app,actual.app);
+}
+
+TEST_F(SuperNodeMediatorTest, platformConfigToVariant_makerOnly)
+{
+  SuperNodeMediator::PlatformVariant expected;
+  SuperNodeMediator::PlatformVariant actual;
+  superNodeMediator.platformConfigToVariant("dji",actual);
+  expected.maker="dji";
+  assertPlatformVariant(expected,actual);
+}
+
+TEST_F(SuperNodeMediatorTest, platformConfigToVariant_makerModel)
+{
+  SuperNodeMediator::PlatformVariant expected;
+  SuperNodeMediator::PlatformVariant actual;
+  superNodeMediator.platformConfigToVariant("dji_m300",actual);
+  expected.maker="dji";
+  expected.model="m300";
+  assertPlatformVariant(expected,actual);}
+
+TEST_F(SuperNodeMediatorTest, platformConfigToVariant_makerModelApp)
+{
+  SuperNodeMediator::PlatformVariant expected;
+  SuperNodeMediator::PlatformVariant actual;
+  superNodeMediator.platformConfigToVariant("dji_m300_bridge",actual);
+  expected.maker="dji";
+  expected.model="m300";
+  expected.app="bridge";
+  assertPlatformVariant(expected,actual);
+}
+
+TEST_F(SuperNodeMediatorTest, platformVariantToConfig_empty)
+{
+  SuperNodeMediator::PlatformVariant variant;
+  ASSERT_EQ(superNodeMediator.platformVariantToConfig(variant),"");
+}
+TEST_F(SuperNodeMediatorTest, platformVariantToConfig_makerOnly)
+{
+  SuperNodeMediator::PlatformVariant variant;
+  variant.maker="dji";
+  ASSERT_EQ(superNodeMediator.platformVariantToConfig(variant),"dji");
+}
+
+TEST_F(SuperNodeMediatorTest, platformVariantToConfig_makerModel)
+{
+  SuperNodeMediator::PlatformVariant variant;
+  variant.maker="dji";
+  variant.model="m300";
+  ASSERT_EQ(superNodeMediator.platformVariantToConfig(variant),"dji_m300");
+}
+
+TEST_F(SuperNodeMediatorTest, platformVariantToConfig_makerModelApp)
+{
+  SuperNodeMediator::PlatformVariant variant;
+  variant.maker="dji";
+  variant.model="m300";
+  variant.app="bridge";
+  ASSERT_EQ(superNodeMediator.platformVariantToConfig(variant),"dji_m300_bridge");
+}
+
+TEST_F(SuperNodeMediatorTest, platformVariantToConfig_appOnlyShowsWildcard)
+{
+  SuperNodeMediator::PlatformVariant variant;
+  variant.app="bridge";
+  ASSERT_EQ(superNodeMediator.platformVariantToConfig(variant),"*_*_bridge");
+}
+
+
+TEST_F(SuperNodeMediatorTest, isCorrectPlatform_sameConfigIsTrue)
+{
+  std::string config = "dji_m300_bridge";
+  SuperNodeMediator::PlatformVariant expected;
+  superNodeMediator.platformConfigToVariant(config,expected);
+  SuperNodeMediator::PlatformVariant actual;
+  superNodeMediator.platformConfigToVariant(config,actual);
+  ASSERT_TRUE(superNodeMediator.isCorrectPlatform(expected,actual));
+}
+
+TEST_F(SuperNodeMediatorTest, isCorrectPlatform_missingAppIsFalse)
+{
+  SuperNodeMediator::PlatformVariant expected;
+  superNodeMediator.platformConfigToVariant("dji_m300_bridge",expected);
+  SuperNodeMediator::PlatformVariant actual;
+  superNodeMediator.platformConfigToVariant("dji_m300",actual);
+  ASSERT_FALSE(superNodeMediator.isCorrectPlatform(expected,actual));
+}
+
+/** Demonstrate any drone could work as long as it satisfies the app requirements */
+TEST_F(SuperNodeMediatorTest, isCorrectPlatform_appOnlyIsTrue)
+{
+  SuperNodeMediator::PlatformVariant expected;
+  expected.app = "bridge";
+  SuperNodeMediator::PlatformVariant actual;
+  superNodeMediator.platformConfigToVariant("dji_m300_bridge",actual);
+  ASSERT_TRUE(superNodeMediator.isCorrectPlatform(expected,actual));
+}
+
+TEST_F(SuperNodeMediatorTest, isCorrectPlatform_wrongAppIsFalse)
+{
+  SuperNodeMediator::PlatformVariant expected;
+  expected.app = "bridge";
+  SuperNodeMediator::PlatformVariant actual;
+  superNodeMediator.platformConfigToVariant("dji_m300_culvert",actual);
+  ASSERT_FALSE(superNodeMediator.isCorrectPlatform(expected,actual));
+}
+
+
+TEST_F(SuperNodeMediatorTest, isCorrectPlatform_emptyRequirementsIsTrue)
+{
+  SuperNodeMediator::PlatformVariant expected;
+  SuperNodeMediator::PlatformVariant actual;
+  superNodeMediator.platformConfigToVariant("dji_m300_culvert",actual);
+  ASSERT_TRUE(superNodeMediator.isCorrectPlatform(expected,actual));
+}
+

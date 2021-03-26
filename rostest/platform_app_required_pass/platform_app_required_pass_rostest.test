@@ -1,0 +1,9 @@
+<launch>
+  <!-- include test file and pass in this test node name -->
+  <include file="$(find am_super)/rostest/am_super_rostest.test">
+    <arg name="test_name" value="platform_app_required_pass"/>
+  </include>
+  <!-- only the app matters, the maker/model does not -->
+  <rosparam param="/am_super/platform/app/required">test</rosparam>
+  <rosparam param="/am_super/platform/actual">maker_model_test</rosparam>
+</launch>

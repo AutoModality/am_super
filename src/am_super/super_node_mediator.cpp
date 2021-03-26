@@ -340,4 +340,69 @@ bool SuperNodeMediator::transitionHasControllerState(const StateTransition& tran
   return transition.controller_state != StateTransition::NO_CONTROLLER_STATE;
 }
 
+void SuperNodeMediator::platformConfigToVariant(const std::string config,
+                                                SuperNodeMediator::PlatformVariant &variant)
+{
+  std::vector<std::string> results;
+  boost::split(results, config, [](char c){return c == '_';});
+  if (results.size() > 0){
+    variant.maker = results.at(0);
+  }
+  if (results.size() > 1){
+    variant.model = results.at(1);
+  }
+  if (results.size() > 2)
+  {
+    variant.app = results.at(2);
+  }
+}
+
+std::string SuperNodeMediator::platformVariantToConfig(const SuperNodeMediator::PlatformVariant &variant)
+{
+  std::stringstream config;
+  const std::string dilimeter = "_"; //must match character in parser method
+  if(!variant.maker.empty())
+  { 
+    config << variant.maker;
+    if(!variant.model.empty())
+    { 
+      config << dilimeter << variant.model;
+      if(!variant.app.empty())
+      {
+        config << dilimeter << variant.app;
+      }
+    }
+  }
+  else if(!variant.app.empty())
+  {
+    std::string any = "*";
+    config << any << dilimeter << any << dilimeter << variant.app;
+  }
+  return config.str();
+}
+
+bool SuperNodeMediator::isCorrectPlatform(const SuperNodeMediator::PlatformVariant &required, 
+                                          const SuperNodeMediator::PlatformVariant &actual)
+{
+  //if all is empty, then its a pass
+  bool pass = true;
+
+  //maker can be solo, but model must always be with maker
+  if(!required.maker.empty())
+  {
+    pass = pass && required.maker == actual.maker;
+    if(!required.model.empty())
+    {
+      pass = pass && required.model == actual.model;
+    }
+  }
+  //app is optional, but can be by itself
+  if(!required.app.empty())
+  {
+    pass = pass && required.app == actual.app;
+  }
+  
+  return pass;
+}
+
 }

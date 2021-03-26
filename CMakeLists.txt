@@ -224,6 +224,10 @@ if (CATKIN_ENABLE_TESTING)
                  hz_config
                  manual_to_disarming 
                  param
+                 platform_app_required_fail
+                 platform_app_required_pass
+                 platform_required_fail
+                 platform_required_pass
                  primary
                  ready_to_shutdown 
                  semi_auto_to_manual

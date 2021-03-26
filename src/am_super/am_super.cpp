@@ -66,7 +66,6 @@ private:
   ros::Publisher super_status_pub_;
   ros::Publisher led_pub_;
   ros::Subscriber node_state_sub_;
-  ros::Subscriber node_status_sub_;
   ros::Subscriber operator_command_sub_;
   ros::Subscriber controller_state_sub;
   ros::Subscriber diagnostics_sub;
@@ -214,10 +213,6 @@ public:
      * node status via LifeCycle
      */
     node_state_sub_ = nh_.subscribe("/node_state", 100, &AMSuper::nodeStateCB, this);
-    /**
-     * legacy node status
-     */
-    node_status_sub_ = nh_.subscribe("/process/status", 100, &AMSuper::statusCB, this);
 
     /**
      * commands from operator
@@ -262,24 +257,6 @@ private:
 
     // TODO: topic name should come from vb_util_lib::topics.h
     LOG_MSG("/node_state", rmsg, SU_LOG_LEVEL);
-  }
-
-  /**
-   * process legacy messages from nodes
-   * TODO: mark deprecated due to legacy. use nodeStateCB.
-   */
-  void statusCB(const ros::MessageEvent<brain_box_msgs::NodeStatus const>& event)
-  {
-    const brain_box_msgs::NodeStatus::ConstPtr& rmsg = event.getMessage();
-
-    /*
-     * legacy messages don't carry any state or status info so just process as ACTIVE/OK
-     */
-    processState(rmsg->node_name, LifeCycleState::INACTIVE, LifeCycleStatus::OK, rmsg->status, rmsg->value,
-                 rmsg->process_id, event.getReceiptTime());
-
-    // TODO: topic name should come from vb_util_lib::topics.
-    LOG_MSG("/process/status", rmsg, SU_LOG_LEVEL);
   }
 
   void controllerStateCB(const ros::MessageEvent<brain_box_msgs::ControllerState const>& event)

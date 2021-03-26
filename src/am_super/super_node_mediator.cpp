@@ -206,12 +206,7 @@ bool SuperNodeMediator::forceTransition(const SuperState& to_state)
 
 bool SuperNodeMediator::lifeCycleNotYetImplemented(string node_name)
 {
-  string stripped = SuperNodeMediator::nodeNameStripped(node_name);
-  return  
-    stripped == "flight_controller" || 
-    stripped == "locator" ||
-    stripped == "dji_sdk" ||
-    stripped == "can_node";
+  return false;
 }
 
 bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)

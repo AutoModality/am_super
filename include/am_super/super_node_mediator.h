@@ -306,14 +306,26 @@ public:
   bool forceTransition(const SuperState& to_state);
 
   /**
+   * Validates the actual platform matches the required. 
+   * Empty required platform will always return true.
+   * App provided by itself will ensure the app is correct without concern for the maker/model.
+   * dji_m300_bridge and acsl_pf2_bridge will both pass required app=bridge
+   * 
    * @returns true if the running platform has matching components for that required
    */
   bool isCorrectPlatform(const PlatformVariant &required, const PlatformVariant &actual);
 
-  /** Given the string in the configurations, the variant is returned with the components filled in */
+  /** Given the string in the configurations, the variant given 
+   * is populated with the components parsed from the config 
+   *  dji_m300 -> maker=dji,model=m300,app=""
+   *  dji_m300_bridge -> ...,app=bridge
+   * */
   void platformConfigToVariant(const std::string config, PlatformVariant &variant);
 
-  /** Converts the platform struct into a single string, separated by underscores
+  /** 
+   * Converts the platform struct into a single string, separated by underscores
+   * {maker}
+   * {maker}_{model}
    * {maker}_{model}_{app}
    */
   std::string platformVariantToConfig(const PlatformVariant &variant);

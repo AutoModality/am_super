@@ -323,7 +323,7 @@ public:
   /** Converts the platform struct into a single string, separated by underscores
    * {maker}_{model}_{app}
    */
-  std::string platformVariantToConfig(const PlatformVariant variant);
+  std::string platformVariantToConfig(const PlatformVariant &variant);
 
 private:
   /** name of supervisor node */

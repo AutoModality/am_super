@@ -581,6 +581,36 @@ TEST_F(SuperNodeMediatorTest, platformConfigToVariant_makerModelApp)
   assertPlatformVariant(expected,actual);
 }
 
+TEST_F(SuperNodeMediatorTest, platformVariantToConfig_empty)
+{
+  SuperNodeMediator::PlatformVariant variant;
+  ASSERT_EQ(superNodeMediator.platformVariantToConfig(variant),"");
+}
+TEST_F(SuperNodeMediatorTest, platformVariantToConfig_makerOnly)
+{
+  SuperNodeMediator::PlatformVariant variant;
+  variant.maker="dji";
+  ASSERT_EQ(superNodeMediator.platformVariantToConfig(variant),"dji");
+}
+
+TEST_F(SuperNodeMediatorTest, platformVariantToConfig_makerModel)
+{
+  SuperNodeMediator::PlatformVariant variant;
+  variant.maker="dji";
+  variant.model="m300";
+  ASSERT_EQ(superNodeMediator.platformVariantToConfig(variant),"dji_m300");
+}
+
+TEST_F(SuperNodeMediatorTest, platformVariantToConfig_makerModelApp)
+{
+  SuperNodeMediator::PlatformVariant variant;
+  variant.maker="dji";
+  variant.model="m300";
+  variant.app="bridge";
+  ASSERT_EQ(superNodeMediator.platformVariantToConfig(variant),"dji_m300_bridge");
+}
+
+
 TEST_F(SuperNodeMediatorTest, isCorrectPlatform_sameConfigIsTrue)
 {
   std::string config = "dji_m300_bridge";

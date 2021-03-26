@@ -363,12 +363,12 @@ SuperNodeMediator::PlatformVariant SuperNodeMediator::platformConfigToVariant(co
   return variant;
 }
 
-std::string platformVariantToConfig(const SuperNodeMediator::PlatformVariant variant)
+std::string SuperNodeMediator::platformVariantToConfig(const SuperNodeMediator::PlatformVariant variant)
 {
   std::stringstream config;
   const std::string dilimeter = "_"; //must match character in parser method
   if(!variant.maker.empty())
-  {
+  { 
     config << variant.maker;
     if(!variant.model.empty())
     { 

@@ -373,6 +373,11 @@ std::string SuperNodeMediator::platformVariantToConfig(const SuperNodeMediator::
       }
     }
   }
+  else if(!variant.app.empty())
+  {
+    std::string any = "*";
+    config << any << dilimeter << any << dilimeter << variant.app;
+  }
   return config.str();
 }
 

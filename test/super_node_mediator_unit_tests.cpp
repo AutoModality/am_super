@@ -604,6 +604,13 @@ TEST_F(SuperNodeMediatorTest, platformVariantToConfig_makerModelApp)
   ASSERT_EQ(superNodeMediator.platformVariantToConfig(variant),"dji_m300_bridge");
 }
 
+TEST_F(SuperNodeMediatorTest, platformVariantToConfig_appOnlyShowsWildcard)
+{
+  SuperNodeMediator::PlatformVariant variant;
+  variant.app="bridge";
+  ASSERT_EQ(superNodeMediator.platformVariantToConfig(variant),"*_*_bridge");
+}
+
 
 TEST_F(SuperNodeMediatorTest, isCorrectPlatform_sameConfigIsTrue)
 {

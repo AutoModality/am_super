@@ -651,14 +651,20 @@ private:
       error("NNS9",true);
       return;
     }
+    node_mediator_.platformConfigToVariant(actual_platform_param,actual_platform);
 
     //compare actual platform to required platform, if provided
     std::string required_platform_param;
+    std::string platform_app_required_param;
     param("platform/required",required_platform_param,not_provided);
+    param("platform/app/required",platform_app_required_param,not_provided);
     if(required_platform_param != not_provided)
     {
       node_mediator_.platformConfigToVariant(required_platform_param,required_platform);
-      node_mediator_.platformConfigToVariant(actual_platform_param,actual_platform);
+    }
+    else if(platform_app_required_param != not_provided)
+    {
+      required_platform.app = platform_app_required_param;
     }
     else
     {

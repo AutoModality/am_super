@@ -622,7 +622,11 @@ private:
                         << " actual: " 
                         << node_mediator_.platformVariantToConfig(supervisor_.required_platform)
                         << "[PO90]");
-      error("NSK2",true);
+      error("NSK2",true); //force failure since this is not recoverable
+    }
+    else
+    {
+      AMLifeCycle::onConfigure();
     }
   }
 

@@ -276,7 +276,7 @@ bool AMLifeCycle::withinConfigureTolerance()
 
 void AMLifeCycle::error(std::string error_code, bool forced)
 {
-  error("",error_code,forced);
+  error("[GSHY]",error_code,forced);
 }
 
 void AMLifeCycle::error(std::string message, std::string error_code, bool forced)

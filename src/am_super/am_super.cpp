@@ -623,12 +623,13 @@ private:
     ROS_WARN_STREAM("actual" << actual_platform.maker);
     if(!node_mediator_.isCorrectPlatform(required_platform,actual_platform))
     {
-      ROS_ERROR_STREAM("Platform required: `" 
-                        << node_mediator_.platformVariantToConfig(required_platform)
-                        << "` actual: `" 
-                        << node_mediator_.platformVariantToConfig(actual_platform)
-                        << "` [PO90]");
-      error("NSK2",true); //force failure since this is not recoverable
+      std::stringstream message;
+      message << "Platform required: `" 
+              << node_mediator_.platformVariantToConfig(required_platform)
+              << "` actual: `" 
+              << node_mediator_.platformVariantToConfig(actual_platform)
+              ;
+      errorTerminal(message.str(),"NSK2"); //force failure since this is not recoverable
     }
     else
     {
@@ -647,8 +648,7 @@ private:
     param("platform/actual",actual_platform_param,not_provided);
     if(actual_platform_param == not_provided)
     {
-      ROS_ERROR_STREAM("param `/am_super/platform/actual` must provide the platform running");
-      error("NNS9",true);
+      errorTerminal("param `/am_super/platform/actual` must provide the platform running","NNS9");
       return;
     }
     node_mediator_.platformConfigToVariant(actual_platform_param,actual_platform);

@@ -273,25 +273,42 @@ bool AMLifeCycle::withinConfigureTolerance()
   }
   return tolerated;
 }
+
 void AMLifeCycle::error(std::string error_code, bool forced)
 {
-  std::string error_code_message=" [" + error_code + "] ";
+  error("",error_code,forced);
+}
+
+void AMLifeCycle::error(std::string message, std::string error_code, bool forced)
+{
+  std::string error_code_message = " [" + error_code + "] ";
   if (!forced && life_cycle_mediator_.redundantError(life_cycle_info_))
   {
     ROS_WARN_STREAM("Error called again, but previously reported." << error_code_message);
   }
   else if(!forced && withinConfigureTolerance())
   {
-    ROS_WARN_STREAM_THROTTLE(throttle_info_.warn_throttle_s,"Ignoring error" << error_code_message << "during configure tolerance of " << configure_tolerance_s << " seconds [GFRT]");
+    ROS_WARN_STREAM_THROTTLE(throttle_info_.warn_throttle_s,"Ignoring" << error_code_message << " during configure tolerance of " << configure_tolerance_s << " seconds [GFRT]");
   }
   else
   {
-    std::string forced_prefix = forced?"Forced ":"";
-    ROS_ERROR_STREAM(forced_prefix << "Error" << error_code_message << "called while in: " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << " [R45Y]" );
+     std::string forced_prefix = forced?"Terminal ":"";
+    ROS_ERROR_STREAM(message << "  state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << error_code_message << " [R45Y]" );
     setState(LifeCycleState::ERROR_PROCESSING);
     setStatus(LifeCycleStatus::ERROR);
     onError();
   }
+}
+
+
+void AMLifeCycle::errorTerminal(std::string message, std::string error_code)
+{
+  error(message,error_code,true);
+}
+
+void AMLifeCycle::errorTolerant(std::string message, std::string error_code)
+{
+  error(message,error_code,false);
 }
 
 void AMLifeCycle::onError()
@@ -350,7 +367,7 @@ void AMLifeCycle::addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw
   LifeCycleStatus status = stats_list_.process(throttle_info_.warn_throttle_s, throttle_info_.error_throttle_s);
   if(life_cycle_mediator_.statusError(status))
   {
-    error("PQAE");
+    errorTolerant("Stats reporting error","PQAE");
   }
   else
   {

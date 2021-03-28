@@ -304,25 +304,25 @@ private:
       SuperNodeMediator::SuperNodeInfo& nr = it->second;
       if (!nr.online)
       {
-        ROS_INFO_STREAM("manifested node '" << node_name << "' came online");
+        ROS_INFO_STREAM("manifested node '" << node_name << "' came online [PGPG]");
         nr.online = true;
         nodes_changed = true;
       }
       if (nr.state != state)
       {
-        ROS_INFO_STREAM(node_name << " changed state to = " << life_cycle_mediator_.stateToString(state));
+        ROS_INFO_STREAM(node_name << " changed state to = " << life_cycle_mediator_.stateToString(state) << " [38S8]");
         nr.state = state;
         nodes_changed = true;
       }
       if (nr.status != status)
       {
-        ROS_INFO_STREAM(node_name << " changed status to = " << life_cycle_mediator_.statusToString(status));
+        ROS_INFO_STREAM(node_name << " changed status to = " << life_cycle_mediator_.statusToString(status) << " [09SI]");
         nr.status = status;
         nodes_changed = true;
         if(nr.manifested && nr.status == LifeCycleStatus::ERROR)
         {
           supervisor_.status_error = true;
-          ROS_ERROR_STREAM("Manifested node " << nr.name << " changed status to ERROR. Shutting down nodes..");
+          ROS_ERROR_STREAM("Manifested node " << nr.name << " changed status to ERROR. Shutting down nodes... [JHRE]");
         }
       }
       if (nr.pid != pid)
@@ -330,11 +330,11 @@ private:
         //process id = 0 observed to be a node coming online. -1 appears to be offline
         if(pid == 0)
         {
-          ROS_INFO_STREAM(node_name << " process is alive");
+          ROS_INFO_STREAM(node_name << " process is alive [UIRE]");
         }
         else
         {
-          ROS_WARN_STREAM(node_name << " changed process id from: " << nr.pid << " to: " <<  pid);
+          ROS_WARN_STREAM(node_name << " changed process id from: " << nr.pid << " to: " <<  pid << " [WNEW]");
         }
         nr.pid = pid;
         nodes_changed = true;

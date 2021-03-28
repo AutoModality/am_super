@@ -193,6 +193,10 @@ class AMLifeCycle
      * */
     AMStatReset& configureHzStats(AMStatReset& stats);
 
+    /** Called periodically by a timer defaulting to 1 second.
+     * Useful for checking health regularly, but not during 
+     * callbacks which can affect performance and be too granular
+     */
     virtual void heartbeatCB(const ros::TimerEvent& event);
 
     void lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg);

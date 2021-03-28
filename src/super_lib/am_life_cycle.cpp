@@ -281,7 +281,7 @@ void AMLifeCycle::error(std::string error_code, bool forced)
 
 void AMLifeCycle::error(std::string message, std::string error_code, bool forced)
 {
-  std::string error_code_message = " Error[" + error_code + "] ";
+  std::string error_code_message = "Error[" + error_code + "] ";
   if(withinConfigureTolerance() && !forced)
   {
     ROS_WARN_STREAM_THROTTLE(throttle_info_.warn_throttle_s,"Ignoring tolerant error for (" << configure_tolerance_s << "s) `" << message << "` " << error_code_message << "[GFRT]");
@@ -290,7 +290,6 @@ void AMLifeCycle::error(std::string message, std::string error_code, bool forced
   {
     std::string forced_prefix = forced?"Terminal ":"";
     std::string repeat_prefix = "";
-
     //only change the state if 
     if(!life_cycle_mediator_.redundantError(life_cycle_info_))
     {
@@ -303,7 +302,7 @@ void AMLifeCycle::error(std::string message, std::string error_code, bool forced
       repeat_prefix = "Repeated ";
     }
     std::string error_explanation=forced_prefix + repeat_prefix + error_code_message;
-    ROS_ERROR_STREAM(message << "  state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << error_explanation << " [R45Y]" );
+    ROS_ERROR_STREAM(message << " -> " << error_explanation << " [R45Y]" );
   }
 }
 

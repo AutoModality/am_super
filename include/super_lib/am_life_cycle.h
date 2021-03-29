@@ -61,6 +61,7 @@ class AMLifeCycle
     void destroy();
     void cleanup();
     void sendNodeUpdate();
+    void error(std::string message, std::string error_code, bool forced = false);
 
   protected:
     std::string node_name_;
@@ -140,7 +141,14 @@ class AMLifeCycle
      * @param error_code provides a reference for the developer to correlate log output to the originating error.
      * @param forced terminal error that will not allow any tolerance
      */
+    [[deprecated("use errorTolerant or errorTerminal with message")]]
     void error(std::string error_code="NNLW",bool forced = false);
+
+    /** Reports an error for immediate shutdown without any tolerance. */
+    void errorTerminal(std::string message, std::string error_code);
+
+    /** Reports an error, but may not shutdown the system if tolerance is allowed.*/
+    void errorTolerant(std::string message, std::string error_code);
 
     /**
      * @brief Function to be defined by the user.
@@ -185,6 +193,10 @@ class AMLifeCycle
      * */
     AMStatReset& configureHzStats(AMStatReset& stats);
 
+    /** Called periodically by a timer defaulting to 1 second.
+     * Useful for checking health regularly, but not during 
+     * callbacks which can affect performance and be too granular
+     */
     virtual void heartbeatCB(const ros::TimerEvent& event);
 
     void lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg);

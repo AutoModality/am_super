@@ -9,14 +9,20 @@ protected:
   LifeCycleErrorTest() : 
     RostestBase() 
   {}
+
+
+  void onConfigure()
+  {
+    //do nothing...stay in configure
+  }
 };
 
 TEST_F(LifeCycleErrorTest, testStatus_Error)
 {
-  waitUntil(LifeCycleState::UNCONFIGURED);
+  waitUntil(LifeCycleState::CONFIGURING,"3K3K");
   ASSERT_EQ(LifeCycleStatus::OK,getStatus());
-  error("NNAQ",true);
-  waitUntil(LifeCycleState::ERROR_PROCESSING);
+  errorTerminal("forcing error during configuration", "NNAQ");
+  waitUntil(LifeCycleState::ERROR_PROCESSING,"NAKW");
   waitUntil(LifeCycleStatus::ERROR,"IUIU");
 }
 

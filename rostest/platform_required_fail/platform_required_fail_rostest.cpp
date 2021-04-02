@@ -19,7 +19,7 @@ TEST_F(PlatformRequiredFailTest, requiredPlatformDifferentThanActual)
   ros::param::param<string>("/am_super/platform/actual", platform_actual_param, "missing");
   ASSERT_EQ(platform_actual_param,"not_test");
   
-  waitUntil(LifeCycleState::CONFIGURING,"UIYT");
+
   waitUntil(LifeCycleState::FINALIZED,"23SS");
   waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN,"HYUJ");
 }

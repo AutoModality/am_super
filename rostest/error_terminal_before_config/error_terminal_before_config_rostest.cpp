@@ -23,6 +23,7 @@ TEST_F(LifeCycleErrorTest, testStatus_Error)
 {
   waitUntil(LifeCycleState::FINALIZED,"NAKW");
   waitUntil(LifeCycleStatus::ERROR,"IUIU");
+  waitUntil(LifeCycleStatus::ERROR,"NQNE");
 }
 
 int main(int argc, char** argv)

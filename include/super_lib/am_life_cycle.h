@@ -31,6 +31,18 @@ class AMLifeCycle
 {
   public:
     static constexpr std::string_view BROADCAST_NODE_NAME = "";
+    
+    /**Specific parts of the lifecycle where nodes have responsibilities.*/
+    LifeCycleState getState() const;
+
+    /**Simple indication of health */
+    LifeCycleStatus getStatus() const;
+    
+    /** @brief string represenation of LifeCycleState*/
+    const std::string_view& getStateName();
+    
+    /** @brief string representation of LifeCycleStatus*/
+    const std::string_view& getStatusName();
 
   private:
     /* Variables to help seperate business logic from AMLifeCycle ROS */
@@ -201,14 +213,6 @@ class AMLifeCycle
 
     void lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg);
 
-    /**Specific parts of the lifecycle where nodes have responsibilities.*/
-    LifeCycleState getState() const;
-    /**Simple indication of health */
-    LifeCycleStatus getStatus() const;
-    /** @brief string represenation of LifeCycleState*/
-    const std::string_view& getStateName();
-    /** @brief string representation of LifeCycleStatus*/
-    const std::string_view& getStatusName();
 
     double getThrottleS() const;
     void setThrottleS(const double throttleS);

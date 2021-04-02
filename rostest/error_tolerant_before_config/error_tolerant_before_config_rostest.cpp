@@ -11,12 +11,6 @@ protected:
   {
       errorTolerant("tolerant error during construction", "HW8S");
   }
-
-
-  void onConfigure()
-  {
-    //do nothing...stay in configure
-  }
 };
 
 TEST_F(LifeCycleErrorTest, testStatus_Error)

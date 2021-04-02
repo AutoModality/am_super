@@ -263,10 +263,10 @@ bool AMLifeCycle::withinConfigureTolerance()
 {
   bool tolerated = false;
   //outside of configuring, we have no tolerance
-  if(life_cycle_info_.state == LifeCycleState::CONFIGURING)
+  if(life_cycle_mediator_.unconfigured(life_cycle_info_))
   {
     ros::Duration duration_since_configure = ros::Time::now() - configure_start_time_;
-    if (duration_since_configure <= ros::Duration(configure_tolerance_s) )
+    if (life_cycle_info_.state == LifeCycleState::UNCONFIGURED || duration_since_configure <= ros::Duration(configure_tolerance_s) )
     {
       tolerated = true;
     }

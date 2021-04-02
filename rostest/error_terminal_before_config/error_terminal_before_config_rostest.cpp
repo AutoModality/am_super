@@ -21,8 +21,7 @@ protected:
 
 TEST_F(LifeCycleErrorTest, testStatus_Error)
 {
-  ASSERT_EQ(LifeCycleState::ERROR_PROCESSING, getState());
-  waitUntil(LifeCycleState::ERROR_PROCESSING,"NAKW");
+  waitUntil(LifeCycleState::FINALIZED,"NAKW");
   waitUntil(LifeCycleStatus::ERROR,"IUIU");
 }
 

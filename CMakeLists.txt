@@ -221,6 +221,8 @@ if (CATKIN_ENABLE_TESTING)
                  error_forced 
                  error_status 
                  error_status_without_stats 
+                 error_terminal_before_config
+                 error_tolerant_before_config
                  hz_config
                  manual_to_disarming 
                  param

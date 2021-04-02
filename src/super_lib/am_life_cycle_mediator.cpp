@@ -205,6 +205,19 @@ bool AMLifeCycleMediator::shutdown(const AMLifeCycleMediator::LifeCycleInfo& inf
     info.state == LifeCycleState::ACTIVE;
 }
 
+bool AMLifeCycleMediator::unconfigured(const AMLifeCycleMediator::LifeCycleInfo& info)
+{
+  switch (info.state)
+  {
+  case LifeCycleState::UNCONFIGURED:
+  case LifeCycleState::CONFIGURING:
+    return true;
+  default:
+    return false;
+  }
+}
+
+
 bool AMLifeCycleMediator::redundantShutdown(const AMLifeCycleMediator::LifeCycleInfo& info)
 {
   return info.state == LifeCycleState::SHUTTING_DOWN || 

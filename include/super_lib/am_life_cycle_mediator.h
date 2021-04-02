@@ -193,7 +193,11 @@ class AMLifeCycleMediator
 
     bool redundantShutdown(const AMLifeCycleMediator::LifeCycleInfo& info);
 
+    /** @brief return true if already in error state */
     bool redundantError(const AMLifeCycleMediator::LifeCycleInfo& info);
+
+    /** @brief return true if in UNCONFIGURED or CONFIGURING */
+    bool unconfigured(const AMLifeCycleMediator::LifeCycleInfo& info);
 
     bool illegalDestroy(const AMLifeCycleMediator::LifeCycleInfo& info);
 

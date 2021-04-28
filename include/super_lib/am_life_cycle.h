@@ -8,6 +8,7 @@
 #include <diagnostic_msgs/DiagnosticStatus.h>
 
 #include <super_lib/am_stat_list.h>
+#include <super_lib/am_stat_reset.h>
 #include <super_lib/am_life_cycle_types.h>
 #include <super_lib/am_life_cycle_mediator.h>
 
@@ -30,6 +31,18 @@ class AMLifeCycle
 {
   public:
     static constexpr std::string_view BROADCAST_NODE_NAME = "";
+    
+    /**Specific parts of the lifecycle where nodes have responsibilities.*/
+    LifeCycleState getState() const;
+
+    /**Simple indication of health */
+    LifeCycleStatus getStatus() const;
+    
+    /** @brief string represenation of LifeCycleState*/
+    const std::string_view& getStateName();
+    
+    /** @brief string representation of LifeCycleStatus*/
+    const std::string_view& getStatusName();
 
   private:
     /* Variables to help seperate business logic from AMLifeCycle ROS */
@@ -60,6 +73,7 @@ class AMLifeCycle
     void destroy();
     void cleanup();
     void sendNodeUpdate();
+    void error(std::string message, std::string error_code, bool forced = false);
 
   protected:
     std::string node_name_;
@@ -139,7 +153,14 @@ class AMLifeCycle
      * @param error_code provides a reference for the developer to correlate log output to the originating error.
      * @param forced terminal error that will not allow any tolerance
      */
+    [[deprecated("use errorTolerant or errorTerminal with message")]]
     void error(std::string error_code="NNLW",bool forced = false);
+
+    /** Reports an error for immediate shutdown without any tolerance. */
+    void errorTerminal(std::string message, std::string error_code);
+
+    /** Reports an error, but may not shutdown the system if tolerance is allowed.*/
+    void errorTolerant(std::string message, std::string error_code);
 
     /**
      * @brief Function to be defined by the user.
@@ -155,19 +176,43 @@ class AMLifeCycle
     virtual void onShutdown();
     void doShutdown(bool success);
 
+    /**Initialize statistics by adding to the list*/
     virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw);
+
+    /** Initialize the stats that reset once per second providing the equivalent of rostopic hz to ensure frequency of 
+     * publishing.   Allows for overriding values in roslaunch configurations. 
+     * Provide the target, which is the approximate value you expect to receive. The warnings and errors will be 
+     * provided with tolerance on both sides of the target. 
+     * 
+     * Configurations key use the stats short name.
+     * 
+     * setting a target will also set a min/max 5% warn and 10% error
+     * no target allows for just min or just max or both.
+     * 
+     * stats_target_sets_min_max:
+     *  hz:
+     *   target: 100 # sets min_error=90,min_warn=95,max_warn=105,max_error=110
+     * 
+     * stats_only_min:
+     *  hz:
+     *   error:
+     *     min: 50
+     *   warn:
+     *     min: 60
+     * 
+     * 
+     * @param stats to be configured
+     * */
+    AMStatReset& configureHzStats(AMStatReset& stats);
+
+    /** Called periodically by a timer defaulting to 1 second.
+     * Useful for checking health regularly, but not during 
+     * callbacks which can affect performance and be too granular
+     */
     virtual void heartbeatCB(const ros::TimerEvent& event);
 
     void lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg);
 
-    /**Specific parts of the lifecycle where nodes have responsibilities.*/
-    LifeCycleState getState() const;
-    /**Simple indication of health */
-    LifeCycleStatus getStatus() const;
-    /** @brief string represenation of LifeCycleState*/
-    const std::string_view& getStateName();
-    /** @brief string representation of LifeCycleStatus*/
-    const std::string_view& getStatusName();
 
     double getThrottleS() const;
     void setThrottleS(const double throttleS);

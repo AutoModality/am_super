@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <launch>
+    <arg name="platform" value="$(eval optenv('AM_PLATFORM'))" if="$(eval optenv('AM_PLATFORM') != '')" />
+    <arg name="platform" value="dev" if="$(eval optenv('AM_PLATFORM') == '')" />
     <node pkg="am_super" type="am_super" name="am_super" output="screen">
-    	<rosparam command="load" file="$(find am_super)/launch/am_super.yaml"/>    	
+    	<rosparam command="load" file="$(find am_super)/launch/am_super.yaml" subst_value="true">
+            <arg name="platform" value="$(arg platform)" />
+        </rosparam>
     </node>
 </launch>

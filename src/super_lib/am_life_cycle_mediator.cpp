@@ -205,6 +205,19 @@ bool AMLifeCycleMediator::shutdown(const AMLifeCycleMediator::LifeCycleInfo& inf
     info.state == LifeCycleState::ACTIVE;
 }
 
+bool AMLifeCycleMediator::unconfigured(const AMLifeCycleMediator::LifeCycleInfo& info)
+{
+  switch (info.state)
+  {
+  case LifeCycleState::UNCONFIGURED:
+  case LifeCycleState::CONFIGURING:
+    return true;
+  default:
+    return false;
+  }
+}
+
+
 bool AMLifeCycleMediator::redundantShutdown(const AMLifeCycleMediator::LifeCycleInfo& info)
 {
   return info.state == LifeCycleState::SHUTTING_DOWN || 
@@ -213,8 +226,7 @@ bool AMLifeCycleMediator::redundantShutdown(const AMLifeCycleMediator::LifeCycle
 
 bool AMLifeCycleMediator::redundantError(const AMLifeCycleMediator::LifeCycleInfo& info)
 {
-  return info.state == LifeCycleState::ERROR_PROCESSING || info.state == LifeCycleState::FINALIZED ||
-    info.state == LifeCycleState::UNCONFIGURED;
+  return info.state == LifeCycleState::ERROR_PROCESSING || info.state == LifeCycleState::FINALIZED;
 }
 
 bool AMLifeCycleMediator::illegalDestroy(const AMLifeCycleMediator::LifeCycleInfo& info)

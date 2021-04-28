@@ -1,6 +1,6 @@
 <launch>
   <!-- include test file and pass in this test node name -->
   <include file="$(find am_super)/rostest/am_super_rostest.test">
-    <arg name="test_name" value="manual_to_disarming"/>
+    <arg name="test_name" value="error_tolerant_before_config"/>
   </include>
 </launch>

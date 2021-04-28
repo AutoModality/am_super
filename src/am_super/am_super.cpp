@@ -67,7 +67,6 @@ private:
   ros::Publisher super_status_pub_;
   ros::Publisher led_pub_;
   ros::Subscriber node_state_sub_;
-  ros::Subscriber node_status_sub_;
   ros::Subscriber operator_command_sub_;
   ros::Subscriber controller_state_sub;
   ros::Subscriber diagnostics_sub;
@@ -216,10 +215,6 @@ public:
      * node status via LifeCycle
      */
     node_state_sub_ = nh_.subscribe("/node_state", 100, &AMSuper::nodeStateCB, this);
-    /**
-     * legacy node status
-     */
-    node_status_sub_ = nh_.subscribe("/process/status", 100, &AMSuper::statusCB, this);
 
     /**
      * commands from operator
@@ -268,24 +263,6 @@ private:
     LOG_MSG("/node_state", rmsg, SU_LOG_LEVEL);
   }
 
-  /**
-   * process legacy messages from nodes
-   * TODO: mark deprecated due to legacy. use nodeStateCB.
-   */
-  void statusCB(const ros::MessageEvent<brain_box_msgs::NodeStatus const>& event)
-  {
-    const brain_box_msgs::NodeStatus::ConstPtr& rmsg = event.getMessage();
-
-    /*
-     * legacy messages don't carry any state or status info so just process as ACTIVE/OK
-     */
-    processState(rmsg->node_name, LifeCycleState::INACTIVE, LifeCycleStatus::OK, rmsg->status, rmsg->value,
-                 rmsg->process_id, event.getReceiptTime());
-
-    // TODO: topic name should come from vb_util_lib::topics.
-    LOG_MSG("/process/status", rmsg, SU_LOG_LEVEL);
-  }
-
   void controllerStateCB(const ros::MessageEvent<brain_box_msgs::ControllerState const>& event)
   {
     const brain_box_msgs::ControllerState::ConstPtr& rmsg = event.getMessage();
@@ -331,25 +308,25 @@ private:
       SuperNodeMediator::SuperNodeInfo& nr = it->second;
       if (!nr.online)
       {
-        ROS_INFO_STREAM("manifested node '" << node_name << "' came online");
+        ROS_INFO_STREAM("manifested node '" << node_name << "' came online [PGPG]");
         nr.online = true;
         nodes_changed = true;
       }
       if (nr.state != state)
       {
-        ROS_INFO_STREAM(node_name << " changed state to = " << life_cycle_mediator_.stateToString(state));
+        ROS_INFO_STREAM(node_name << " changed state to = " << life_cycle_mediator_.stateToString(state) << " [38S8]");
         nr.state = state;
         nodes_changed = true;
       }
       if (nr.status != status)
       {
-        ROS_INFO_STREAM(node_name << " changed status to = " << life_cycle_mediator_.statusToString(status));
+        ROS_INFO_STREAM(node_name << " changed status to = " << life_cycle_mediator_.statusToString(status) << " [09SI]");
         nr.status = status;
         nodes_changed = true;
         if(nr.manifested && nr.status == LifeCycleStatus::ERROR)
         {
           supervisor_.status_error = true;
-          ROS_ERROR_STREAM("Manifested node " << nr.name << " changed status to ERROR. Shutting down nodes..");
+          ROS_ERROR_STREAM("Manifested node " << nr.name << " changed status to ERROR. Shutting down nodes... [JHRE]");
         }
       }
       if (nr.pid != pid)
@@ -357,11 +334,11 @@ private:
         //process id = 0 observed to be a node coming online. -1 appears to be offline
         if(pid == 0)
         {
-          ROS_INFO_STREAM(node_name << " process is alive");
+          ROS_INFO_STREAM(node_name << " process is alive [UIRE]");
         }
         else
         {
-          ROS_WARN_STREAM(node_name << " changed process id from: " << nr.pid << " to: " <<  pid);
+          ROS_WARN_STREAM(node_name << " changed process id from: " << nr.pid << " to: " <<  pid << " [WNEW]");
         }
         nr.pid = pid;
         nodes_changed = true;
@@ -518,7 +495,7 @@ private:
   {
     std::stringstream ss;
     genSystemState(ss);
-    ROS_INFO_STREAM(ss.str());
+    ROS_INFO_STREAM_THROTTLE(LOG_THROTTLE_S, ss.str());
   }
 
   /**
@@ -636,6 +613,69 @@ private:
     }
   }
 
+  /**
+   * Verify the basic requirements are being met:
+   * - platform required matches actual platform
+   */  
+  void onConfigure()
+  {
+        
+    SuperNodeMediator::PlatformVariant required_platform;
+    SuperNodeMediator::PlatformVariant actual_platform;
+    configurePlatformRequirements(required_platform,actual_platform);
+    ROS_WARN_STREAM("required" << required_platform.maker);
+    ROS_WARN_STREAM("actual" << actual_platform.maker);
+    if(!node_mediator_.isCorrectPlatform(required_platform,actual_platform))
+    {
+      std::stringstream message;
+      message << "Platform required: `" 
+              << node_mediator_.platformVariantToConfig(required_platform)
+              << "` actual: `" 
+              << node_mediator_.platformVariantToConfig(actual_platform)
+              ;
+      errorTerminal(message.str(),"NSK2"); //force failure since this is not recoverable
+    }
+    else
+    {
+      AMLifeCycle::onConfigure();
+    }
+  }
+
+  /** load the platform configurations from the launch file and populate the variants provided.
+   */
+  void configurePlatformRequirements(SuperNodeMediator::PlatformVariant &required_platform,
+                                     SuperNodeMediator::PlatformVariant &actual_platform)
+  {
+    //actual platform is required or we fail 
+    std::string not_provided = "none";
+    std::string actual_platform_param;
+    param("platform/actual",actual_platform_param,not_provided);
+    if(actual_platform_param == not_provided)
+    {
+      errorTerminal("param `/am_super/platform/actual` must provide the platform running","NNS9");
+      return;
+    }
+    node_mediator_.platformConfigToVariant(actual_platform_param,actual_platform);
+
+    //compare actual platform to required platform, if provided
+    std::string required_platform_param;
+    std::string platform_app_required_param;
+    param("platform/required",required_platform_param,not_provided);
+    param("platform/app/required",platform_app_required_param,not_provided);
+    if(required_platform_param != not_provided)
+    {
+      node_mediator_.platformConfigToVariant(required_platform_param,required_platform);
+    }
+    else if(platform_app_required_param != not_provided)
+    {
+      required_platform.app = platform_app_required_param;
+    }
+    else
+    {
+      ROS_WARN("platform requirements not set");
+    }
+
+  }
   /**
    * send led color message based on raw values
    */

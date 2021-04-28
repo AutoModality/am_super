@@ -1,6 +1,6 @@
 #include <am_rostest_lib/am_rostest.h>
 
-/** Indicating a forced error should go into error reporting regardless of the state. 
+/** Shows an error that happens upon construction will be reported as an ERROR during configuration. 
  */
 class LifeCycleErrorTest : public RostestBase, public am::AMLifeCycle
 {
@@ -8,7 +8,9 @@ protected:
 
   LifeCycleErrorTest() : 
     RostestBase() 
-  {}
+  {
+      errorTerminal("forcing error during construction", "HW8S");
+  }
 
 
   void onConfigure()
@@ -19,11 +21,9 @@ protected:
 
 TEST_F(LifeCycleErrorTest, testStatus_Error)
 {
-  waitUntil(LifeCycleState::CONFIGURING,"3K3K");
-  ASSERT_EQ(LifeCycleStatus::OK,getStatus());
-  errorTerminal("forcing error during configuration", "NNAQ");
-  waitUntil(LifeCycleState::ERROR_PROCESSING,"NAKW");
+  waitUntil(LifeCycleState::FINALIZED,"NAKW");
   waitUntil(LifeCycleStatus::ERROR,"IUIU");
+  waitUntil(LifeCycleStatus::ERROR,"NQNE");
 }
 
 int main(int argc, char** argv)

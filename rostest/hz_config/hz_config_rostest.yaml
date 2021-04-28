@@ -1,0 +1,45 @@
+hz_config_rostest:
+  target_one:
+    hz:
+      target: 1
+  target_ten:
+    hz:
+      target: 10
+  target_one_hundred:
+    hz:
+      target: 100
+
+  # no validation stat
+  no_target:
+    something_else: "doesn't matter"
+  
+  # no target, all boundaries declared
+  all_provided:
+    hz:
+      error:
+        min: 11
+        max: 44
+      warn:
+        min: 22
+        max: 33
+
+  # prove the values are set by target, but override can happen
+  target_one_hundred_min_error_10:
+    hz:
+      target: 100
+      error:
+        min: 10
+
+  min_only:
+    hz:
+      error:
+        min: 77
+      warn:
+        min: 88
+  
+  max_only:
+    hz:
+      error:
+        max: 63
+      warn:
+        max: 51

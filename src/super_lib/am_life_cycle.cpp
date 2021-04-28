@@ -103,7 +103,7 @@ void AMLifeCycle::lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr m
         configure();
         break;
       case LifeCycleCommand::CREATE:
-        ROS_WARN_STREAM("illegal command " << life_cycle_mediator_.commandToString(LifeCycleCommand::CREATE));
+        ROS_WARN_STREAM("illegal command " << life_cycle_mediator_.commandToString(LifeCycleCommand::CREATE) << " [7YT8]");
         break;
       case LifeCycleCommand::DEACTIVATE:
         transition("deactivate", LifeCycleState::ACTIVE, LifeCycleState::DEACTIVATING, LifeCycleState::INACTIVE,
@@ -124,17 +124,17 @@ void AMLifeCycle::transition(std::string transition_name, LifeCycleState initial
 {
   if (life_cycle_info_.state == initial_state)
   {
-    ROS_INFO_STREAM(transition_name << ", current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
+    ROS_INFO_STREAM(transition_name << ", current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << " [ASWU]");
     setState(transition_state);
     on_function();
   }
   else if (life_cycle_info_.state == transition_state || life_cycle_info_.state == final_state)
   {
-    ROS_DEBUG_STREAM("ignoring redundant " << transition_name);
+    ROS_DEBUG_STREAM("ignoring redundant " << transition_name << " [0393]");
   }
   else
   {
-    ROS_WARN_STREAM("received illegal " << transition_name  << " in state " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
+    ROS_WARN_STREAM("received illegal " << transition_name  << " in state " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << " [JGV5]");
   }
 }
 
@@ -237,12 +237,12 @@ void AMLifeCycle::destroy()
 {
   if (life_cycle_mediator_.illegalDestroy(life_cycle_info_))
   {
-    ROS_INFO_STREAM("received illegal activate in state " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
+    ROS_INFO_STREAM("received illegal activate in state " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << " [45RT]");
   }
   /* This condition is hit only if state equals FINALIZED. Checking SHUTTING_DOWN is redundant */
   else
   {
-    ROS_INFO_STREAM("current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state));
+    ROS_INFO_STREAM("current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << " [RE45]");
     onDestroy();
   }
 }
@@ -263,35 +263,58 @@ bool AMLifeCycle::withinConfigureTolerance()
 {
   bool tolerated = false;
   //outside of configuring, we have no tolerance
-  if(life_cycle_info_.state == LifeCycleState::CONFIGURING)
+  if(life_cycle_mediator_.unconfigured(life_cycle_info_))
   {
     ros::Duration duration_since_configure = ros::Time::now() - configure_start_time_;
-    if (duration_since_configure <= ros::Duration(configure_tolerance_s) )
+    if (life_cycle_info_.state == LifeCycleState::UNCONFIGURED || duration_since_configure <= ros::Duration(configure_tolerance_s) )
     {
       tolerated = true;
     }
   }
   return tolerated;
 }
+
 void AMLifeCycle::error(std::string error_code, bool forced)
 {
-  std::string error_code_message=" [" + error_code + "] ";
-  if (!forced && life_cycle_mediator_.redundantError(life_cycle_info_))
+  error("[GSHY]",error_code,forced);
+}
+
+void AMLifeCycle::error(std::string message, std::string error_code, bool forced)
+{
+  std::string error_code_message = "Error[" + error_code + "] ";
+  if(withinConfigureTolerance() && !forced)
   {
-    ROS_WARN_STREAM("Error called again, but previously reported." << error_code_message);
-  }
-  else if(!forced && withinConfigureTolerance())
-  {
-    ROS_WARN_STREAM_THROTTLE(throttle_info_.warn_throttle_s,"Ignoring error" << error_code_message << "during configure tolerance of " << configure_tolerance_s << " seconds [GFRT]");
+    ROS_WARN_STREAM_THROTTLE(throttle_info_.warn_throttle_s,"Ignoring tolerant error for (" << configure_tolerance_s << "s) `" << message << "` " << error_code_message << "[GFRT]");
   }
   else
   {
-    std::string forced_prefix = forced?"Forced ":"";
-    ROS_ERROR_STREAM(forced_prefix << "Error" << error_code_message << "called while in: " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << " [R45Y]" );
-    setState(LifeCycleState::ERROR_PROCESSING);
-    setStatus(LifeCycleStatus::ERROR);
-    onError();
+    std::string forced_prefix = forced?"Terminal ":"";
+    std::string repeat_prefix = "";
+    //only change the state if 
+    if(!life_cycle_mediator_.redundantError(life_cycle_info_))
+    {
+      setState(LifeCycleState::ERROR_PROCESSING);
+      setStatus(LifeCycleStatus::ERROR);
+      onError();
+    }
+    else
+    {
+      repeat_prefix = "Repeated ";
+    }
+    std::string error_explanation=forced_prefix + repeat_prefix + error_code_message;
+    ROS_ERROR_STREAM(message << " -> " << error_explanation << " [R45Y]" );
   }
+}
+
+
+void AMLifeCycle::errorTerminal(std::string message, std::string error_code)
+{
+  error(message,error_code,true);
+}
+
+void AMLifeCycle::errorTolerant(std::string message, std::string error_code)
+{
+  error(message,error_code,false);
 }
 
 void AMLifeCycle::onError()
@@ -350,11 +373,15 @@ void AMLifeCycle::addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw
   LifeCycleStatus status = stats_list_.process(throttle_info_.warn_throttle_s, throttle_info_.error_throttle_s);
   if(life_cycle_mediator_.statusError(status))
   {
-    error("PQAE");
+    errorTolerant("Stats reporting error","PQAE");
   }
   else
   {
-    setStatus(status);
+    //only report status if not already errored
+    if(!life_cycle_mediator_.redundantError(life_cycle_info_))
+    {
+      setStatus(status);
+    }
 
     //configuring is a special case where tolerance for errors is allowed
     if(getState() == LifeCycleState::CONFIGURING)
@@ -365,6 +392,55 @@ void AMLifeCycle::addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw
   dsw.summary((uint8_t)status, "update");
 }
 
+AMStatReset& AMLifeCycle::configureHzStats(AMStatReset& stats)
+{
+    int unassigned=UINT_MAX;
+    int hz_target = unassigned;
+    int hz_min_error =unassigned;
+    int hz_min_warn=unassigned;
+    int hz_max_warn=unassigned;
+    int hz_max_error=unassigned;
+    const std::string prefix = stats.getShortName();
+    const std::string hz_prefix=prefix + "/hz/";
+    const std::string target_key   =hz_prefix + "target";
+    const std::string error_min_key=hz_prefix + "error/min";
+    const std::string warn_min_key =hz_prefix + "warn/min";
+    const std::string warn_max_key =hz_prefix + "warn/max";
+    const std::string error_max_key=hz_prefix + "error/max";
+
+    //set all if target is provided
+    if(param<int>(target_key, hz_target, 0))
+    {
+      //give 5% tolerance in either direction for warning, 10% for error.  Override default values as desired
+      const int warning_offset = std::ceil(hz_target * 0.05);
+      const int error_offset =  2 * warning_offset;
+      //don't go  below zero because that doesn't make any sense for hz.
+      hz_min_error=std::max(0,hz_target - error_offset);
+      hz_min_warn=std::max(0,hz_target - warning_offset);
+      hz_max_warn=hz_target + warning_offset;
+      hz_max_error=hz_target + error_offset;
+      stats.setWarnError(hz_min_error, hz_min_warn, hz_max_warn, hz_max_error); 
+    }
+    //override individual boundary configs if provided
+    if(param<int>(error_min_key, hz_min_error, hz_min_error))
+    {
+      stats.setMinError(hz_min_error); 
+    }
+    if(param<int>(warn_min_key, hz_min_warn, hz_min_warn))
+    {
+      stats.setMinWarn(hz_min_warn); 
+    }
+    if(param<int>(warn_max_key, hz_max_warn, hz_max_warn))
+    {
+      stats.setMaxWarn(hz_max_warn); 
+    }
+    if(param<int>(error_max_key, hz_max_error, hz_max_error))
+    {
+      stats.setMaxError(hz_max_error); 
+    }
+
+    return stats;       
+}
 void AMLifeCycle::sendNodeUpdate()
 {
   brain_box_msgs::LifeCycleState msg;
@@ -429,9 +505,8 @@ bool AMLifeCycle::setStatus(const LifeCycleStatus status)
   //if we are in error and want to leave it
   if(life_cycle_info_.status == LifeCycleStatus::ERROR && status != LifeCycleStatus::ERROR)
   {
-    ROS_WARN_STREAM_THROTTLE(getThrottle(), "requested to change status from ERROR to " << life_cycle_mediator_.statusToString(status));
+    ROS_WARN_STREAM_THROTTLE(getThrottle(), "requested to change status from ERROR to " << life_cycle_mediator_.statusToString(status) << " [DFRE]");
   }
-
   else if (life_cycle_mediator_.setStatus(status, life_cycle_info_))
   {
     sendNodeUpdate();

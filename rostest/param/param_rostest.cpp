@@ -22,13 +22,13 @@ protected:
 TEST_F(ParamTest, test_params)
 {
   ASSERT_EQ(relative_param_,"relative_value");
-  ASSERT_TRUE(relative_result_);
+  ASSERT_TRUE(relative_result_) << "true since it found a configuration";
 
   ASSERT_EQ(absolute_param_,"absolute_value");
-  ASSERT_TRUE(absolute_result_);
+  ASSERT_TRUE(absolute_result_) << "true since it found a configuration";
 
   ASSERT_EQ(default_param_,default_value_);
-  ASSERT_FALSE(default_result_);
+  ASSERT_FALSE(default_result_) << "false since no configuration found";
 
 }
 

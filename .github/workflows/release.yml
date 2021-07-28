@@ -9,13 +9,12 @@ env:
   RELEASE_PAYLOAD_FILE: release/payload.json
 jobs:
   release:
-    runs-on: ubuntu-18.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04]
     steps:
       - uses: AutoModality/action-clean@v1.1.0
-      - name: Wait if concurrent action
-        uses: softprops/turnstyle@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout
         uses: actions/checkout@v2
       - name: Semantic Release
@@ -50,11 +49,7 @@ jobs:
           path: '${{ env.RELEASE_DIR }}'
   release-package:
     needs: release
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [[x64, self-hosted,linux,build], [arm64,self-hosted,linux, build]]
-      fail-fast: true
+    runs-on: [x64, self-hosted,linux,build]
     name: Package if released
     steps:
       - uses: AutoModality/action-clean@v1.1.0
@@ -78,28 +73,42 @@ jobs:
         with:
           path: ${{ env.RELEASE_PROPERTIES_FILE }}
           property: 'version'
-      - name: Package if published
-        if: steps.published.outputs.value == 'true'
-        id: package
-        uses: AutoModality/action-package-debian-ros@v5-amros
-        with:
-          version: ${{ steps.version.outputs.value }}
-          release-repo-entitlement: ${{ secrets.CLOUDSMITH_READ_RELEASE_ENTITLEMENT }}
       - name: Deploy if published
         if: steps.published.outputs.value == 'true'
         id: deploy
-        uses: AutoModality/action-cloudsmith@0.2.0
+        run: amros dev docker run -dm --command="deploy-amros ${{ secrets.DEVELOPER_PASSWORD }} ${{ steps.version.outputs.value }} release ${{ secrets.CLOUDSMITH_API_KEY }}"
+  release-package-arm:
+    needs: release
+    runs-on: [arm64,self-hosted,linux, cuda]
+    steps:
+      - uses: AutoModality/action-clean@v1.1.0
+      - uses: actions/checkout@v2
+      - name: Download release
+        uses: actions/download-artifact@v1
         with:
-          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
-          command: 'push'
-          format: 'deb'
-          owner: 'automodality'
-          repo: 'release'
-          distro: 'ubuntu'
-          release: 'bionic'
-          file: '${{ steps.package.outputs.artifact-path }}'       
+          name: release
+          path: ${{ env.RELEASE_DIR }}
+      - name: Read Published
+        id: published
+        uses: christian-draeger/read-properties@1.0.1
+        with:
+          path: ${{ env.RELEASE_PROPERTIES_FILE }}
+          property: 'published'
+      - name: Read Version if published
+        id: version
+        if: steps.published.outputs.value == 'true'
+        uses: christian-draeger/read-properties@1.0.1
+        with:
+          path: ${{ env.RELEASE_PROPERTIES_FILE }}
+          property: 'version'
+      - name: Deploy
+        id: deploy
+        if: steps.published.outputs.value == 'true'
+        run: deploy-amros ${{ secrets.DEVELOPER_PASSWORD }} ${{ steps.version.outputs.value }} release ${{ secrets.CLOUDSMITH_API_KEY }}
   notify-amros:
-    needs: release-package
+    needs: 
+      - release-package
+      - release-package-arm
     runs-on: ubuntu-latest
     name: Notify AMROS
     steps:

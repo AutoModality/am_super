@@ -9,10 +9,7 @@ env:
   RELEASE_PAYLOAD_FILE: release/payload.json
 jobs:
   release:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-18.04]
+    runs-on: ubuntu-18.04
     steps:
       - uses: AutoModality/action-clean@v1.1.0
       - name: Checkout
@@ -49,7 +46,11 @@ jobs:
           path: '${{ env.RELEASE_DIR }}'
   release-package:
     needs: release
-    runs-on: [x64, self-hosted,linux,build]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [[x64, self-hosted,linux,build], [arm64,self-hosted,linux, build]]
+      fail-fast: true
     name: Package if released
     steps:
       - uses: AutoModality/action-clean@v1.1.0
@@ -77,38 +78,8 @@ jobs:
         if: steps.published.outputs.value == 'true'
         id: deploy
         run: amros dev docker run -dm --command="deploy-amros ${{ secrets.DEVELOPER_PASSWORD }} ${{ steps.version.outputs.value }} release ${{ secrets.CLOUDSMITH_API_KEY }}"
-  release-package-arm:
-    needs: release
-    runs-on: [arm64,self-hosted,linux, cuda]
-    steps:
-      - uses: AutoModality/action-clean@v1.1.0
-      - uses: actions/checkout@v2
-      - name: Download release
-        uses: actions/download-artifact@v1
-        with:
-          name: release
-          path: ${{ env.RELEASE_DIR }}
-      - name: Read Published
-        id: published
-        uses: christian-draeger/read-properties@1.0.1
-        with:
-          path: ${{ env.RELEASE_PROPERTIES_FILE }}
-          property: 'published'
-      - name: Read Version if published
-        id: version
-        if: steps.published.outputs.value == 'true'
-        uses: christian-draeger/read-properties@1.0.1
-        with:
-          path: ${{ env.RELEASE_PROPERTIES_FILE }}
-          property: 'version'
-      - name: Deploy
-        id: deploy
-        if: steps.published.outputs.value == 'true'
-        run: deploy-amros ${{ secrets.DEVELOPER_PASSWORD }} ${{ steps.version.outputs.value }} release ${{ secrets.CLOUDSMITH_API_KEY }}
   notify-amros:
-    needs: 
-      - release-package
-      - release-package-arm
+    needs: release-package
     runs-on: ubuntu-latest
     name: Notify AMROS
     steps:

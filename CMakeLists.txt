@@ -18,15 +18,15 @@ find_package(catkin REQUIRED
   am_rostest
 )
 
-find_package(CUDA)
+#find_package(CUDA)
 
-if(CUDA_FOUND)
-	add_definitions(-DCUDA_FLAG)
-	message([STATUS] "CUDA FOUND, am_super will be built with GPU monitoring")
-	SET(CUDA_NVCC_FLAGS "-arch=sm_62" CACHE STRING "nvcc flags" FORCE)
-	SET(CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
-	CUDA_ADD_LIBRARY(cuda_utility ${LIB_TYPE} src/cuda/cuda_utility.cu)
-endif(CUDA_FOUND)
+#if(CUDA_FOUND)
+#	add_definitions(-DCUDA_FLAG)
+#	message([STATUS] "CUDA FOUND, am_super will be built with GPU monitoring")
+#	SET(CUDA_NVCC_FLAGS "-arch=sm_62" CACHE STRING "nvcc flags" FORCE)
+#	SET(CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
+#	CUDA_ADD_LIBRARY(cuda_utility ${LIB_TYPE} src/cuda/cuda_utility.cu)
+#endif(CUDA_FOUND)
 
 
 ## System dependencies are found with CMake's conventions
@@ -134,13 +134,16 @@ add_library(super_lib
 target_link_libraries(super_lib ${catkin_LIBRARIES})
 add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
 
-if(CUDA_FOUND)
-	add_executable(am_super ${am_super_cpp_files} ${cuda_cpp_files} )
-	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib cuda_utility)
-else()
-	add_executable(am_super ${am_super_cpp_files})
-	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib)
-endif(CUDA_FOUND)
+#if(CUDA_FOUND)
+#	add_executable(am_super ${am_super_cpp_files} ${cuda_cpp_files} )
+#	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib cuda_utility)
+#else()
+#	add_executable(am_super ${am_super_cpp_files})
+#	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib)	
+#endif(CUDA_FOUND)
+
+add_executable(am_super ${am_super_cpp_files})
+target_link_libraries(am_super ${catkin_LIBRARIES} super_lib)
 add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
 
 #############

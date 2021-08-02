@@ -204,7 +204,7 @@ if (CATKIN_ENABLE_TESTING)
 
   ## Add gtest based cpp test target and link libraries
 
-  catkin_add_gtest(${PROJECT_NAME}_test ${TEST_FILES} ${SUPER_MEDIATOR_FILES})
+  catkin_add_gtest(${PROJECT_NAME}_test ${TEST_FILES} src/am_super/proc_stat.cpp  ${SUPER_MEDIATOR_FILES} )
 
   if(TARGET ${PROJECT_NAME}_test)
     target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES} super_lib)

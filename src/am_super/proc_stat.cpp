@@ -34,4 +34,12 @@ long ProcStat::workJiffies(ProcStat::CpuJiffies jiffies)
 }
 
 
+int ProcStat::cpuUsage(ProcStat::CpuJiffies first, ProcStat::CpuJiffies second)
+{
+	float work= (float) ProcStat::workJiffies(second) -  ProcStat::workJiffies(first);
+	float total= (float) ProcStat::totalJiffies(second) - ProcStat::totalJiffies(first);
+	return work/total * 100 ;
+}
+
+
 }

@@ -100,3 +100,25 @@ TEST_F(ProcStatTest, workJiffies_sumsUpCorrectly)
   long total = ProcStat::workJiffies(jiffiesSumFixture());
   ASSERT_EQ(total,111);
 }
+
+TEST_F(ProcStatTest, workJiffies_cpuUsage)
+{
+  ProcStat::CpuJiffies first;
+  first.user = 0;
+  first.nice=0;
+  first.system=0;
+  first.idle=0;
+  first.iowait=0;
+  first.irq=0;
+  first.softirq=0;
+  ProcStat::CpuJiffies second;
+  second.user = 1;
+  second.nice=0;
+  second.system=0;
+  second.idle=0;
+  second.iowait=0;
+  second.irq=0;
+  second.softirq=9;
+  int cpu = ProcStat::cpuUsage(first,second);
+  ASSERT_EQ(cpu,10);
+}

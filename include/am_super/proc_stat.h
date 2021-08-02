@@ -42,7 +42,7 @@ public:
 	static std::string filterCpuJiffies(std::string prefix, std::string content);
 
 	/** Percent of CPU used from the earlier first to the latter second */
-	static float cpuUsage(CpuJiffies first, CpuJiffies second);
+	static int cpuUsage(CpuJiffies first, CpuJiffies second);
 
 	/** @return sum of values in the CPU jiffies */
 	static long totalJiffies(CpuJiffies jiffies);

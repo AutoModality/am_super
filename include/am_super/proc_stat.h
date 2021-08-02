@@ -41,15 +41,14 @@ public:
 	*/
 	static std::string filterCpuJiffies(std::string prefix, std::string content);
 
-
-	/** provides the CPU usage from the earlier first to the latter second */
+	/** Percent of CPU used from the earlier first to the latter second */
 	static float cpuUsage(CpuJiffies first, CpuJiffies second);
 
-	/** @return sum of values in the CPU line */
-	static int totalJiffies(CpuJiffies line);
+	/** @return sum of values in the CPU jiffies */
+	static long totalJiffies(CpuJiffies jiffies);
 
-	/** @return sum of user,nice,system values in CPU line*/
-	static int workJiffies(CpuJiffies line);
+	/** @return sum of user,nice,system values in CPU jiffies*/
+	static long workJiffies(CpuJiffies jiffies);
 
 private:
  

@@ -23,4 +23,15 @@ ProcStat::CpuJiffies ProcStat::lineToJiffies(std::string line)
 	return results;
 }
 
+long ProcStat::totalJiffies(ProcStat::CpuJiffies jiffies)
+{
+	return jiffies.user + jiffies.nice + jiffies.system + jiffies.idle + jiffies.iowait + jiffies.irq + jiffies.softirq;
+}
+
+long ProcStat::workJiffies(ProcStat::CpuJiffies jiffies)
+{
+	return jiffies.user + jiffies.nice + jiffies.system;
+}
+
+
 }

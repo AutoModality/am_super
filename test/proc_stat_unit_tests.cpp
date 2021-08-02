@@ -53,10 +53,26 @@ procs_blocked 0
 softirq 790221764 28901099 255437953 225 7009871 12843 0 348751 266059998 13693 232437331
 )";
 
+
+
 class ProcStatTest : public ::testing::Test
 {
   public:
     ProcStatTest(){
+    }
+
+    /**Handy for testing sums, each jiffy increases by a factor to avoid any accidental sum from wrong values.*/
+    ProcStat::CpuJiffies jiffiesSumFixture()
+    {
+      ProcStat::CpuJiffies jiffies;
+      jiffies.user=1;
+      jiffies.nice=10;
+      jiffies.system=100;
+      jiffies.idle=1000;
+      jiffies.iowait=10000;
+      jiffies.irq=100000;
+      jiffies.softirq=1000000;
+      return jiffies;
     }
 };
 
@@ -71,5 +87,16 @@ TEST_F(ProcStatTest, parseCpuLine_ReturnsCpuLineWithValidJiffies)
   ASSERT_EQ(jiffies.iowait,995798);
   ASSERT_EQ(jiffies.irq,736353);
   ASSERT_EQ(jiffies.softirq,1943565);
-  ASSERT_EQ(true, true);
+}
+
+TEST_F(ProcStatTest, totalJiffies_sumsUpCorrectly)
+{
+  long total = ProcStat::totalJiffies(jiffiesSumFixture());
+  ASSERT_EQ(total,1111111);
+}
+
+TEST_F(ProcStatTest, workJiffies_sumsUpCorrectly)
+{
+  long total = ProcStat::workJiffies(jiffiesSumFixture());
+  ASSERT_EQ(total,111);
 }

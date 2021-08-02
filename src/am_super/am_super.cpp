@@ -460,19 +460,6 @@ private:
       ROS_INFO_STREAM_THROTTLE(LOG_THROTTLE_S, ss.str());
     }
 
-    // log stats
-    fstream newfile;
-    newfile.open("/sys/bus/i2c/devices/7-0040/iio_device/in_power0_input",ios::in); //open a file to perform read operation using file object
-    if (newfile.is_open())
-    {   //checking whether the file is open
-       string tp;
-       getline(newfile, tp);
-       std_msgs::Int16 msg;
-       msg.data = std::stoi(tp);
-       LOG_MSG("/watts", msg, SU_LOG_LEVEL);
-       newfile.close(); //close the file object.
-    }
-
     AMLifeCycle::heartbeatCB(event);
   }
 

@@ -38,8 +38,23 @@ int ProcStat::cpuUsage(ProcStat::CpuJiffies first, ProcStat::CpuJiffies second)
 {
 	float work= (float) ProcStat::workJiffies(second) -  ProcStat::workJiffies(first);
 	float total= (float) ProcStat::totalJiffies(second) - ProcStat::totalJiffies(first);
-	return work/total * 100 ;
+	return (int)(work/total * 100);
 }
 
+
+std::string ProcStat::filterCpuJiffies(std::string prefix, std::string content)
+{
+	std::vector<std::string> lines;
+	boost::split(lines, content, boost::is_any_of("\n"), boost::token_compress_on);
+  	for (std::vector<std::string>::iterator it = lines.begin() ; it != lines.end(); ++it)
+	{
+		std::string line = *it;
+		if(line.substr(0, prefix.length()) == prefix)
+		{
+			return line;
+		}
+	}
+	return "";
+}
 
 }

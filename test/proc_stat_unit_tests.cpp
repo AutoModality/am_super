@@ -101,7 +101,7 @@ TEST_F(ProcStatTest, workJiffies_sumsUpCorrectly)
   ASSERT_EQ(total,111);
 }
 
-TEST_F(ProcStatTest, workJiffies_cpuUsage)
+TEST_F(ProcStatTest, cpuUsage_simpleMath)
 {
   ProcStat::CpuJiffies first;
   first.user = 0;
@@ -122,3 +122,27 @@ TEST_F(ProcStatTest, workJiffies_cpuUsage)
   int cpu = ProcStat::cpuUsage(first,second);
   ASSERT_EQ(cpu,10);
 }
+
+TEST_F(ProcStatTest, cpuUsage_realTestFixtures)
+{
+  ProcStat::CpuJiffies first  = ProcStat::lineToJiffies("cpu  17676702 24292 5014517 256030758 1100143 0 2274894 0 0 0");//22715511 & 282121306 -> 909 / 6281
+  ProcStat::CpuJiffies second = ProcStat::lineToJiffies("cpu  17677426 24292 5014702 256036082 1100155 0 2274930 0 0 0");//22716420 & 282127587
+  int cpu = ProcStat::cpuUsage(first,second);
+  ASSERT_EQ(cpu,14);
+}
+
+TEST_F(ProcStatTest, filterCpuJiffies_cpuFirstLineIsFound)
+{
+  std::string line  = ProcStat::filterCpuJiffies("cpu",procStatFixture1);
+  ASSERT_EQ(line,"cpu  14363100 24188 4071366 241029694 995775 0 1943501 0 0 0");
+}
+
+TEST_F(ProcStatTest, filterCpuJiffies_cpuSecondLineIsFound)
+{
+  std::string line  = ProcStat::filterCpuJiffies("cpu0",procStatFixture1);
+  ASSERT_EQ(line,"cpu0 1189158 2195 327037 20138961 80227 0 1145374 0 0 0");
+}
+
+
+
+

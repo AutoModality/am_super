@@ -20,6 +20,7 @@
 #include <brain_box_msgs/StampedAltimeter.h>
 #include <brain_box_msgs/Super2Status.h>
 #include <brain_box_msgs/VxState.h>
+#include <brain_box_msgs/SystemState.h>
 #include <brain_box_msgs/ControllerState.h>
 
 #include <am_super/controller_state.h>
@@ -64,6 +65,7 @@ private:
    */
   ros::Publisher lifecycle_pub_;
   ros::Publisher vstate_summary_pub_;
+  ros::Publisher system_state_pub_;
   ros::Publisher super_status_pub_;
   ros::Publisher led_pub_;
   ros::Subscriber node_state_sub_;
@@ -182,11 +184,12 @@ public:
     /**
      * system status pub
      */
-    vstate_summary_pub_ = nh_.advertise<brain_box_msgs::VxState>("/vstate/summary", 1000);
-    /**
+    vstate_summary_pub_ = nh_.advertise<brain_box_msgs::VxState>(am_super_topics::SUPER_STATE, 1000);
+    system_state_pub_ = nh_.advertise<brain_box_msgs::SystemState>(am_topics::SYSTEM_STATE, 1000);
+    /**Super
      * node lifecycle state pub. used to tell nodes to change their lifecycle state.
      */
-    lifecycle_pub_ = nh_.advertise<brain_box_msgs::LifeCycleCommand>("/node_lifecycle", 100);
+    lifecycle_pub_ = nh_.advertise<brain_box_msgs::LifeCycleCommand>(am_super_topics::NODE_LIFECYCLE, 100);
     /**
      * led control pub
      */
@@ -194,7 +197,7 @@ public:
     /**
      * super status contains online naode list for gcs_comms
      */
-    super_status_pub_ = nh_.advertise<brain_box_msgs::Super2Status>("/super/status", 1000);
+    super_status_pub_ = nh_.advertise<brain_box_msgs::Super2Status>(am_super_topics::SUPER_STATUS, 1000);
 
     supervisor_.system_state = SuperState::BOOTING;
     supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::INIT;
@@ -214,7 +217,7 @@ public:
     /**
      * node status via LifeCycle
      */
-    node_state_sub_ = nh_.subscribe("/node_state", 100, &AMSuper::nodeStateCB, this);
+    node_state_sub_ = nh_.subscribe(am_super_topics::LIFECYCLE_STATE, 100, &AMSuper::nodeStateCB, this);
 
     /**
      * commands from operator
@@ -260,7 +263,7 @@ private:
                  rmsg->value, rmsg->process_id, event.getReceiptTime());
 
     // TODO: topic name should come from vb_util_lib::topics.h
-    LOG_MSG("/node_state", rmsg, SU_LOG_LEVEL);
+    LOG_MSG(am_super_topics::LIFECYCLE_STATE, rmsg, SU_LOG_LEVEL);
   }
 
   void controllerStateCB(const ros::MessageEvent<brain_box_msgs::ControllerState const>& event)
@@ -400,9 +403,21 @@ private:
 #if CUDA_FLAG
     gpu_info_->display();
 #endif
-    brain_box_msgs::VxState state_msg;
-    state_msg.state = (uint8_t)supervisor_.system_state;
-    vstate_summary_pub_.publish(state_msg);
+
+    //publish deprecated topic
+    {
+      brain_box_msgs::VxState state_msg;
+      state_msg.state = (uint8_t)supervisor_.system_state;
+      vstate_summary_pub_.publish(state_msg);      
+    }
+
+    //publish the system state
+    {
+      brain_box_msgs::SystemState system_state_msg;
+      system_state_msg.state = (uint8_t)supervisor_.system_state;
+      system_state_msg.state_string = state_mediator_.stateToString(supervisor_.system_state);
+      system_state_pub_.publish(system_state_msg);
+    }
 
     // cycle thru all the nodes in the list to look for a timeout
     ros::Time now = ros::Time().now();

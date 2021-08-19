@@ -8,15 +8,15 @@ protected:
 
 TEST_F(AbortToManual, testState_AbortToDisarming)
 {
-  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  waitUntilMissionState(brain_box_msgs::VxState::READY,"SNED");
   arm();
-  waitUntilMissionState(brain_box_msgs::VxState::ARMED);
+  waitUntilMissionState(brain_box_msgs::VxState::ARMED,"SNES");
   launch();
-  waitUntilMissionState(brain_box_msgs::VxState::AUTO);
+  waitUntilMissionState(brain_box_msgs::VxState::AUTO,"LKNK");
   abort();
-  waitUntilMissionState(brain_box_msgs::VxState::ABORT);
+  waitUntilMissionState(brain_box_msgs::VxState::ABORT,"NBWD");
   manual();
-  waitUntilMissionState(brain_box_msgs::VxState::MANUAL);
+  waitUntilMissionState(brain_box_msgs::VxState::MANUAL,"XSED");
 }
 
 int main(int argc, char** argv)

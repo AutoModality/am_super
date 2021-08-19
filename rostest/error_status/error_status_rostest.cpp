@@ -48,7 +48,7 @@ TEST_F(LifeCycleErrorTest, testStatus_Error)
   waitUntil(LifeCycleStatus::ERROR,"QAQA");
   waitUntil(LifeCycleState::ERROR_PROCESSING,"AQ90");
   
-  waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN);
+  waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN,"AQAL");
 }
 
 int main(int argc, char** argv)

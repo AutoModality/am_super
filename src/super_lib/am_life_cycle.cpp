@@ -392,55 +392,74 @@ void AMLifeCycle::addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw
   dsw.summary((uint8_t)status, "update");
 }
 
-AMStatReset& AMLifeCycle::configureHzStats(AMStatReset& stats)
+void AMLifeCycle::configureStat(AMStat& stat, std::string name, std::string category)
 {
     int unassigned=UINT_MAX;
-    int hz_target = unassigned;
-    int hz_min_error =unassigned;
-    int hz_min_warn=unassigned;
-    int hz_max_warn=unassigned;
-    int hz_max_error=unassigned;
-    const std::string prefix = stats.getShortName();
-    const std::string hz_prefix=prefix + "/hz/";
-    const std::string target_key   =hz_prefix + "target";
-    const std::string error_min_key=hz_prefix + "error/min";
-    const std::string warn_min_key =hz_prefix + "warn/min";
-    const std::string warn_max_key =hz_prefix + "warn/max";
-    const std::string error_max_key=hz_prefix + "error/max";
+    int target = unassigned;
+    int min_error =unassigned;
+    int min_warn=unassigned;
+    int max_warn=unassigned;
+    int max_error=unassigned;
+    std::string prefix = name + "/";
+
+    if(!category.empty())
+    {
+      prefix = prefix + category + "/";
+    }
+
+    const std::string target_key   =prefix + "target";
+    const std::string error_min_key=prefix + "error/min";
+    const std::string warn_min_key =prefix + "warn/min";
+    const std::string warn_max_key =prefix + "warn/max";
+    const std::string error_max_key=prefix + "error/max";
 
     //set all if target is provided
-    if(param<int>(target_key, hz_target, 0))
+    if(param<int>(target_key, target, 0))
     {
       //give 5% tolerance in either direction for warning, 10% for error.  Override default values as desired
-      const int warning_offset = std::ceil(hz_target * 0.05);
+      const int warning_offset = std::ceil(target * 0.05);
       const int error_offset =  2 * warning_offset;
       //don't go  below zero because that doesn't make any sense for hz.
-      hz_min_error=std::max(0,hz_target - error_offset);
-      hz_min_warn=std::max(0,hz_target - warning_offset);
-      hz_max_warn=hz_target + warning_offset;
-      hz_max_error=hz_target + error_offset;
-      stats.setWarnError(hz_min_error, hz_min_warn, hz_max_warn, hz_max_error); 
+      min_error=std::max(0,target - error_offset);
+      min_warn=std::max(0,target - warning_offset);
+      max_warn=target + warning_offset;
+      max_error=target + error_offset;
+      stat.setWarnError(min_error, min_warn, max_warn, max_error); 
     }
     //override individual boundary configs if provided
-    if(param<int>(error_min_key, hz_min_error, hz_min_error))
+    if(param<int>(error_min_key, min_error, min_error))
     {
-      stats.setMinError(hz_min_error); 
+      stat.setMinError(min_error); 
     }
-    if(param<int>(warn_min_key, hz_min_warn, hz_min_warn))
+    if(param<int>(warn_min_key, min_warn, min_warn))
     {
-      stats.setMinWarn(hz_min_warn); 
+      stat.setMinWarn(min_warn); 
     }
-    if(param<int>(warn_max_key, hz_max_warn, hz_max_warn))
+    if(param<int>(warn_max_key, max_warn, max_warn))
     {
-      stats.setMaxWarn(hz_max_warn); 
+      stat.setMaxWarn(max_warn); 
     }
-    if(param<int>(error_max_key, hz_max_error, hz_max_error))
+    if(param<int>(error_max_key, max_error, max_error))
     {
-      stats.setMaxError(hz_max_error); 
-    }
-
-    return stats;       
+      stat.setMaxError(max_error); 
+    }   
 }
+
+void AMLifeCycle::configureStat(AMStat& stat)
+{
+  configureStat(stat,stat.getLongName());
+}
+
+AMStatReset& AMLifeCycle::configureHzStat(AMStatReset& stat)
+{
+    configureStat(stat, stat.getLongName(), "hz");
+}
+
+AMStatReset& AMLifeCycle::configureHzStats(AMStatReset& stats)
+{
+    configureStat(stats, stats.getShortName(), "hz");
+}
+
 void AMLifeCycle::sendNodeUpdate()
 {
   brain_box_msgs::LifeCycleState msg;

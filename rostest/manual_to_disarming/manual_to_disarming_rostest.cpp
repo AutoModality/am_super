@@ -10,16 +10,16 @@ TEST_F(ManualToDisarming, testState_SuccessfulFlight)
 {
   waitUntil(LifeCycleState::CONFIGURING);
   waitUntil(LifeCycleState::INACTIVE);
-  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  waitUntilMissionState(brain_box_msgs::VxState::READY,"NSK3");
   arm();
   waitUntil(LifeCycleState::ACTIVE);
-  waitUntilMissionState(brain_box_msgs::VxState::ARMED);
+  waitUntilMissionState(brain_box_msgs::VxState::ARMED,"38JK");
   launch();
-  waitUntilMissionState(brain_box_msgs::VxState::AUTO);
+  waitUntilMissionState(brain_box_msgs::VxState::AUTO,"22K3");
   manual();
-  waitUntilMissionState(brain_box_msgs::VxState::MANUAL);
+  waitUntilMissionState(brain_box_msgs::VxState::MANUAL,"21KS");
   landed();
-  waitUntilMissionState(brain_box_msgs::VxState::DISARMING);
+  waitUntilMissionState(brain_box_msgs::VxState::DISARMING,"2NSK");
   //the test launch file timeout acts as an assertion if any wait is blocked and unfinishing
 }
 

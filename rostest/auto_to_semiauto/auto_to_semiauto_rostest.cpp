@@ -10,14 +10,14 @@ TEST_F(AutoToSemiAuto, testState_SuccessfulFlight)
 {
   waitUntil(LifeCycleState::CONFIGURING);
   waitUntil(LifeCycleState::INACTIVE);
-  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  waitUntilMissionState(brain_box_msgs::VxState::READY,"AQIE");
   arm();
   waitUntil(LifeCycleState::ACTIVE);
-  waitUntilMissionState(brain_box_msgs::VxState::ARMED);
+  waitUntilMissionState(brain_box_msgs::VxState::ARMED,"IEQA");
   launch();
-  waitUntilMissionState(brain_box_msgs::VxState::AUTO);
+  waitUntilMissionState(brain_box_msgs::VxState::AUTO,"AQUE");
   pause();
-  waitUntilMissionState(brain_box_msgs::VxState::SEMI_AUTO);
+  waitUntilMissionState(brain_box_msgs::VxState::SEMI_AUTO,"AAQA");
   //the test launch file timeout acts as an assertion if any wait is blocked and unfinishing
 }
 

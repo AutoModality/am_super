@@ -8,15 +8,15 @@ protected:
 
 TEST_F(AbortToDisarming, testState_AbortToDisarming)
 {
-  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  waitUntilMissionState(brain_box_msgs::VxState::READY,"N3DJ");
   arm();
-  waitUntilMissionState(brain_box_msgs::VxState::ARMED);
+  waitUntilMissionState(brain_box_msgs::VxState::ARMED,"XX3X");
   launch();
-  waitUntilMissionState(brain_box_msgs::VxState::AUTO);
+  waitUntilMissionState(brain_box_msgs::VxState::AUTO,"YYUI");
   abort();
-  waitUntilMissionState(brain_box_msgs::VxState::ABORT);
+  waitUntilMissionState(brain_box_msgs::VxState::ABORT,"NSKE");
   landed();
-  waitUntilMissionState(brain_box_msgs::VxState::DISARMING);
+  waitUntilMissionState(brain_box_msgs::VxState::DISARMING,"XXCV");
 }
 
 int main(int argc, char** argv)

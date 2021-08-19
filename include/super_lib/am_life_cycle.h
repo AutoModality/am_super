@@ -74,6 +74,7 @@ class AMLifeCycle
     void cleanup();
     void sendNodeUpdate();
     void error(std::string message, std::string error_code, bool forced = false);
+    void configureStat(AMStat& stat, std::string name, std::string category="");
 
   protected:
     std::string node_name_;
@@ -179,12 +180,16 @@ class AMLifeCycle
     /**Initialize statistics by adding to the list*/
     virtual void addStatistics(diagnostic_updater::DiagnosticStatusWrapper& dsw);
 
+
+    [[deprecated("configureHzStat with the stat's long name in the yaml")]]
+    AMStatReset& configureHzStats(AMStatReset& stats);
+
     /** Initialize the stats that reset once per second providing the equivalent of rostopic hz to ensure frequency of 
      * publishing.   Allows for overriding values in roslaunch configurations. 
      * Provide the target, which is the approximate value you expect to receive. The warnings and errors will be 
      * provided with tolerance on both sides of the target. 
      * 
-     * Configurations key use the stats short name.
+     * Configurations key use the stats long name.
      * 
      * setting a target will also set a min/max 5% warn and 10% error
      * no target allows for just min or just max or both.
@@ -202,8 +207,20 @@ class AMLifeCycle
      * 
      * 
      * @param stats to be configured
-     * */
-    AMStatReset& configureHzStats(AMStatReset& stats);
+     * */    
+    AMStatReset& configureHzStat(AMStatReset& stats);
+
+    /** Standard configuration of min/max or warn/error for a stat.  
+     * 
+     * Keyed by the stat long name in the yaml for configuration.
+     * 
+     * my_stat:
+     *   error:
+     *     max: 85
+     *   warn:
+     *     max: 70
+     */
+    void configureStat(AMStat& stat);
 
     /** Called periodically by a timer defaulting to 1 second.
      * Useful for checking health regularly, but not during 

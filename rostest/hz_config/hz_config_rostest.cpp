@@ -15,14 +15,14 @@ protected:
   AMStatReset hz_stats_max_only_ = AMStatReset("max_only", "max_only");
 
   HzConfigTest() : RostestBase() {
-    configureHzStats(hz_stats_target_ten_);
-    configureHzStats(hz_stats_target_one_);
-    configureHzStats(hz_stats_target_one_hundred_);
-    configureHzStats(hz_stats_no_target_);
-    configureHzStats(hz_stats_all_provided_);
-    configureHzStats(hz_stats_target_one_hundred_min_error_10_);
-    configureHzStats(hz_stats_min_only_);
-    configureHzStats(hz_stats_max_only_);
+    configureHzStat(hz_stats_target_ten_);
+    configureHzStat(hz_stats_target_one_);
+    configureHzStat(hz_stats_target_one_hundred_);
+    configureHzStat(hz_stats_no_target_);
+    configureHzStat(hz_stats_all_provided_);
+    configureHzStat(hz_stats_target_one_hundred_min_error_10_);
+    configureHzStat(hz_stats_min_only_);
+    configureHzStat(hz_stats_max_only_);
   }
 
 };

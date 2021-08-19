@@ -8,12 +8,12 @@ protected:
 
 TEST_F(ArmedToReady, testState_ArmedToReady)
 {
-  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  waitUntilMissionState(brain_box_msgs::VxState::READY,"SNWS");
   arm();
-  waitUntilMissionState(brain_box_msgs::VxState::ARMED);
+  waitUntilMissionState(brain_box_msgs::VxState::ARMED,"AXAD");
   cancel();
-  waitUntilMissionState(brain_box_msgs::VxState::DISARMING);
-  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  waitUntilMissionState(brain_box_msgs::VxState::DISARMING,"ANZD");
+  waitUntilMissionState(brain_box_msgs::VxState::READY,"QADE");
 }
 
 int main(int argc, char** argv)

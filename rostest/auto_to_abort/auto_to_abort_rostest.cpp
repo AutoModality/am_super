@@ -10,14 +10,14 @@ TEST_F(AutoToAbort, testState_SuccessfulFlight)
 {
   waitUntil(LifeCycleState::CONFIGURING);
   waitUntil(LifeCycleState::INACTIVE);
-  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  waitUntilMissionState(brain_box_msgs::VxState::READY,"JHDE");
   arm();
   waitUntil(LifeCycleState::ACTIVE);
-  waitUntilMissionState(brain_box_msgs::VxState::ARMED);
+  waitUntilMissionState(brain_box_msgs::VxState::ARMED,"HGFE");
   launch();
-  waitUntilMissionState(brain_box_msgs::VxState::AUTO);
+  waitUntilMissionState(brain_box_msgs::VxState::AUTO,"NS33");
   abort();
-  waitUntilMissionState(brain_box_msgs::VxState::ABORT);
+  waitUntilMissionState(brain_box_msgs::VxState::ABORT,"NP09");
   //the test launch file timeout acts as an assertion if any wait is blocked and unfinishing
 }
 

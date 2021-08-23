@@ -10,9 +10,9 @@ TEST_F(ReadyToShutdown, testState_SuccessfulFlight)
 {
   waitUntil(LifeCycleState::CONFIGURING);
   waitUntil(LifeCycleState::INACTIVE);
-  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  waitUntilMissionState(brain_box_msgs::VxState::READY,"ANQA");
   RostestBase::shutdown(); //since lifeCycle also has a shutdown, need to be specific
-  waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN);
+  waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN,"ANKD");
   //the test launch file timeout acts as an assertion if any wait is blocked and unfinishing
 }
 

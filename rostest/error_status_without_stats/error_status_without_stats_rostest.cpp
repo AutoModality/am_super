@@ -11,13 +11,13 @@ TEST_F(LifeCycleErrorTestWithoutStats, testStatus_Error)
 {
   waitUntil(LifeCycleState::CONFIGURING);
   waitUntil(LifeCycleState::INACTIVE);
-  waitUntilMissionState(brain_box_msgs::VxState::READY);
+  waitUntilMissionState(brain_box_msgs::VxState::READY,"ANQP");
   
-  error("HEOL");
+  errorTerminal("forcing error","HEOL");
   waitUntil(LifeCycleStatus::ERROR,"QNA0");
   waitUntil(LifeCycleState::ERROR_PROCESSING);
   
-  waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN);
+  waitUntilMissionState(brain_box_msgs::VxState::SHUTDOWN,"ANAQ");
 }
 
 int main(int argc, char** argv)

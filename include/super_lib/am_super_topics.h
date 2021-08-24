@@ -19,6 +19,11 @@ public:
   static constexpr char SUPER_STATE[] = "/vstate/summary";
 
   static constexpr char LIFECYCLE_STATE[] = "/node_state";
+
+  static constexpr char SUPER_STATUS[] = "/super/status";
+
+  static constexpr char NODE_LIFECYCLE[] = "/node_lifecycle";
+
 };
 
 }

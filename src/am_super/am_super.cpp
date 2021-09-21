@@ -7,6 +7,7 @@
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <std_msgs/Int16.h>
+#include <std_msgs/Bool.h>
 
 #include <am_super/baby_sitter.h>
 #include <am_super/super_state.h>
@@ -566,6 +567,7 @@ private:
     std_msgs::Bool msg;
     msg.data = false; //false means deactivate
     flight_plan_deactivation_pub_.publish(msg);
+    ROS_ERROR_STREAM("Sending flight plan kill command.");
   }
 
   /**

@@ -68,6 +68,8 @@ private:
   ros::Publisher system_state_pub_;
   ros::Publisher super_status_pub_;
   ros::Publisher led_pub_;
+  /** stops the flight plan when SHUTDOWN state */
+  ros::Publisher flight_plan_deactivation_pub_;
   ros::Subscriber node_state_sub_;
   ros::Subscriber operator_command_sub_;
   ros::Subscriber controller_state_sub;
@@ -198,6 +200,8 @@ public:
      * super status contains online naode list for gcs_comms
      */
     super_status_pub_ = nh_.advertise<brain_box_msgs::Super2Status>(am_super_topics::SUPER_STATUS, 1000);
+
+    flight_plan_deactivation_pub_ = nh_.advertise<std_msgs::Bool>(am_topics::CTRL_FLIGHTPLAN_ACTIVITY_CONTROL, 1000);
 
     supervisor_.system_state = SuperState::BOOTING;
     supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::INIT;
@@ -330,6 +334,7 @@ private:
         {
           supervisor_.status_error = true;
           ROS_ERROR_STREAM("Manifested node " << nr.name << " changed status to ERROR. Shutting down nodes... [JHRE]");
+          stopFlightPlan();
         }
       }
       if (nr.pid != pid)
@@ -552,6 +557,15 @@ private:
       }
     }
     return success;
+  }
+
+
+  /** Send signal to flight controller that flight is over. */
+  void stopFlightPlan()
+  {
+    std_msgs::Bool msg;
+    msg.data = false; //false means deactivate
+    flight_plan_deactivation_pub_.publish(msg);
   }
 
   /**

@@ -2,8 +2,8 @@
 #define AM_SUPER_INCLUDE_SUPER_LIB_AM_LIFECYCLE_TYPES_H_
 
 #include <cstdint>
-#include <brain_box_msgs/LifeCycleState.h>
-#include <brain_box_msgs/LifeCycleCommand.h>
+#include <brain_box_msgs/msg/life_cycle_state.hpp>
+#include <brain_box_msgs/msg/life_cycle_command.hpp>
 
 namespace am
 {
@@ -12,17 +12,17 @@ namespace am
  */
 enum class LifeCycleState : std::uint8_t
 {
-  INVALID = brain_box_msgs::LifeCycleState::STATE_INVALID,
-  UNCONFIGURED = brain_box_msgs::LifeCycleState::STATE_UNCONFIGURED,
-  INACTIVE = brain_box_msgs::LifeCycleState::STATE_INACTIVE,
-  ACTIVE = brain_box_msgs::LifeCycleState::STATE_ACTIVE,
-  FINALIZED = brain_box_msgs::LifeCycleState::STATE_FINALIZED,
-  CONFIGURING = brain_box_msgs::LifeCycleState::STATE_CONFIGURING,
-  CLEANING_UP = brain_box_msgs::LifeCycleState::STATE_CLEANING_UP,
-  SHUTTING_DOWN = brain_box_msgs::LifeCycleState::STATE_SHUTTING_DOWN,
-  ACTIVATING = brain_box_msgs::LifeCycleState::STATE_ACTIVATING,
-  DEACTIVATING = brain_box_msgs::LifeCycleState::STATE_DEACTIVATING,
-  ERROR_PROCESSING = brain_box_msgs::LifeCycleState::STATE_ERROR_PROCESSING
+  INVALID = brain_box_msgs::msg::LifeCycleState::STATE_INVALID,
+  UNCONFIGURED = brain_box_msgs::msg::LifeCycleState::STATE_UNCONFIGURED,
+  INACTIVE = brain_box_msgs::msg::LifeCycleState::STATE_INACTIVE,
+  ACTIVE = brain_box_msgs::msg::LifeCycleState::STATE_ACTIVE,
+  FINALIZED = brain_box_msgs::msg::LifeCycleState::STATE_FINALIZED,
+  CONFIGURING = brain_box_msgs::msg::LifeCycleState::STATE_CONFIGURING,
+  CLEANING_UP = brain_box_msgs::msg::LifeCycleState::STATE_CLEANING_UP,
+  SHUTTING_DOWN = brain_box_msgs::msg::LifeCycleState::STATE_SHUTTING_DOWN,
+  ACTIVATING = brain_box_msgs::msg::LifeCycleState::STATE_ACTIVATING,
+  DEACTIVATING = brain_box_msgs::msg::LifeCycleState::STATE_DEACTIVATING,
+  ERROR_PROCESSING = brain_box_msgs::msg::LifeCycleState::STATE_ERROR_PROCESSING
 };
 
 /**
@@ -30,9 +30,9 @@ enum class LifeCycleState : std::uint8_t
  */
 enum class LifeCycleStatus : std::uint8_t
 {
-  OK = brain_box_msgs::LifeCycleState::STATUS_OK,
-  WARN = brain_box_msgs::LifeCycleState::STATUS_WARN,
-  ERROR = brain_box_msgs::LifeCycleState::STATUS_ERROR
+  OK = brain_box_msgs::msg::LifeCycleState::STATUS_OK,
+  WARN = brain_box_msgs::msg::LifeCycleState::STATUS_WARN,
+  ERROR = brain_box_msgs::msg::LifeCycleState::STATUS_ERROR
 };
 
 /**
@@ -40,16 +40,16 @@ enum class LifeCycleStatus : std::uint8_t
  */
 enum class LifeCycleCommand : std::uint8_t
 {
-  CREATE = brain_box_msgs::LifeCycleCommand::COMMAND_CREATE,
-  CONFIGURE = brain_box_msgs::LifeCycleCommand::COMMAND_CONFIGURE,
-  CLEANUP = brain_box_msgs::LifeCycleCommand::COMMAND_CLEANUP,
-  ACTIVATE = brain_box_msgs::LifeCycleCommand::COMMAND_ACTIVATE,
-  DEACTIVATE = brain_box_msgs::LifeCycleCommand::COMMAND_DEACTIVATE,
-  SHUTDOWN = brain_box_msgs::LifeCycleCommand::COMMAND_SHUTDOWN,
-  DESTROY = brain_box_msgs::LifeCycleCommand::COMMAND_DESTROY,
+  CREATE = brain_box_msgs::msg::LifeCycleCommand::COMMAND_CREATE,
+  CONFIGURE = brain_box_msgs::msg::LifeCycleCommand::COMMAND_CONFIGURE,
+  CLEANUP = brain_box_msgs::msg::LifeCycleCommand::COMMAND_CLEANUP,
+  ACTIVATE = brain_box_msgs::msg::LifeCycleCommand::COMMAND_ACTIVATE,
+  DEACTIVATE = brain_box_msgs::msg::LifeCycleCommand::COMMAND_DEACTIVATE,
+  SHUTDOWN = brain_box_msgs::msg::LifeCycleCommand::COMMAND_SHUTDOWN,
+  DESTROY = brain_box_msgs::msg::LifeCycleCommand::COMMAND_DESTROY,
 
   //FIXME: there should be no last command
-  LAST_COMMAND = brain_box_msgs::LifeCycleCommand::COMMAND_LAST
+  LAST_COMMAND = brain_box_msgs::msg::LifeCycleCommand::COMMAND_LAST
 };
 
 };  // namespace am

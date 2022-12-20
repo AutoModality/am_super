@@ -3,9 +3,9 @@
 
 #include <string_view>
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
-#include <diagnostic_msgs/DiagnosticStatus.h>
+#include <diagnostic_msgs/msg/diagnostic_status.hpp>
 
 #include <super_lib/am_stat_list.h>
 #include <super_lib/am_stat_reset.h>
@@ -53,7 +53,7 @@ class AMLifeCycle
 
     /**The moment configuration is requested for this node. Used with 
      * max_configure_seconds_ to allow startup error tolerance.*/
-    ros::Time configure_start_time_;
+    rclcpp::Time configure_start_time_;
 
     void setState(const LifeCycleState state);
 
@@ -85,15 +85,15 @@ class AMLifeCycle
     diagnostic_updater::Updater updater_;
     AMStatList stats_list_;
 
-    ros::NodeHandle nh_;
-    ros::Timer heartbeat_timer_;
-    ros::Publisher state_pub_;
-    ros::Subscriber lifecycle_sub_;
+    rclcpp::Node::SharedPtr node_;
+    rclcpp::TimerBase::SharedPtr heartbeat_timer_;
+    rclcpp::Publisher<brain_box_msgs::msg::LifeCycleState>::SharedPtr state_pub_;
+    rclcpp::Subscription<brain_box_msgs::msg::LifeCycleCommand>::SharedPtr lifecycle_sub_;
 
     /**
      * @brief Default constructor
      */
-    AMLifeCycle();
+    AMLifeCycle(rclcpp::Node::SharedPtr node);
 
     /**
      * @brief Virtual destructor
@@ -226,9 +226,9 @@ class AMLifeCycle
      * Useful for checking health regularly, but not during 
      * callbacks which can affect performance and be too granular
      */
-    virtual void heartbeatCB(const ros::TimerEvent& event);
+    virtual void heartbeatCB();
 
-    void lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg);
+    void lifecycleCB(const brain_box_msgs::msg::LifeCycleCommand::SharedPtr msg);
 
 
     double getThrottleS() const;

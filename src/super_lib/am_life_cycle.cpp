@@ -1,5 +1,5 @@
 #include <super_lib/am_life_cycle.h>
-#include <brain_box_msgs/LifeCycleState.h>
+#include <brain_box_msgs/msg/life_cycle_state.hpp>
 #include <boost/bimap.hpp>
 #include <boost/assign.hpp>
 
@@ -13,7 +13,7 @@ namespace am
 // static constexpr std::string AMLifeCycle::STATE_INVALID_STRING;
 // static constexpr std::string AMLifeCycle::STATE_UNCONFIGURED_STRING;
 
-AMLifeCycle::AMLifeCycle() : nh_("~")
+AMLifeCycle::AMLifeCycle(rclcpp::Node::SharedPtr node) : node_(node)
 {
   std::string init_state_str;
   //FIXME: This string should come from the enum
@@ -40,7 +40,7 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
     life_cycle_info_.state = LifeCycleState::ACTIVE;
   }
   life_cycle_info_.status = LifeCycleStatus::OK;
-  state_pub_ = nh_.advertise<brain_box_msgs::LifeCycleState>("/node_state", 100);
+  state_pub_ = node_->create_publisher<brain_box_msgs::msg::LifeCycleState>("/node_state", 100);
 
   updater_.setHardwareID("none");
   updater_.broadcast(0, "Initializing node");
@@ -49,13 +49,13 @@ AMLifeCycle::AMLifeCycle() : nh_("~")
 
   // strip leading '/' if it is there
   // TODO: this might always be there so just strip it without checking?
-  if (ros::this_node::getName().at(0) == '/')
+  if (std::string(node_->get_name()).at(0) == '/')
   {
-    node_name_ = ros::this_node::getName().substr(1);
+    node_name_ = std::string(node_->get_name()).substr(1);
   }
   else
   {
-    node_name_ = ros::this_node::getName();
+    node_name_ = node_->get_name();
   }
 
 
@@ -82,9 +82,9 @@ bool AMLifeCycle::param(const std::string& param_name, T& param_val, const T& de
     return result;
 }
 
-void AMLifeCycle::lifecycleCB(const brain_box_msgs::LifeCycleCommand::ConstPtr msg)
+void AMLifeCycle::lifecycleCB(const brain_box_msgs::msg::LifeCycleCommand::SharedPtr msg)
 {
-  ROS_DEBUG_STREAM_THROTTLE(1.0, life_cycle_mediator_.commandToString((LifeCycleCommand)msg->command));
+  RCLCPP_DEBUG_STREAM_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, life_cycle_mediator_.commandToString((LifeCycleCommand)msg->command));
 
   if (!msg->node_name.compare(AMLifeCycle::BROADCAST_NODE_NAME) || !msg->node_name.compare(node_name_))
   {
@@ -124,7 +124,7 @@ void AMLifeCycle::transition(std::string transition_name, LifeCycleState initial
 {
   if (life_cycle_info_.state == initial_state)
   {
-    ROS_INFO_STREAM(transition_name << ", current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << " [ASWU]");
+    RCLCPP_INFO_STREAM(nh_->get_logger(), transition_name << ", current state: " << life_cycle_mediator_.stateToString(life_cycle_info_.state) << " [ASWU]");
     setState(transition_state);
     on_function();
   }
@@ -462,18 +462,18 @@ AMStatReset& AMLifeCycle::configureHzStats(AMStatReset& stats)
 
 void AMLifeCycle::sendNodeUpdate()
 {
-  brain_box_msgs::LifeCycleState msg;
-  msg.node_name = ros::this_node::getName();
+  brain_box_msgs::msg::LifeCycleState msg;
+  msg.node_name = node_->get_name();
   msg.process_id = 0;
   msg.state = (uint8_t)life_cycle_info_.state;
   msg.status = (uint8_t)life_cycle_info_.status;
   msg.subsystem = "";
   msg.value = "";
-  state_pub_.publish(msg);
+  state_pub_->publish(msg);
 }
 
 
-void AMLifeCycle::heartbeatCB(const ros::TimerEvent& event)
+void AMLifeCycle::heartbeatCB()
 {
   updater_.force_update();
 

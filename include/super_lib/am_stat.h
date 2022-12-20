@@ -4,10 +4,10 @@
 #include <cstdint>
 #include <limits>
 
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <super_lib/am_life_cycle_types.h>
-#include <diagnostic_updater/diagnostic_updater.h>
+#include <diagnostic_updater/diagnostic_updater.hpp>
 
 namespace am
 {

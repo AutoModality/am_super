@@ -3,12 +3,13 @@
 
 #include <super_lib/am_life_cycle.h>
 #include <functional>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
-#include <brain_box_msgs/BabySitterStatus.h>
-#include <brain_box_msgs/NodeStatus.h>
+#include <brain_box_msgs/msg/baby_sitter_status.hpp>
+#include <brain_box_msgs/msg/node_status.hpp>
 #include <vb_util_lib/bag_logger.h>
 #include <vb_util_lib/trace.h>
+#include <am_utils/am_ros2_utility.h>
 
 namespace am
 {
@@ -45,10 +46,10 @@ private:
   int curr_max_ms_;
   std::string node_name_;
 
-  ros::NodeHandle nh_;
-  ros::Subscriber device_data_sub_;
-  ros::Publisher node_status_pub_;
-  ros::Timer heartbeat_timer_;
+  rclcpp::Node::SharedPtr nh_;
+  rclcpp::Subscription<M>::SharedPtr device_data_sub_;
+  rclcpp::Publisher<brain_box_msgs::msg::NodeStatus>::SharedPtr node_status_pub_;
+  rclcpp::TimerBase::SharedPtr heartbeat_timer_;
 
   BagLogger* logger_;
 
@@ -63,7 +64,7 @@ public:
   /*
    *	Constructor with ros::NodeHandle
    */
-  BabySitter(const ros::NodeHandle& nh, BagLogger* logger, const std::string& node_name, const std::string& topic,
+  BabySitter(rclcpp::Node::SharedPtr nh, BagLogger* logger, const std::string& node_name, const std::string& topic,
              int warn_ms, int error_ms, int warn_count_thresh = 5, int timeout_ms = 2000,
              int start_delay_ms = 0 /*, ErrorCB error_cb */);
 
@@ -81,8 +82,8 @@ public:
   int getAveLatencyMs();
 
 private:
-  void deviceCB(const ros::MessageEvent<M const>& event);
-  void heartbeatCB(const ros::TimerEvent& event);
+  void deviceCB(const M::SharedPtr event);
+  void heartbeatCB();
   void checkNodeState();
   void setNodeState(LifeCycleState node_state);
   std::string parseNodeState(LifeCycleState state);
@@ -92,29 +93,29 @@ private:
 };
 
 template <class M>
-BabySitter<M>::BabySitter(const ros::NodeHandle& nh, BagLogger* logger, const std::string& node_name,
+BabySitter<M>::BabySitter(const rclcpp::Node::SharedPtr nh, BagLogger* logger, const std::string& node_name,
                           const std::string& topic, int warn_ms, int error_ms, int warn_count_thresh, int timeout_ms,
-                          int start_delay_ms)
+                          int start_delay_ms): nh_(nh)
 {
-  ROS_INFO_STREAM(NODE_FUNC << node_name);
+  RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << node_name);
 
   nh_ = nh;
 
   std::string parm = "~" + node_name + "/warn_ms";
   ros::param::param<int>(parm, warn_ms_, warn_ms);
-  ROS_INFO_STREAM(NODE_FUNC << parm << " = " << warn_ms_);
+  RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << parm << " = " << warn_ms_);
 
   parm = "~" + node_name + "/error_ms";
   ros::param::param<int>(parm, error_ms_, error_ms);
-  ROS_INFO_STREAM(NODE_FUNC << parm << " = " << error_ms_);
+  RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << parm << " = " << error_ms_);
 
   parm = "~" + node_name + "/warn_count_thresh";
   ros::param::param<int>(parm, warn_count_thresh_, warn_count_thresh);
-  ROS_INFO_STREAM(NODE_FUNC << parm << " = " << warn_count_thresh_);
+  RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << parm << " = " << warn_count_thresh_);
 
   parm = "~" + node_name + "/timeout_ms";
   ros::param::param<int>(parm, timeout_ms_, timeout_ms);
-  ROS_INFO_STREAM(NODE_FUNC << parm << " = " << timeout_ms_);
+  RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << parm << " = " << timeout_ms_);
 
   min_ms_ = 1000;
   max_ms_ = 0;
@@ -135,11 +136,12 @@ BabySitter<M>::BabySitter(const ros::NodeHandle& nh, BagLogger* logger, const st
   start_delay_ms_ = start_delay_ms;
 
   logger_ = logger;
-  node_status_pub_ = nh_.advertise<brain_box_msgs::NodeStatus>("/process/status", 1000);
 
-  device_data_sub_ = nh_.subscribe(topic, 10, &BabySitter<M>::deviceCB, this);
+  node_status_pub_ = nh_->create_publisher<brain_box_msgs::msg::NodeStatus>("/process/status", 1000);
 
-  heartbeat_timer_ = nh_.createTimer(ros::Duration(1.0), &BabySitter::heartbeatCB, this);
+  device_data_sub_ = nh_->create_subscription<M>(topic, 10, std::bind(&BabySitter<M>::deviceCB, this, std::placeholders::_1));
+
+  heartbeat_timer_ = nh_->create_wall_timer(am::toDuration(1.0), std::bind(&BabySitter::heartbeatCB, this));
 }
 
 template <class M>
@@ -211,7 +213,7 @@ std::string BabySitter<M>::parseDeviceState(DeviceState state)
 template <class M>
 void BabySitter<M>::printStatus()
 {
-  ROS_INFO_STREAM(NODE_FUNC << node_name_ << ", node state:" << parseNodeState(node_state_)
+	RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << node_name_ << ", node state:" << parseNodeState(node_state_)
                             << ", device state: " << parseDeviceState(device_state_));
 }
 
@@ -233,7 +235,7 @@ void BabySitter<M>::checkNodeState()
       }
       break;
     default:
-      ROS_WARN_STREAM_THROTTLE(10, NODE_FUNC << node_name_ << ": unknown node state: " << parseNodeState(node_state_));
+      RCLCPP_WARN_STREAM_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 10, nh_->get_name() << node_name_ << ": unknown node state: " << parseNodeState(node_state_));
       break;
   }
 }
@@ -241,7 +243,7 @@ void BabySitter<M>::checkNodeState()
 template <class M>
 void BabySitter<M>::setNodeState(LifeCycleState node_state)
 {
-  ROS_INFO_STREAM(NODE_FUNC << node_name_ << ": changing state from: " << parseNodeState(node_state_)
+  RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << node_name_ << ": changing state from: " << parseNodeState(node_state_)
                             << " to: " << parseNodeState(node_state));
 
   switch (node_state_)
@@ -253,20 +255,20 @@ void BabySitter<M>::setNodeState(LifeCycleState node_state)
       node_state_ = node_state;
       break;
     default:
-      ROS_WARN_STREAM_THROTTLE(10, NODE_FUNC << node_name_ << ": unknown node state: " << parseNodeState(node_state_));
+      RCLCPP_WARN_STREAM_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 10, nh_->get_name() << node_name_ << ": unknown node state: " << parseNodeState(node_state_));
       break;
   }
   printStatus();
 }
 
 template <class M>
-void BabySitter<M>::deviceCB(const ros::MessageEvent<M const>& event)
+void BabySitter<M>::deviceCB(const M::SharedPtr msg)
 {
   message_count_++;
   long now_ms = nowMS();
   if (now_ms - start_time_ms_ < start_delay_ms_)
   {
-    ROS_WARN_STREAM_THROTTLE(1.0, NODE_FUNC << node_name_ << ":message received during start delay");
+    RCLCPP_WARN_STREAM_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, nh_->get_name() << node_name_ << ":message received during start delay");
   }
 
   long latency_ms = now_ms - last_contact_ms_;
@@ -282,35 +284,35 @@ void BabySitter<M>::deviceCB(const ros::MessageEvent<M const>& event)
   }
   if (latency_ms < curr_min_ms_)
   {
-    curr_min_ms_ = latency_ms;
+	  curr_min_ms_ = latency_ms;
   }
   if (latency_ms >= error_ms_)
   {
-    ROS_ERROR_STREAM_THROTTLE(1.0, NODE_FUNC << node_name_ << ": max latency error: " << latency_ms << "(" << error_ms_
-                                             << ")");
-    device_state_ = DeviceState::ERROR;
+	  RCLCPP_ERROR_STREAM_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, nh_->get_name()<< node_name_ << ": max latency error: " << latency_ms << "(" << error_ms_
+			  << ")");
+	  device_state_ = DeviceState::ERROR;
   }
   else if (latency_ms >= warn_ms_)
   {
-    ROS_WARN_STREAM_THROTTLE(1.0, NODE_FUNC << node_name_ << ": latency warning: " << latency_ms << "(" << warn_ms_
-                                            << ")");
-    device_state_ = DeviceState::WARN;
-    warn_count_++;
-    if (warn_count_ >= warn_count_thresh_)
-    {
-      ROS_ERROR_STREAM_THROTTLE(1.0, NODE_FUNC << node_name_ << ": count latency error: " << warn_count_ << "("
-                                               << warn_count_thresh_ << ")");
-      device_state_ = DeviceState::ERROR;
-    }
+	  RCLCPP_WARN_STREAM_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, nh_->get_name() << node_name_ << ": latency warning: " << latency_ms << "(" << warn_ms_
+			  << ")");
+	  device_state_ = DeviceState::WARN;
+	  warn_count_++;
+	  if (warn_count_ >= warn_count_thresh_)
+	  {
+		  RCLCPP_ERROR_STREAM_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, nh_->get_name() << node_name_ << ": count latency error: " << warn_count_ << "("
+				  << warn_count_thresh_ << ")");
+		  device_state_ = DeviceState::ERROR;
+	  }
   }
   else
   {
-    if (device_state_ != DeviceState::OK)
-    {
-      ROS_INFO_STREAM_THROTTLE(1.0, NODE_FUNC << node_name_ << ": latency ok: " << latency_ms);
-      device_state_ = DeviceState::OK;
-    }
-    warn_count_ = 0;
+	  if (device_state_ != DeviceState::OK)
+	  {
+		  RCLCPP_INFO_STREAM_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, nh_->get_name() << node_name_ << ": latency ok: " << latency_ms);
+		  device_state_ = DeviceState::OK;
+	  }
+	  warn_count_ = 0;
   }
 
   last_contact_ms_ = now_ms;
@@ -320,13 +322,13 @@ void BabySitter<M>::deviceCB(const ros::MessageEvent<M const>& event)
 template <class M>
 long BabySitter<M>::nowMS()
 {
-  ros::Time now = ros::Time().now();
-  long now_ms = (long)(now.nsec / NSECS_IN_MSECS) + (long)now.sec * MSECS_IN_SECS;
+  rclcpp::Time now = nh_->now();
+  long now_ms = (long)(now.seconds() / NSECS_IN_MSECS) + (long)now.seconds() * MSECS_IN_SECS;
   return now_ms;
 }
 
 template <class M>
-void BabySitter<M>::heartbeatCB(const ros::TimerEvent& event)
+void BabySitter<M>::heartbeatCB()
 {
   min_ms_ = curr_min_ms_;
   curr_min_ms_ = 1000;
@@ -343,7 +345,7 @@ void BabySitter<M>::heartbeatCB(const ros::TimerEvent& event)
   freq_hz_ = message_count_;
   message_count_ = 0;
 
-  brain_box_msgs::BabySitterStatus log_msg;
+  brain_box_msgs::msg::BabySitterStatus log_msg;
   log_msg.name = node_name_;
   log_msg.freq = freq_hz_;
   log_msg.max_min_ave.max = max_ms_;
@@ -356,7 +358,7 @@ void BabySitter<M>::heartbeatCB(const ros::TimerEvent& event)
     int time_since_contact = nowMS() - last_contact_ms_;
     if (time_since_contact > timeout_ms_)
     {
-      ROS_ERROR_STREAM(NODE_FUNC << node_name_ << ": timed out");
+      RCLCPP_ERROR_STREAM(nh_->get_logger(), NODE_FUNC << node_name_ << ": timed out");
       device_state_ = DeviceState::ERROR;
       checkNodeState();
     }
@@ -364,15 +366,15 @@ void BabySitter<M>::heartbeatCB(const ros::TimerEvent& event)
 
   if (node_state_ == LifeCycleState::ACTIVE)
   {
-    brain_box_msgs::NodeStatus ns_msg;
+    brain_box_msgs::msg::NodeStatus ns_msg;
     ns_msg.node_name = node_name_;
     ns_msg.status = "ALIVE";
     ns_msg.value = "";
     ns_msg.process_id = 0;
-    node_status_pub_.publish(ns_msg);
+    node_status_pub_->publish(ns_msg);
   }
 
-  ROS_INFO_STREAM_THROTTLE(LOG_PERIOD_S, NODE_FUNC << node_name_ << " node:" << parseNodeState(node_state_)
+  RCLCPP_INFO_STREAM_THROTTLE(nh_->get_logger(), *nh_->get_clock(), LOG_PERIOD_S, nh_->get_name() << node_name_ << " node:" << parseNodeState(node_state_)
                                                    << ", state: " << parseDeviceState(device_state_)
                                                    << ", max:" << max_ms_ << ", min: " << min_ms_
                                                    << ", ave: " << ave_ms_ << ", freq: " << freq_hz_);

@@ -38,26 +38,26 @@ protected:
   bool validate_max_ = false;
   bool sample_received_ = false;
   bool sample_required_ = false;
+  rclcpp::Node::SharedPtr node_;
 private:
   AMStat();
-
 public:
-  AMStat(const std::string& short_name, const std::string& long_name)
+  AMStat(rclcpp::Node::SharedPtr node, const std::string& short_name, const std::string& long_name): node_(node)
   {
     short_name_ = short_name;
     long_name_ = long_name;
   }
 
-  AMStat(const std::string& short_name, const std::string& long_name, uint32_t max_warn, uint32_t max_error)
-    : AMStat(short_name, long_name)
+  AMStat(rclcpp::Node::SharedPtr node, const std::string& short_name, const std::string& long_name, uint32_t max_warn, uint32_t max_error)
+    : AMStat(node, short_name, long_name)
   {
     setMaxWarn(max_warn);
     setMaxError(max_error);
   }
 
-  AMStat(const std::string& short_name, const std::string& long_name, uint32_t min_error, uint32_t min_warn,
+  AMStat(rclcpp::Node::SharedPtr node, const std::string& short_name, const std::string& long_name, uint32_t min_error, uint32_t min_warn,
               uint32_t max_warn, uint32_t max_error)
-      : AMStat(short_name, long_name,max_warn,max_error)
+      : AMStat(node, short_name, long_name,max_warn,max_error)
   {
     setMinError(min_error);
     setMinWarn(min_warn);
@@ -77,13 +77,13 @@ public:
       {
         if (value_ > max_error_)
         {
-          ROS_ERROR_STREAM_THROTTLE(error_throttle_s, long_name_ << " exceeding max_error: " << value_
+          RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(),error_throttle_s, long_name_ << " exceeding max_error: " << value_
                                                                 << " (max:" << max_error_ << ") [TF5R]");
           compoundStatus(status, LifeCycleStatus::ERROR);
         }
         else if (value_ > max_warn_)
         {
-          ROS_WARN_STREAM_THROTTLE(warn_throttle_s, long_name_ << " exceeding max_warn: " << value_ << " (max:" << max_warn_
+          RCLCPP_WARN_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), warn_throttle_s, long_name_ << " exceeding max_warn: " << value_ << " (max:" << max_warn_
                                                               << ") [PO9P]");
           compoundStatus(status, LifeCycleStatus::WARN);
         }
@@ -93,13 +93,13 @@ public:
       {
         if (value_ < min_error_)
         {
-          ROS_ERROR_STREAM_THROTTLE(error_throttle_s, long_name_ << " exceeding min_error: " << value_
+          RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), error_throttle_s, long_name_ << " exceeding min_error: " << value_
                                                                 << " (min:" << min_error_ << ") [K08K]");
           compoundStatus(status, LifeCycleStatus::ERROR);
         }
         else if (value_ < min_warn_)
         {
-          ROS_WARN_STREAM_THROTTLE(warn_throttle_s, long_name_ << " exceeding min_warn: " << value_ << " (min:" << min_warn_
+          RCLCPP_WARN_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), warn_throttle_s, long_name_ << " exceeding min_warn: " << value_ << " (min:" << min_warn_
                                                               << ") [H9H8]");
           compoundStatus(status, LifeCycleStatus::WARN);
         }
@@ -108,14 +108,14 @@ public:
       if(!validate_max_ && !validate_min_)
       {   
           //report this warning once during first validation
-          ROS_WARN_STREAM_THROTTLE(9999, long_name_ << " lacks validation since min/max is not set [TRB5]");        
+          RCLCPP_WARN_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 9999, long_name_ << " lacks validation since min/max is not set [TRB5]");
       }
     }
     else
     {
       //sample is required and not yet received
       status = LifeCycleStatus::ERROR;
-      ROS_ERROR_STREAM_THROTTLE(error_throttle_s, long_name_ << " no samples received [NAQE] ");      
+      RCLCPP_ERROR_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), error_throttle_s, long_name_ << " no samples received [NAQE] ");
     }
     return status;
   }

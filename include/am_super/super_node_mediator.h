@@ -2,8 +2,8 @@
 
 #ifndef AM_SUPER_INCLUDE_AM_SUPER_NODE_MEDIATOR_H_
 #define AM_SUPER_INCLUDE_AM_SUPER_NODE_MEDIATOR_H_
-#include <ros/ros.h>
-#include <brain_box_msgs/LifeCycleState.h>
+#include <rclcpp/rclcpp.hpp>
+#include <brain_box_msgs/msg/life_cycle_state.hpp>
 
 #include <super_lib/am_life_cycle_types.h>
 #include <super_lib/am_life_cycle.h>
@@ -21,7 +21,7 @@ namespace am
 class SuperNodeMediator
 {
 public:
-  SuperNodeMediator(const std::string& node_name);
+  SuperNodeMediator(rclcpp::Node::SharedPtr node, const std::string& node_name);
   
   /**
    * Instructions Super receives from flight controller.
@@ -44,7 +44,7 @@ public:
     LifeCycleStatus status;  // node lifecycle status
     bool manifested;         // nodes was in manfiest
     bool online;             // node is online
-    ros::Time last_contact;  // last time a message was received from the node
+    rclcpp::Time last_contact;  // last time a message was received from the node
   };
 
  /**
@@ -331,6 +331,9 @@ public:
   std::string platformVariantToConfig(const PlatformVariant &variant);
 
 private:
+
+  rclcpp::Node::SharedPtr node_;
+
   /** name of supervisor node */
   const std::string SUPER_NODE_NAME;
 

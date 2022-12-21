@@ -102,19 +102,20 @@ BabySitter<M>::BabySitter(const rclcpp::Node::SharedPtr nh, BagLogger* logger, c
   nh_ = nh;
 
   std::string parm = "~" + node_name + "/warn_ms";
-  ros::param::param<int>(parm, warn_ms_, warn_ms);
+
+  am::getParam<int>(nh_, parm, warn_ms_, warn_ms);
   RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << parm << " = " << warn_ms_);
 
   parm = "~" + node_name + "/error_ms";
-  ros::param::param<int>(parm, error_ms_, error_ms);
+  am::getParam<int>(nh_,parm, error_ms_, error_ms);
   RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << parm << " = " << error_ms_);
 
   parm = "~" + node_name + "/warn_count_thresh";
-  ros::param::param<int>(parm, warn_count_thresh_, warn_count_thresh);
+  am::getParam<int>(nh_,parm, warn_count_thresh_, warn_count_thresh);
   RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << parm << " = " << warn_count_thresh_);
 
   parm = "~" + node_name + "/timeout_ms";
-  ros::param::param<int>(parm, timeout_ms_, timeout_ms);
+  am::getParam<int>(nh_,parm, timeout_ms_, timeout_ms);
   RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << parm << " = " << timeout_ms_);
 
   min_ms_ = 1000;
@@ -358,7 +359,7 @@ void BabySitter<M>::heartbeatCB()
     int time_since_contact = nowMS() - last_contact_ms_;
     if (time_since_contact > timeout_ms_)
     {
-      RCLCPP_ERROR_STREAM(nh_->get_logger(), NODE_FUNC << node_name_ << ": timed out");
+      RCLCPP_ERROR_STREAM(nh_->get_logger(), nh_->get_name() << node_name_ << ": timed out");
       device_state_ = DeviceState::ERROR;
       checkNodeState();
     }

@@ -129,7 +129,7 @@ public:
   {
     RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name());
 
-    ros::param::param<double>("~node_timeout_s", node_timeout_s_, 2.0);
+    am::getParam<double>(nh_, "node_timeout_s", node_timeout_s_, 2.0);
     RCLCPP_INFO_STREAM(nh_->get_logger(), "node_timeout_s = " << node_timeout_s_);
 
     /*
@@ -138,7 +138,7 @@ public:
     supervisor_.system_state = SuperState::OFF;
     // strip spaces from manifest param
     string manifest_param;
-    ros::param::param<string>("~manifest", manifest_param, "");
+    am::getParam<std::string>(nh_, "manifest", manifest_param, "");
 
     node_mediator_.parseManifest(supervisor_, manifest_param);
 
@@ -606,7 +606,7 @@ private:
         LifeCycleCommand command = transition_instructions.life_cycle_command;
         std::string failed_nodes_string = boost::algorithm::join(transition_instructions.failed_nodes, ", ");
         std::string failed_nodes_reasons_string = boost::algorithm::join(transition_instructions.failed_nodes_reasons, ", ");
-        ROS_INFO_STREAM_THROTTLE(5,state_mediator_.stateToString(supervisor_.system_state)
+        RCLCPP_INFO_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 5,state_mediator_.stateToString(supervisor_.system_state)
                         << ": sending " << life_cycle_mediator_.commandToString(command) << " to "
                         << failed_nodes_string << " because " << failed_nodes_reasons_string);
 

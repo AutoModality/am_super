@@ -36,6 +36,7 @@
 #include <vb_util_lib/topics.h>
 #include <vb_util_lib/trace.h>
 #include <vb_util_lib/vb_main.h>
+
 #if CUDA_FLAG
 #include <cuda/cuda_utility_class.h>
 #endif
@@ -125,7 +126,7 @@ private:
 #endif
 
 public:
-  AMSuper(rclcpp::Node::SharedPtr nh) : nh_(nh), node_mediator_(SuperNodeMediator::nodeNameStripped(nh->get_name()))
+  AMSuper(rclcpp::Node::SharedPtr nh) : nh_(nh), AMLifeCycle(nh_), node_mediator_(nh_, SuperNodeMediator::nodeNameStripped(nh->get_name()))
   {
     RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name());
 
@@ -276,7 +277,7 @@ private:
                  rmsg->value, rmsg->process_id, rmsg->header.stamp);
 
     // TODO: topic name should come from vb_util_lib::topics.h
-    LOG_MSG(am_super_topics::LIFECYCLE_STATE, rmsg, SU_LOG_LEVEL);
+    LOG_MSG(*rmsg, am_super_topics::LIFECYCLE_STATE, "brain_box_msgs/msg/LifeCycleState", rmsg->header.stamp, SU_LOG_LEVEL);
   }
 
   //void controllerStateCB(const ros::MessageEvent<brain_box_msgs::ControllerState const>& event)
@@ -297,7 +298,7 @@ private:
     
     node_mediator_.setOperatorCommand(supervisor_, (OperatorCommand)rmsg->command);
     // TODO: topic name should come from vb_util_lib::topics.
-    LOG_MSG("/operator/command", rmsg, SU_LOG_LEVEL);
+    LOG_MSG(*rmsg, "/operator/command", "brain_box_msgs/msg/OperatorCommand", nh_->now(), SU_LOG_LEVEL);
   }
   /**
    * process state
@@ -444,7 +445,7 @@ private:
       if (nr.online)
       {
         rclcpp::Duration time_since_contact = (now - nr.last_contact);
-        rclcpp::Duration timeout_dur(node_timeout_s_);
+        rclcpp::Duration timeout_dur(am::toDuration(node_timeout_s_));
         if (time_since_contact > timeout_dur)
         {
           nr.online = false;
@@ -469,7 +470,7 @@ private:
       SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
       status_msg.nodes.push_back(nr.name);
     }
-    LOG_MSG("/status/super", status_msg, 1);
+    LOG_MSG(status_msg, "/status/super", "brain_box_msgs/msg/Super2Status", nh_->now(), 1);
     if (super_status_pub_->get_subscription_count() > 0)
     {
       super_status_pub_->publish(status_msg);
@@ -500,7 +501,7 @@ private:
        getline(newfile, tp);
        std_msgs::msg::Int16 msg;
        msg.data = std::stoi(tp);
-       LOG_MSG("/watts", msg, SU_LOG_LEVEL);
+       LOG_MSG(msg, "/watts", "std_msgs/msg/Int16", nh_->now(), SU_LOG_LEVEL);
        newfile.close(); //close the file object.
     }
 
@@ -830,12 +831,12 @@ private:
   
   void diagnosticsCB(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg)
   {
-      LOG_MSG("/diagnostics", msg, SU_LOG_LEVEL);
+      LOG_MSG(*msg, "/diagnostics", "diagnostic_msgs/msg/DiagnosticArray", nh_->now(), SU_LOG_LEVEL);
   }
 
   void currentENUCB(const nav_msgs::msg::Odometry::SharedPtr msg)
   {
-      LOG_MSG(am_topics::CTRL_VX_VEHICLE_CURRENTENU, msg, SU_LOG_LEVEL);
+      LOG_MSG(*msg, am_topics::CTRL_VX_VEHICLE_CURRENTENU, "nav_msgs/msg/Odometry", nh_->now(), SU_LOG_LEVEL);
   }
 
   BagLogger::BagLoggerLevel intToLoggerLevel(int level)

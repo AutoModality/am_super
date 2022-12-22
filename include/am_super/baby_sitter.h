@@ -13,7 +13,7 @@
 
 namespace am
 {
-template <class M>
+template <typename M>
 class BabySitter
 {
 private:
@@ -47,7 +47,7 @@ private:
   std::string node_name_;
 
   rclcpp::Node::SharedPtr nh_;
-  rclcpp::Subscription<M>::SharedPtr device_data_sub_;
+  rclcpp::GenericSubscription::SharedPtr device_data_sub_;
   rclcpp::Publisher<brain_box_msgs::msg::NodeStatus>::SharedPtr node_status_pub_;
   rclcpp::TimerBase::SharedPtr heartbeat_timer_;
 
@@ -82,7 +82,7 @@ public:
   int getAveLatencyMs();
 
 private:
-  void deviceCB(const M::SharedPtr event);
+  void deviceCB(std::shared_ptr<rclcpp::SerializedMessage> msg);
   void heartbeatCB();
   void checkNodeState();
   void setNodeState(LifeCycleState node_state);
@@ -140,7 +140,7 @@ BabySitter<M>::BabySitter(const rclcpp::Node::SharedPtr nh, BagLogger* logger, c
 
   node_status_pub_ = nh_->create_publisher<brain_box_msgs::msg::NodeStatus>("/process/status", 1000);
 
-  device_data_sub_ = nh_->create_subscription<M>(topic, 10, std::bind(&BabySitter<M>::deviceCB, this, std::placeholders::_1));
+  device_data_sub_ = nh_->create_generic_subscription(topic, am::getMessageName<M>(), 10, std::bind(&BabySitter<M>::deviceCB, this, std::placeholders::_1));
 
   heartbeat_timer_ = nh_->create_wall_timer(am::toDuration(1.0), std::bind(&BabySitter::heartbeatCB, this));
 }
@@ -263,7 +263,7 @@ void BabySitter<M>::setNodeState(LifeCycleState node_state)
 }
 
 template <class M>
-void BabySitter<M>::deviceCB(const M::SharedPtr msg)
+void BabySitter<M>::deviceCB(std::shared_ptr<rclcpp::SerializedMessage> msg)
 {
   message_count_++;
   long now_ms = nowMS();
@@ -352,7 +352,7 @@ void BabySitter<M>::heartbeatCB()
   log_msg.max_min_ave.max = max_ms_;
   log_msg.max_min_ave.min = min_ms_;
   log_msg.max_min_ave.ave = ave_ms_;
-  LOG_MSG("/status/super/" + node_name_, log_msg, 1);
+  LOG_MSG(log_msg, std::string("/status/super/" + node_name_), "brain_box_msgs/msg/BabySitterStatus", nh_->now(), 1);
 
   if (node_state_ == LifeCycleState::ACTIVE)
   {

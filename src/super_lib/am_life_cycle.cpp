@@ -469,6 +469,7 @@ AMStatReset& AMLifeCycle::configureHzStats(AMStatReset& stats)
 void AMLifeCycle::sendNodeUpdate()
 {
   brain_box_msgs::msg::LifeCycleState msg;
+  msg.header.stamp = node_->now();
   msg.node_name = node_->get_name();
   msg.process_id = 0;
   msg.state = (uint8_t)life_cycle_info_.state;

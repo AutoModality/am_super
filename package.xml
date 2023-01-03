@@ -9,17 +9,19 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   
+  <exec_depend>ros2launch</exec_depend>
+
   <depend>am_utils</depend>  
   <depend>brain_box_msgs</depend>  
+  <depend>builtin_interfaces</depend>
   <depend>diagnostic_msgs</depend>  
+  <depend>diagnostic_updater</depend>
   <depend>rosbag2</depend>
   <depend>rosbag2_cpp</depend>
   <depend>rclcpp</depend>
   <depend>rclpy</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
-  <depend>builtin_interfaces</depend>
-  <depend>diagnostic_updater</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

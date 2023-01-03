@@ -126,7 +126,7 @@ private:
 #endif
 
 public:
-  AMSuper(rclcpp::Node::SharedPtr nh) : nh_(nh), AMLifeCycle(nh_), node_mediator_(nh_, SuperNodeMediator::nodeNameStripped(nh->get_name()))
+  AMSuper(rclcpp::Node::SharedPtr nh) : nh_(nh), AMLifeCycle(nh), node_mediator_(nh, SuperNodeMediator::nodeNameStripped(nh->get_name()))
   {
     RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name());
 

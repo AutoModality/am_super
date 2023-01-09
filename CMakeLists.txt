@@ -1,115 +1,46 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(am_super)
 
-## Compile as C++11, supported in ROS melodic and newer
-add_compile_options(-std=c++17)
+set(CMAKE_BUILD_TYPE Debug)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED
+if(POLICY CMP0074)
+  cmake_policy(SET CMP0074 NEW)
+endif()
+
+# Default to C99
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
+endif()
+
+# Default to C++17
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+
+
+set(dependencies
   am_utils
+  brain_box_msgs
+  builtin_interfaces
   diagnostic_msgs
-  rosbag
-  roscpp
-  rospy
+  diagnostic_updater
+  rclcpp
+  rclpy
+  rosbag2
+  rosbag2_cpp
   std_msgs
-  std_srvs
-  am_rostest
 )
 
-#find_package(CUDA)
+# find dependencies
+find_package(ament_cmake REQUIRED)
 
-#if(CUDA_FOUND)
-#	add_definitions(-DCUDA_FLAG)
-#	message([STATUS] "CUDA FOUND, am_super will be built with GPU monitoring")
-#	SET(CUDA_NVCC_FLAGS "-arch=sm_62" CACHE STRING "nvcc flags" FORCE)
-#	SET(CUDA_VERBOSE_BUILD ON CACHE BOOL "nvcc verbose" FORCE)
-#	CUDA_ADD_LIBRARY(cuda_utility ${LIB_TYPE} src/cuda/cuda_utility.cu)
-#endif(CUDA_FOUND)
+foreach(Dependency IN ITEMS ${dependencies})
+  find_package(${Dependency} REQUIRED)
+endforeach()
 
-
-## System dependencies are found with CMake's conventions
-
-
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
-
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
-
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
-
-## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
-
-## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
-
-################################################
-## Declare ROS dynamic reconfigure parameters ##
-################################################
-
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
-
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if your package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES super_lib
-  CATKIN_DEPENDS 
-  am_utils
-  diagnostic_msgs
-  rosbag
-  roscpp
-  rospy
-  std_msgs
-  std_srvs
-)
-
-###########
-## Build ##
-###########
-
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
 include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
+	include
 )
-
 
 file(GLOB super_lib_cpp_files
     src/super_lib/*.cpp
@@ -127,119 +58,69 @@ file(GLOB SUPER_MEDIATOR_FILES
     src/am_super/*_mediator.cpp
 )
 
-## Declare a C++ library
 add_library(super_lib
   ${super_lib_cpp_files}
 )
-target_link_libraries(super_lib ${catkin_LIBRARIES})
-add_dependencies(super_lib ${catkin_EXPORTED_TARGETS})
+target_link_libraries(super_lib)
 
-#if(CUDA_FOUND)
-#	add_executable(am_super ${am_super_cpp_files} ${cuda_cpp_files} )
-#	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib cuda_utility)
-#else()
-#	add_executable(am_super ${am_super_cpp_files})
-#	target_link_libraries(am_super ${catkin_LIBRARIES} super_lib)	
-#endif(CUDA_FOUND)
+ament_target_dependencies(super_lib ${dependencies})
+ament_export_targets(super_libTargets HAS_LIBRARY_TARGET)
+ament_export_include_directories(include)
+ament_export_libraries(super_lib)
 
 add_executable(am_super ${am_super_cpp_files})
-target_link_libraries(am_super ${catkin_LIBRARIES} super_lib)
-add_dependencies(am_super ${catkin_EXPORTED_TARGETS})
+target_link_libraries(am_super super_lib)
+ament_target_dependencies(am_super ${dependencies})
 
-#############
-## Install ##
-#############
-# all install targets should use catkin DESTINATION variables
-# See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
-
-## Mark executable scripts (Python etc.) for installation
-## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
-#  scripts/my_python_script
-#  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
-## Mark executables for installation
-## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
- install(TARGETS ${PROJECT_NAME}
-   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
- )
-
-# Mark libraries for installation
-# See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
- install(TARGETS super_lib
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
- )
-
-#Mark cpp header files for installation
-install(DIRECTORY include/super_lib
-  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
-
-## Mark other files for installation (e.g. launch and bag files, etc.)
-# install(FILES
-#   # myfile1
-#   # myfile2
-#   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-# )
-
-#############
-## Testing ##
-#############
-
-if(CATKIN_ENABLE_TESTING AND ENABLE_COVERAGE_TESTING)
-  find_package(code_coverage REQUIRED)
-  # Add compiler flags for coverage instrumentation before defining any targets
-  APPEND_COVERAGE_COMPILER_FLAGS()
-endif()
-
-file(GLOB TEST_FILES
-    test/*_tests.cpp
+install(DIRECTORY include/
+        DESTINATION include/
 )
 
+install(
+  TARGETS super_lib
+  EXPORT super_libTargets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
 
-# code coverage setup: https://github.com/mikeferguson/code_coverage
-if (CATKIN_ENABLE_TESTING)
+install(TARGETS
+  am_super
+  DESTINATION lib/${PROJECT_NAME}
+)
 
-  ## Add gtest based cpp test target and link libraries
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}/
+)
 
-  catkin_add_gtest(${PROJECT_NAME}_test ${TEST_FILES} ${SUPER_MEDIATOR_FILES})
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_lint_auto REQUIRED)
+  find_package(ros_testing REQUIRED)
 
-  if(TARGET ${PROJECT_NAME}_test)
-    target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES} super_lib)
-  endif()
+  # the following lines skip linters
+  set(ament_cmake_cppcheck_FOUND TRUE)
+  set(ament_cmake_copyright_FOUND TRUE)
+  set(ament_cmake_cpplint_FOUND TRUE)
+  set(ament_cmake_flake8_FOUND TRUE)
+  set(ament_cmake_uncrustify_FOUND TRUE)
+  ament_lint_auto_find_test_dependencies()
 
-  # For ros testing
-  find_package(rostest REQUIRED)
+  # Run all lint tests in package.xml except those listed above
+  ament_lint_auto_find_test_dependencies()
 
-  #follow test naming convention of files in a folder and the cpp and launch have the test name with _rostest
-  set(TEST_NAMES abort_to_disarming 
-                 abort_to_manual 
-                 armed_to_ready 
-                 auto_to_abort 
-                 auto_to_manual 
-                 auto_to_semiauto 
-                 error_configure_tolerance
-                 error_forced 
-                 error_status 
-                 error_status_without_stats 
-                 error_terminal_before_config
-                 error_tolerant_before_config
-                 hz_config
-                 manual_to_disarming 
-                 param
-                 platform_app_required_fail
-                 platform_app_required_pass
-                 platform_required_fail
-                 platform_required_pass
-                 primary
-                 ready_to_shutdown 
-                 semi_auto_to_manual
+  ament_add_gtest_executable(abort_to_disarming
+    super_test/abort_to_disarming/abort_to_disarming_rostest.cpp
   )
-  foreach(TEST_NAME ${TEST_NAMES})
-    set(PROJECT_TEST_NAME  ${TEST_NAME}_${PROJECT_NAME}_rostest)
-    add_rostest_gtest(${PROJECT_TEST_NAME} rostest/${TEST_NAME}/${TEST_NAME}_rostest.test rostest/${TEST_NAME}/${TEST_NAME}_rostest.cpp)
-    target_link_libraries(${PROJECT_TEST_NAME} ${catkin_LIBRARIES} super_lib)
-  endforeach()
+
+  target_link_libraries(abort_to_disarming super_lib)
+  ament_target_dependencies(abort_to_disarming am_utils ${dependencies})
+  add_ros_test(super_test/abort_to_disarming/launch/abort_to_disarming.test.py TIMEOUT 120 ARGS "test_binary_dir:=${CMAKE_CURRENT_BINARY_DIR}")
 endif()
+
+ament_export_include_directories(include)
+ament_export_libraries(super_lib)
+ament_export_dependencies(${dependencies})
+ament_package()

@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include <diagnostic_updater/diagnostic_updater.h>
+#include <diagnostic_updater/diagnostic_updater.hpp>
 #include <super_lib/am_stat.h>
 
 namespace am

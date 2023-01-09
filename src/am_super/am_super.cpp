@@ -1,28 +1,29 @@
 #include <functional>
 #include <memory>
 
-#include <ros/ros.h>
-#include <diagnostic_msgs/DiagnosticArray.h>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/Joy.h>
-#include <sensor_msgs/PointCloud2.h>
-#include <std_msgs/Int16.h>
-#include <std_msgs/Bool.h>
+#include <rclcpp/rclcpp.hpp>
+#include <diagnostic_msgs/msg/diagnostic_array.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <sensor_msgs/msg/joy.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
+#include <std_msgs/msg/int16.hpp>
+#include <std_msgs/msg/bool.hpp>
 
 #include <am_super/baby_sitter.h>
 #include <am_super/super_state.h>
 #include <am_super/super_state_mediator.h>
 #include <am_super/super_node_mediator.h>
 
-#include <brain_box_msgs/BlinkMCommand.h>
-#include <brain_box_msgs/LifeCycleState.h>
-#include <brain_box_msgs/LogControl.h>
-#include <brain_box_msgs/OperatorCommand.h>
-#include <brain_box_msgs/StampedAltimeter.h>
-#include <brain_box_msgs/Super2Status.h>
-#include <brain_box_msgs/VxState.h>
-#include <brain_box_msgs/SystemState.h>
-#include <brain_box_msgs/ControllerState.h>
+#include <brain_box_msgs/msg/blink_m_command.hpp>
+#include <brain_box_msgs/msg/life_cycle_state.hpp>
+#include <brain_box_msgs/msg/log_control.hpp>
+#include <brain_box_msgs/msg/operator_command.hpp>
+#include <brain_box_msgs/msg/stamped_altimeter.hpp>
+#include <brain_box_msgs/msg/super2_status.hpp>
+#include <brain_box_msgs/msg/vx_state.hpp>
+#include <brain_box_msgs/msg/system_state.hpp>
+#include <brain_box_msgs/msg/controller_state.hpp>
+#include <brain_box_msgs/msg/life_cycle_command.hpp>
 
 #include <am_super/controller_state.h>
 
@@ -35,6 +36,8 @@
 #include <vb_util_lib/topics.h>
 #include <vb_util_lib/trace.h>
 #include <vb_util_lib/vb_main.h>
+#include <am_utils/am_ros2_utility.h>
+
 #if CUDA_FLAG
 #include <cuda/cuda_utility_class.h>
 #endif
@@ -59,26 +62,26 @@ private:
   /**
    * the ros node handle
    */
-  ros::NodeHandle nh_;
+  rclcpp::Node::SharedPtr nh_;
 
   /*
    * see constructor for details
    */
-  ros::Publisher lifecycle_pub_;
-  ros::Publisher vstate_summary_pub_;
-  ros::Publisher system_state_pub_;
-  ros::Publisher super_status_pub_;
-  ros::Publisher led_pub_;
+  rclcpp::Publisher<brain_box_msgs::msg::LifeCycleCommand>::SharedPtr lifecycle_pub_;
+  rclcpp::Publisher<brain_box_msgs::msg::VxState>::SharedPtr vstate_summary_pub_;
+  rclcpp::Publisher<brain_box_msgs::msg::SystemState>::SharedPtr system_state_pub_;
+  rclcpp::Publisher<brain_box_msgs::msg::Super2Status>::SharedPtr super_status_pub_;
+  rclcpp::Publisher<brain_box_msgs::msg::BlinkMCommand>::SharedPtr led_pub_;
   /** stops the flight plan when SHUTDOWN state */
-  ros::Publisher flight_plan_deactivation_pub_;
-  ros::Subscriber node_state_sub_;
-  ros::Subscriber operator_command_sub_;
-  ros::Subscriber controller_state_sub;
-  ros::Subscriber diagnostics_sub;
-  ros::Subscriber current_enu_sub;
-  ros::Timer heartbeat_timer_;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr flight_plan_deactivation_pub_;
+  rclcpp::Subscription<brain_box_msgs::msg::LifeCycleState>::SharedPtr node_state_sub_;
+  rclcpp::Subscription<brain_box_msgs::msg::OperatorCommand>::SharedPtr operator_command_sub_;
+  rclcpp::Subscription<brain_box_msgs::msg::ControllerState>::SharedPtr controller_state_sub;
+  rclcpp::Subscription<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostics_sub;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr current_enu_sub;
+  rclcpp::TimerBase::SharedPtr heartbeat_timer_;
 
-  ros::Subscriber log_control_sub_;
+  rclcpp::Subscription<brain_box_msgs::msg::LogControl>::SharedPtr log_control_sub_;
   BagLogger::BagLoggerLevel log_level_;
 
   /** manage logic for SuperState transitions */
@@ -108,13 +111,13 @@ private:
   //
   const std::string NODE_BS_ALTIMETER = "can_node";  // TODO: replace with system global const
  
-  typedef brain_box_msgs::StampedAltimeter altimeter_bs_msg_type;
+  typedef brain_box_msgs::msg::StampedAltimeter altimeter_bs_msg_type;
   am::BabySitter<altimeter_bs_msg_type>* altimeter_bs_;
   const std::string ALTIMETER_BS_TOPIC = "/sensor/distance/agl_lw";  // TODO: replace with system global const
   const int ALTIMETER_HZ = 20;
 
   const std::string NODE_BS_DJI = "dji_sdk";  // TODO: replace with system global const
-  typedef sensor_msgs::Joy dji_bs_msg_type;
+  typedef sensor_msgs::msg::Joy dji_bs_msg_type;
   am::BabySitter<dji_bs_msg_type>* dji_bs_;
   const std::string DJI_BS_TOPIC = "/dji_sdk/rc";  // TODO: replace with system global const
   const int DJI_HZ = 50;
@@ -124,12 +127,12 @@ private:
 #endif
 
 public:
-  AMSuper() : nh_("~"), node_mediator_(SuperNodeMediator::nodeNameStripped(ros::this_node::getName()))
+  AMSuper(rclcpp::Node::SharedPtr nh) : nh_(nh), AMLifeCycle(nh), node_mediator_(nh, SuperNodeMediator::nodeNameStripped(nh->get_name()))
   {
-    ROS_INFO_STREAM(NODE_FUNC);
+    RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name());
 
-    ros::param::param<double>("~node_timeout_s", node_timeout_s_, 2.0);
-    ROS_INFO_STREAM("node_timeout_s = " << node_timeout_s_);
+    am::getParam<double>(nh_, "node_timeout_s", node_timeout_s_, 2.0);
+    RCLCPP_INFO_STREAM(nh_->get_logger(), "node_timeout_s = " << node_timeout_s_);
 
     /*
      * create initial node list from manifest and create babysitters as needed
@@ -137,7 +140,7 @@ public:
     supervisor_.system_state = SuperState::OFF;
     // strip spaces from manifest param
     string manifest_param;
-    ros::param::param<string>("~manifest", manifest_param, "");
+    am::getParam<std::string>(nh_, "manifest", manifest_param, "");
 
     node_mediator_.parseManifest(supervisor_, manifest_param);
 
@@ -147,13 +150,13 @@ public:
     // if a manifest has been specified
     if (!supervisor_.manifest.empty())
     {
-      ROS_INFO_STREAM("configuring nodes from manifest: " << manifest_param);
+    	RCLCPP_INFO_STREAM(nh_->get_logger(), "configuring nodes from manifest: " << manifest_param);
       for (string& name : supervisor_.manifest)
       {
         // create a new node in the list for each name in manifest
         SuperNodeMediator::SuperNodeInfo nr = node_mediator_.initializeManifestedNode(name);
         supervisor_.nodes.insert(pair<string, SuperNodeMediator::SuperNodeInfo>(name, nr));
-        ROS_INFO_STREAM("  " << name);
+        RCLCPP_INFO_STREAM(nh_->get_logger(), "  " << name);
 
         // create babysitters based on hard coded node names
         if (!name.compare(NODE_BS_ALTIMETER))
@@ -174,7 +177,7 @@ public:
     }
     else
     {
-      ROS_WARN_STREAM("Manifest is empty.  No nodes will be monitored.");
+      RCLCPP_WARN_STREAM(nh_->get_logger(), "Manifest is empty.  No nodes will be monitored.");
     }
     
     reportSystemState();
@@ -187,22 +190,22 @@ public:
     /**
      * system status pub
      */
-    vstate_summary_pub_ = nh_.advertise<brain_box_msgs::VxState>(am_super_topics::SUPER_STATE, 1000);
-    system_state_pub_ = nh_.advertise<brain_box_msgs::SystemState>(am_topics::SYSTEM_STATE, 1000);
+    vstate_summary_pub_ = nh_->create_publisher<brain_box_msgs::msg::VxState>(am_super_topics::SUPER_STATE, 1000);
+    system_state_pub_ = nh_->create_publisher<brain_box_msgs::msg::SystemState>(am_topics::SYSTEM_STATE, 1000);
     /**Super
      * node lifecycle state pub. used to tell nodes to change their lifecycle state.
      */
-    lifecycle_pub_ = nh_.advertise<brain_box_msgs::LifeCycleCommand>(am_super_topics::NODE_LIFECYCLE, 100);
+    lifecycle_pub_ = nh_->create_publisher<brain_box_msgs::msg::LifeCycleCommand>(am_super_topics::NODE_LIFECYCLE, 100);
     /**
      * led control pub
      */
-    led_pub_ = nh_.advertise<brain_box_msgs::BlinkMCommand>(am::am_topics::LED_BLINK, 1000);
+    led_pub_ = nh_->create_publisher<brain_box_msgs::msg::BlinkMCommand>(am::am_topics::LED_BLINK, 1000);
     /**
      * super status contains online naode list for gcs_comms
      */
-    super_status_pub_ = nh_.advertise<brain_box_msgs::Super2Status>(am_super_topics::SUPER_STATUS, 1000);
+    super_status_pub_ = nh_->create_publisher<brain_box_msgs::msg::Super2Status>(am_super_topics::SUPER_STATUS, 1000);
 
-    flight_plan_deactivation_pub_ = nh_.advertise<std_msgs::Bool>(am_topics::CTRL_FLIGHTPLAN_ACTIVITY_CONTROL, 1000);
+    flight_plan_deactivation_pub_ = nh_->create_publisher<std_msgs::msg::Bool>(am_topics::CTRL_FLIGHTPLAN_ACTIVITY_CONTROL, 1000);
 
     supervisor_.system_state = SuperState::BOOTING;
     supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::INIT;
@@ -210,10 +213,11 @@ public:
     /**
      * amros log control
      */
-    log_control_sub_ = nh_.subscribe(am::am_topics::CTRL_LOG_CONTROL, 10, &AMSuper::logControlCB, this);
+    log_control_sub_ = nh_->create_subscription<brain_box_msgs::msg::LogControl>(am::am_topics::CTRL_LOG_CONTROL, 10,
+    		std::bind(&AMSuper::logControlCB, this, std::placeholders::_1));
 
     // startup bagfile - gets closed after frist log control command
-    ROS_INFO_STREAM("start logging to ST, level " << SU_LOG_LEVEL);
+    RCLCPP_INFO_STREAM(nh_->get_logger(), "start logging to ST, level " << SU_LOG_LEVEL);
     BagLogger::instance()->startLogging("ST", SU_LOG_LEVEL);
     log_level_ = intToLoggerLevel (SU_LOG_LEVEL);
 
@@ -222,20 +226,25 @@ public:
     /**
      * node status via LifeCycle
      */
-    node_state_sub_ = nh_.subscribe(am_super_topics::LIFECYCLE_STATE, 100, &AMSuper::nodeStateCB, this);
+    node_state_sub_ = nh_->create_subscription<brain_box_msgs::msg::LifeCycleState>(am_super_topics::LIFECYCLE_STATE, 100,
+    		std::bind(&AMSuper::nodeStateCB, this, std::placeholders::_1));
 
     /**
      * commands from operator
      */
-    operator_command_sub_ = nh_.subscribe(am_super_topics::OPERATOR_COMMAND, 100, &AMSuper::operatorCommandCB, this);
+    operator_command_sub_ = nh_->create_subscription<brain_box_msgs::msg::OperatorCommand>(am_super_topics::OPERATOR_COMMAND, 100,
+    		std::bind(&AMSuper::operatorCommandCB, this, std::placeholders::_1));
 
-    controller_state_sub = nh_.subscribe(am_super_topics::CONTROLLER_STATE, 100, &AMSuper::controllerStateCB, this);
+    controller_state_sub = nh_->create_subscription<brain_box_msgs::msg::ControllerState>(am_super_topics::CONTROLLER_STATE, 100,
+    		std::bind(&AMSuper::controllerStateCB, this, std::placeholders::_1));
 
-    diagnostics_sub = nh_.subscribe("/diagnostics", 100, &AMSuper::diagnosticsCB, this);
+    diagnostics_sub = nh_->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 100,
+    		std::bind(&AMSuper::diagnosticsCB, this, std::placeholders::_1));
 
-    current_enu_sub = nh_.subscribe(am_topics::CTRL_VX_VEHICLE_CURRENTENU, 100, &AMSuper::currentENUCB, this);
+    current_enu_sub = nh_->create_subscription<nav_msgs::msg::Odometry>(am_topics::CTRL_VX_VEHICLE_CURRENTENU, 100,
+    		std::bind(&AMSuper::currentENUCB, this, std::placeholders::_1));
 
-    heartbeat_timer_ = nh_.createTimer(ros::Duration(1.0), &AMSuper::heartbeatCB, this);
+    heartbeat_timer_ = nh_->create_wall_timer(am::toDuration(1.0), std::bind(&AMSuper::heartbeatCB, this));
   }
 
   ~AMSuper()
@@ -253,9 +262,10 @@ private:
    * LifeCycle messages are sent once a second by the LifeCycle heartbeat, but may
    * come more frequently if a node chooses.
    */
-  void nodeStateCB(const ros::MessageEvent<brain_box_msgs::LifeCycleState const>& event)
+  //void nodeStateCB(const rclcpp::MessageEvent<brain_box_msgs::msg::LifeCycleState const>& event)
+  void nodeStateCB(const brain_box_msgs::msg::LifeCycleState::SharedPtr rmsg)
   {
-    const brain_box_msgs::LifeCycleState::ConstPtr& rmsg = event.getMessage();
+    //const brain_box_msgs::LifeCycleState::ConstPtr& rmsg = event.getMessage();
 
     /*
      * process the message
@@ -265,29 +275,31 @@ private:
      * for the timeout.
      */
     processState(rmsg->node_name, (LifeCycleState)(rmsg->state), (LifeCycleStatus)(rmsg->status), rmsg->subsystem,
-                 rmsg->value, rmsg->process_id, event.getReceiptTime());
+                 rmsg->value, rmsg->process_id, rmsg->header.stamp);
 
     // TODO: topic name should come from vb_util_lib::topics.h
-    LOG_MSG(am_super_topics::LIFECYCLE_STATE, rmsg, SU_LOG_LEVEL);
+    LOG_MSG(am_super_topics::LIFECYCLE_STATE, *rmsg, SU_LOG_LEVEL);
   }
 
-  void controllerStateCB(const ros::MessageEvent<brain_box_msgs::ControllerState const>& event)
+  //void controllerStateCB(const ros::MessageEvent<brain_box_msgs::ControllerState const>& event)
+  void controllerStateCB(const brain_box_msgs::msg::ControllerState::SharedPtr rmsg)
   {
-    const brain_box_msgs::ControllerState::ConstPtr& rmsg = event.getMessage();
+    //const brain_box_msgs::ControllerState::ConstPtr& rmsg = event.getMessage();
 
-    ROS_INFO("Received Controller State: %s sent %i", rmsg->node_name.c_str(), rmsg->state);
+    RCLCPP_INFO(nh_->get_logger(), "Received Controller State: %s sent %i", rmsg->node_name.c_str(), rmsg->state);
     node_mediator_.setControllerState(supervisor_, (ControllerState)rmsg->state);
   }
 
-  void operatorCommandCB(const ros::MessageEvent<brain_box_msgs::OperatorCommand const>& event)
+  //void operatorCommandCB(const ros::MessageEvent<brain_box_msgs::OperatorCommand const>& event)
+  void operatorCommandCB(const brain_box_msgs::msg::OperatorCommand::SharedPtr rmsg)
   {
-    const brain_box_msgs::OperatorCommand::ConstPtr& rmsg = event.getMessage();
+    //const brain_box_msgs::OperatorCommand::ConstPtr& rmsg = event.getMessage();
     
-    ROS_INFO("Received Operator Command: %s sent '%i'",rmsg->node_name.c_str(),rmsg->command );
+	RCLCPP_INFO(nh_->get_logger(), "Received Operator Command: %s sent '%i'",rmsg->node_name.c_str(),rmsg->command );
     
     node_mediator_.setOperatorCommand(supervisor_, (OperatorCommand)rmsg->command);
     // TODO: topic name should come from vb_util_lib::topics.
-    LOG_MSG("/operator/command", rmsg, SU_LOG_LEVEL);
+    LOG_MSG("/operator/command", *rmsg,  SU_LOG_LEVEL);
   }
   /**
    * process state
@@ -301,7 +313,7 @@ private:
    */
   void processState(const std::string& node_name_in, const am::LifeCycleState state, const am::LifeCycleStatus status,
                     const std::string& subsystem, const std::string& value, const int pid,
-                    const ros::Time& last_contact)
+                    const rclcpp::Time& last_contact)
   {
     // strip leading '/' from the node name if needed
     string node_name = node_mediator_.nodeNameStripped(node_name_in);
@@ -316,25 +328,25 @@ private:
       SuperNodeMediator::SuperNodeInfo& nr = it->second;
       if (!nr.online)
       {
-        ROS_INFO_STREAM("manifested node '" << node_name << "' came online [PGPG]");
+        RCLCPP_INFO_STREAM(nh_->get_logger(), "manifested node '" << node_name << "' came online [PGPG]");
         nr.online = true;
         nodes_changed = true;
       }
       if (nr.state != state)
       {
-        ROS_INFO_STREAM(node_name << " changed state to = " << life_cycle_mediator_.stateToString(state) << " [38S8]");
+    	RCLCPP_INFO_STREAM(nh_->get_logger(), node_name << " changed state to = " << life_cycle_mediator_.stateToString(state) << " [38S8]");
         nr.state = state;
         nodes_changed = true;
       }
       if (nr.status != status)
       {
-        ROS_INFO_STREAM(node_name << " changed status to = " << life_cycle_mediator_.statusToString(status) << " [09SI]");
+    	RCLCPP_INFO_STREAM(nh_->get_logger(), node_name << " changed status to = " << life_cycle_mediator_.statusToString(status) << " [09SI]");
         nr.status = status;
         nodes_changed = true;
         if(nr.manifested && nr.status == LifeCycleStatus::ERROR)
         {
           supervisor_.status_error = true;
-          ROS_ERROR_STREAM("Manifested node " << nr.name << " changed status to ERROR. Shutting down nodes... [JHRE]");
+          RCLCPP_INFO_STREAM(nh_->get_logger(), "Manifested node " << nr.name << " changed status to ERROR. Shutting down nodes... [JHRE]");
           stopFlightPlan();
         }
       }
@@ -343,11 +355,11 @@ private:
         //process id = 0 observed to be a node coming online. -1 appears to be offline
         if(pid == 0)
         {
-          ROS_INFO_STREAM(node_name << " process is alive [UIRE]");
+        	RCLCPP_INFO_STREAM(nh_->get_logger(), node_name << " process is alive [UIRE]");
         }
         else
         {
-          ROS_WARN_STREAM(node_name << " changed process id from: " << nr.pid << " to: " <<  pid << " [WNEW]");
+        	RCLCPP_INFO_STREAM(nh_->get_logger(), node_name << " changed process id from: " << nr.pid << " to: " <<  pid << " [WNEW]");
         }
         nr.pid = pid;
         nodes_changed = true;
@@ -357,7 +369,7 @@ private:
     else
     {
       // if we get here, the node is not in the manifest and we've never heard from it before
-      ROS_WARN_STREAM("unknown node " << node_name << " came online. state: " << life_cycle_mediator_.stateToString(state)
+      RCLCPP_WARN_STREAM(nh_->get_logger(), "unknown node " << node_name << " came online. state: " << life_cycle_mediator_.stateToString(state)
                                       << ", status: " << life_cycle_mediator_.statusToString(status));
       SuperNodeMediator::SuperNodeInfo nr;
       nr.name = node_name;
@@ -393,7 +405,7 @@ private:
       }
       if (flt_ctrl_state_changed)
       {
-        ROS_INFO_STREAM_THROTTLE(1.0, "flight status: " << value);
+        RCLCPP_INFO_STREAM_THROTTLE(nh_->get_logger(), *nh_->get_clock(), 1.0, "flight status: " << value);
         checkForSystemStateTransition();
       }
     }
@@ -404,7 +416,7 @@ private:
    *
    * times out nodes that haven't been heard from recently. reports on status to bag and trace logs.
    */
-  void heartbeatCB(const ros::TimerEvent& event) override
+  void heartbeatCB() override
   {
 #if CUDA_FLAG
     gpu_info_->display();
@@ -412,33 +424,33 @@ private:
 
     //publish deprecated topic
     {
-      brain_box_msgs::VxState state_msg;
+      brain_box_msgs::msg::VxState state_msg;
       state_msg.state = (uint8_t)supervisor_.system_state;
-      vstate_summary_pub_.publish(state_msg);      
+      vstate_summary_pub_->publish(state_msg);
     }
 
     //publish the system state
     {
-      brain_box_msgs::SystemState system_state_msg;
+      brain_box_msgs::msg::SystemState system_state_msg;
       system_state_msg.state = (uint8_t)supervisor_.system_state;
       system_state_msg.state_string = state_mediator_.stateToString(supervisor_.system_state);
-      system_state_pub_.publish(system_state_msg);
+      system_state_pub_->publish(system_state_msg);
     }
 
     // cycle thru all the nodes in the list to look for a timeout
-    ros::Time now = ros::Time().now();
+    rclcpp::Time now = nh_->now();
     map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
     for (it = supervisor_.nodes.begin(); it != supervisor_.nodes.end(); it++)
     {
       SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
       if (nr.online)
       {
-        ros::Duration time_since_contact = now - nr.last_contact;
-        ros::Duration timeout_dur(node_timeout_s_);
+        rclcpp::Duration time_since_contact = (now - nr.last_contact);
+        rclcpp::Duration timeout_dur(am::toDuration(node_timeout_s_));
         if (time_since_contact > timeout_dur)
         {
           nr.online = false;
-          ROS_ERROR_STREAM("node timed out:" << nr.name);
+          RCLCPP_ERROR_STREAM(nh_->get_logger(),"node timed out:" << nr.name);
           reportSystemState();
         }
       }
@@ -449,7 +461,7 @@ private:
 
     int num_manifest_nodes_online = node_mediator_.manifestedNodesOnlineCount(supervisor_);
     // publish and bag log super status message
-    brain_box_msgs::Super2Status status_msg;
+    brain_box_msgs::msg::Super2Status status_msg;
     status_msg.man = supervisor_.manifest.size();
     status_msg.man_run = num_manifest_nodes_online;
     status_msg.run = node_mediator_.nodesOnlineCount(supervisor_);
@@ -460,9 +472,9 @@ private:
       status_msg.nodes.push_back(nr.name);
     }
     LOG_MSG("/status/super", status_msg, 1);
-    if (super_status_pub_.getNumSubscribers() > 0)
+    if (super_status_pub_->get_subscription_count() > 0)
     {
-      super_status_pub_.publish(status_msg);
+      super_status_pub_->publish(status_msg);
     }
 
     // report current status to trace log
@@ -472,13 +484,13 @@ private:
     if (supervisor_.manifest.size() != num_manifest_nodes_online)
     {
       // if all manifested nodes aren't running, report as error
-      ROS_ERROR_STREAM(ss.str());
-      ROS_ERROR_STREAM("not online: " << node_mediator_.manifestedNodesNotOnlineNamesList(supervisor_));
+      RCLCPP_ERROR_STREAM(nh_->get_logger(),ss.str());
+      RCLCPP_ERROR_STREAM(nh_->get_logger(),"not online: " << node_mediator_.manifestedNodesNotOnlineNamesList(supervisor_));
     }
     else
     {
       // if all manifested nodes are running, report as info
-      ROS_INFO_STREAM_THROTTLE(LOG_THROTTLE_S, ss.str());
+      RCLCPP_INFO_STREAM_THROTTLE(nh_->get_logger(), *nh_->get_clock(), LOG_THROTTLE_S, ss.str());
     }
 
     // log stats
@@ -488,13 +500,13 @@ private:
     {   //checking whether the file is open
        string tp;
        getline(newfile, tp);
-       std_msgs::Int16 msg;
+       std_msgs::msg::Int16 msg;
        msg.data = std::stoi(tp);
        LOG_MSG("/watts", msg, SU_LOG_LEVEL);
        newfile.close(); //close the file object.
     }
 
-    AMLifeCycle::heartbeatCB(event);
+    AMLifeCycle::heartbeatCB();
   }
 
   /**
@@ -516,7 +528,7 @@ private:
   {
     std::stringstream ss;
     genSystemState(ss);
-    ROS_INFO_STREAM_THROTTLE(LOG_THROTTLE_S, ss.str());
+    RCLCPP_INFO_STREAM_THROTTLE(nh_->get_logger(), *nh_->get_clock(), LOG_THROTTLE_S, ss.str());
   }
 
   /**
@@ -528,11 +540,11 @@ private:
    */
   void sendLifeCycleCommand(const std::string_view& node_name, const LifeCycleCommand command)
   {
-    ROS_DEBUG_STREAM("sending command: " << life_cycle_mediator_.commandToString(command) << " to " << node_name << " lifecycle");
-    brain_box_msgs::LifeCycleCommand msg;
+    RCLCPP_DEBUG_STREAM(nh_->get_logger(), "sending command: " << life_cycle_mediator_.commandToString(command) << " to " << node_name << " lifecycle");
+    brain_box_msgs::msg::LifeCycleCommand msg;
     msg.node_name = node_name;
-    msg.command = (brain_box_msgs::LifeCycleCommand::_command_type)command;
-    lifecycle_pub_.publish(msg);
+    msg.command = (brain_box_msgs::msg::LifeCycleCommand::_command_type)command;
+    lifecycle_pub_->publish(msg);
   }
 
   /**
@@ -554,7 +566,7 @@ private:
     {
       for (const auto & [ node_name, error_message ] : result.second)
       {
-        ROS_WARN_STREAM(error_message);
+        RCLCPP_WARN_STREAM(nh_->get_logger(),error_message);
       }
     }
     return success;
@@ -564,10 +576,10 @@ private:
   /** Send signal to flight controller that flight is over. */
   void stopFlightPlan()
   {
-    std_msgs::Bool msg;
+    std_msgs::msg::Bool msg;
     msg.data = false; //false means deactivate
-    flight_plan_deactivation_pub_.publish(msg);
-    ROS_ERROR_STREAM("Sending flight plan kill command.");
+    flight_plan_deactivation_pub_->publish(msg);
+    RCLCPP_ERROR_STREAM(nh_->get_logger(), "Sending flight plan kill command.");
   }
 
   /**
@@ -596,7 +608,7 @@ private:
         LifeCycleCommand command = transition_instructions.life_cycle_command;
         std::string failed_nodes_string = boost::algorithm::join(transition_instructions.failed_nodes, ", ");
         std::string failed_nodes_reasons_string = boost::algorithm::join(transition_instructions.failed_nodes_reasons, ", ");
-        ROS_INFO_STREAM_THROTTLE(5,state_mediator_.stateToString(supervisor_.system_state)
+        RCLCPP_INFO_STREAM_THROTTLE(node_->get_logger(), *node_->get_clock(), 5,state_mediator_.stateToString(supervisor_.system_state)
                         << ": sending " << life_cycle_mediator_.commandToString(command) << " to "
                         << failed_nodes_string << " because " << failed_nodes_reasons_string);
 
@@ -617,7 +629,7 @@ private:
    */
   void setSystemState(SuperState state)
   {
-    ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << " --> "
+    RCLCPP_INFO_STREAM(nh_->get_logger(),state_mediator_.stateToString(supervisor_.system_state) << " --> "
                                                                             << state_mediator_.stateToString(state));
     bool legal = true;
     if(!node_mediator_.forceTransition(state))
@@ -625,7 +637,7 @@ private:
 
     if (!legal)
     {
-      ROS_ERROR_STREAM("illegal state transition from " << state_mediator_.stateToString(supervisor_.system_state)
+      RCLCPP_ERROR_STREAM(nh_->get_logger(),"illegal state transition from " << state_mediator_.stateToString(supervisor_.system_state)
                                                         << " to " << state_mediator_.stateToString(state));
     }
     else
@@ -638,9 +650,9 @@ private:
 
       sendLEDMessage();
 
-      brain_box_msgs::VxState state_msg;
+      brain_box_msgs::msg::VxState state_msg;
       state_msg.state = (uint8_t)supervisor_.system_state;
-      vstate_summary_pub_.publish(state_msg);
+      vstate_summary_pub_->publish(state_msg);
     }
   }
 
@@ -654,8 +666,8 @@ private:
     SuperNodeMediator::PlatformVariant required_platform;
     SuperNodeMediator::PlatformVariant actual_platform;
     configurePlatformRequirements(required_platform,actual_platform);
-    ROS_WARN_STREAM("required" << required_platform.maker);
-    ROS_WARN_STREAM("actual" << actual_platform.maker);
+    RCLCPP_WARN_STREAM(nh_->get_logger(),"required" << required_platform.maker);
+    RCLCPP_WARN_STREAM(nh_->get_logger(),"actual" << actual_platform.maker);
     if(!node_mediator_.isCorrectPlatform(required_platform,actual_platform))
     {
       std::stringstream message;
@@ -703,7 +715,7 @@ private:
     }
     else
     {
-      ROS_WARN("platform requirements not set");
+      RCLCPP_WARN(nh_->get_logger(),"platform requirements not set");
     }
 
   }
@@ -712,12 +724,12 @@ private:
    */
   void sendLEDMessage(int r, int g, int b, float period = 0.0)
   {
-    brain_box_msgs::BlinkMCommand led_msg;
+    brain_box_msgs::msg::BlinkMCommand led_msg;
     led_msg.rgb.red = r;
     led_msg.rgb.green = g;
     led_msg.rgb.blue = b;
     led_msg.blink_rate = period;
-    led_pub_.publish(led_msg);
+    led_pub_->publish(led_msg);
   }
 
   static constexpr double LED_SOLID = 0.0;
@@ -818,14 +830,14 @@ private:
     error_ms = (int)(1000.0 / hz * 3.0 + 0.5);
   }
   
-  void diagnosticsCB(const diagnostic_msgs::DiagnosticArray::ConstPtr &msg)
+  void diagnosticsCB(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg)
   {
-      LOG_MSG("/diagnostics", msg, SU_LOG_LEVEL);
+      LOG_MSG("/diagnostics", *msg, SU_LOG_LEVEL);
   }
 
-  void currentENUCB(const nav_msgs::Odometry::ConstPtr &msg)
+  void currentENUCB(const nav_msgs::msg::Odometry::SharedPtr msg)
   {
-      LOG_MSG(am_topics::CTRL_VX_VEHICLE_CURRENTENU, msg, SU_LOG_LEVEL);
+      LOG_MSG(am_topics::CTRL_VX_VEHICLE_CURRENTENU, *msg, SU_LOG_LEVEL);
   }
 
   BagLogger::BagLoggerLevel intToLoggerLevel(int level)
@@ -850,14 +862,14 @@ private:
     }
   }
 
-  void logControlCB(const brain_box_msgs::LogControl::ConstPtr &msg)
+  void logControlCB(const brain_box_msgs::msg::LogControl::SharedPtr msg)
    {
      if (msg->enable)
      {
-       ROS_INFO_STREAM("stop logging");
+       RCLCPP_INFO_STREAM(nh_->get_logger(),"stop logging");
        BagLogger::instance()->stopLogging();
 
-       ROS_INFO_STREAM("start logging to SU, level " << SU_LOG_LEVEL);
+       RCLCPP_INFO_STREAM(nh_->get_logger(),"start logging to SU, level " << SU_LOG_LEVEL);
        BagLogger::instance()->startLogging("SU", SU_LOG_LEVEL);
        log_level_ = intToLoggerLevel (SU_LOG_LEVEL);
      }
@@ -868,14 +880,23 @@ private:
 
 #ifdef TESTING
 #else
+
+std::shared_ptr<rclcpp::Node> am::Node::node;
+
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, ros::this_node::getName());
+  rclcpp::init(argc, argv);
 
-  am::AMSuper node;
+  am::Node::node = std::make_shared<rclcpp::Node>("am_super");
 
-  ROS_INFO_STREAM(ros::this_node::getName() << ": running...");
+  std::shared_ptr<am::AMSuper> am_super_node = std::make_shared<am::AMSuper>(am::Node::node);
 
-  ros::spin();
+  ROS_INFO_STREAM(am::Node::node->get_name() << ": running...");
+
+  rclcpp::spin(am::Node::node);
+
+  rclcpp::shutdown();
+
+  return 0;
 }
 #endif

@@ -17,6 +17,7 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
+
 set(dependencies
   am_utils
   brain_box_msgs
@@ -28,7 +29,6 @@ set(dependencies
   rosbag2
   rosbag2_cpp
   std_msgs
-  rosbag2_cpp
 )
 
 # find dependencies

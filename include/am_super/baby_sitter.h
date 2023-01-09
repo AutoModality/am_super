@@ -352,7 +352,7 @@ void BabySitter<M>::heartbeatCB()
   log_msg.max_min_ave.max = max_ms_;
   log_msg.max_min_ave.min = min_ms_;
   log_msg.max_min_ave.ave = ave_ms_;
-  LOG_MSG(log_msg, std::string("/status/super/" + node_name_), "brain_box_msgs/msg/BabySitterStatus", nh_->now(), 1);
+  LOG_MSG(std::string("/status/super/" + node_name_), log_msg, 1);
 
   if (node_state_ == LifeCycleState::ACTIVE)
   {

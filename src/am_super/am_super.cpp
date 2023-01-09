@@ -36,6 +36,7 @@
 #include <vb_util_lib/topics.h>
 #include <vb_util_lib/trace.h>
 #include <vb_util_lib/vb_main.h>
+#include <am_utils/am_ros2_utility.h>
 
 #if CUDA_FLAG
 #include <cuda/cuda_utility_class.h>
@@ -277,7 +278,7 @@ private:
                  rmsg->value, rmsg->process_id, rmsg->header.stamp);
 
     // TODO: topic name should come from vb_util_lib::topics.h
-    LOG_MSG(*rmsg, am_super_topics::LIFECYCLE_STATE, "brain_box_msgs/msg/LifeCycleState", rmsg->header.stamp, SU_LOG_LEVEL);
+    LOG_MSG(am_super_topics::LIFECYCLE_STATE, *rmsg, SU_LOG_LEVEL);
   }
 
   //void controllerStateCB(const ros::MessageEvent<brain_box_msgs::ControllerState const>& event)
@@ -298,7 +299,7 @@ private:
     
     node_mediator_.setOperatorCommand(supervisor_, (OperatorCommand)rmsg->command);
     // TODO: topic name should come from vb_util_lib::topics.
-    LOG_MSG(*rmsg, "/operator/command", "brain_box_msgs/msg/OperatorCommand", nh_->now(), SU_LOG_LEVEL);
+    LOG_MSG("/operator/command", *rmsg,  SU_LOG_LEVEL);
   }
   /**
    * process state
@@ -470,7 +471,7 @@ private:
       SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
       status_msg.nodes.push_back(nr.name);
     }
-    LOG_MSG(status_msg, "/status/super", "brain_box_msgs/msg/Super2Status", nh_->now(), 1);
+    LOG_MSG("/status/super", status_msg, 1);
     if (super_status_pub_->get_subscription_count() > 0)
     {
       super_status_pub_->publish(status_msg);
@@ -501,7 +502,7 @@ private:
        getline(newfile, tp);
        std_msgs::msg::Int16 msg;
        msg.data = std::stoi(tp);
-       LOG_MSG(msg, "/watts", "std_msgs/msg/Int16", nh_->now(), SU_LOG_LEVEL);
+       LOG_MSG("/watts", msg, SU_LOG_LEVEL);
        newfile.close(); //close the file object.
     }
 
@@ -831,12 +832,12 @@ private:
   
   void diagnosticsCB(const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg)
   {
-      LOG_MSG(*msg, "/diagnostics", "diagnostic_msgs/msg/DiagnosticArray", nh_->now(), SU_LOG_LEVEL);
+      LOG_MSG("/diagnostics", *msg, SU_LOG_LEVEL);
   }
 
   void currentENUCB(const nav_msgs::msg::Odometry::SharedPtr msg)
   {
-      LOG_MSG(*msg, am_topics::CTRL_VX_VEHICLE_CURRENTENU, "nav_msgs/msg/Odometry", nh_->now(), SU_LOG_LEVEL);
+      LOG_MSG(am_topics::CTRL_VX_VEHICLE_CURRENTENU, *msg, SU_LOG_LEVEL);
   }
 
   BagLogger::BagLoggerLevel intToLoggerLevel(int level)
@@ -879,17 +880,20 @@ private:
 
 #ifdef TESTING
 #else
+
+std::shared_ptr<rclcpp::Node> am::Node::node;
+
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
 
-  std::shared_ptr<rclcpp::Node> node = std::make_shared<rclcpp::Node>("am_super");
+  am::Node::node = std::make_shared<rclcpp::Node>("am_super");
 
-  std::shared_ptr<am::AMSuper> am_super_node = std::make_shared<am::AMSuper>(node);
+  std::shared_ptr<am::AMSuper> am_super_node = std::make_shared<am::AMSuper>(am::Node::node);
 
-  RCLCPP_INFO_STREAM(node->get_logger(), node->get_name() << ": running...");
+  ROS_INFO_STREAM(am::Node::node->get_name() << ": running...");
 
-  rclcpp::spin(node);
+  rclcpp::spin(am::Node::node);
 
   rclcpp::shutdown();
 

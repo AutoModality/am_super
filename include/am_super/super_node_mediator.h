@@ -13,6 +13,7 @@
 #include <am_super/super_state_mediator.h>
 #include <am_super/operator_command.h>
 #include <am_super/controller_state.h>
+#include <am_utils/am_ros2_utility.h>
 
 
 using namespace std;

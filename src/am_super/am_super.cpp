@@ -1,7 +1,7 @@
 #include <functional>
 #include <memory>
 
-#include <rclcpp/rclcpp.hpp>
+#include <am_utils/am_ros2_utility.h>
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/joy.hpp>
@@ -36,7 +36,6 @@
 #include <vb_util_lib/topics.h>
 #include <vb_util_lib/trace.h>
 #include <vb_util_lib/vb_main.h>
-#include <am_utils/am_ros2_utility.h>
 
 #if CUDA_FLAG
 #include <cuda/cuda_utility_class.h>
@@ -131,7 +130,7 @@ public:
   {
     RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name());
 
-    am::getParam<double>(nh_, "node_timeout_s", node_timeout_s_, 2.0);
+    am::getParam<double>("node_timeout_s", node_timeout_s_, 2.0);
     RCLCPP_INFO_STREAM(nh_->get_logger(), "node_timeout_s = " << node_timeout_s_);
 
     /*
@@ -140,7 +139,7 @@ public:
     supervisor_.system_state = SuperState::OFF;
     // strip spaces from manifest param
     string manifest_param;
-    am::getParam<std::string>(nh_, "manifest", manifest_param, "");
+    am::getParam<std::string>("manifest", manifest_param, "");
 
     node_mediator_.parseManifest(supervisor_, manifest_param);
 
@@ -878,8 +877,8 @@ private:
 };
 };
 
-#ifdef TESTING
-#else
+// #ifdef TESTING
+// #else
 
 std::shared_ptr<rclcpp::Node> am::Node::node;
 
@@ -899,4 +898,4 @@ int main(int argc, char** argv)
 
   return 0;
 }
-#endif
+// #endif

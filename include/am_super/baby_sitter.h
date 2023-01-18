@@ -103,19 +103,19 @@ BabySitter<M>::BabySitter(const rclcpp::Node::SharedPtr nh, BagLogger* logger, c
 
   std::string parm = "~" + node_name + "/warn_ms";
 
-  am::getParam<int>(nh_, parm, warn_ms_, warn_ms);
+  am::getParam<int>(parm, warn_ms_, warn_ms);
   RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << parm << " = " << warn_ms_);
 
   parm = "~" + node_name + "/error_ms";
-  am::getParam<int>(nh_,parm, error_ms_, error_ms);
+  am::getParam<int>(parm, error_ms_, error_ms);
   RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << parm << " = " << error_ms_);
 
   parm = "~" + node_name + "/warn_count_thresh";
-  am::getParam<int>(nh_,parm, warn_count_thresh_, warn_count_thresh);
+  am::getParam<int>(parm, warn_count_thresh_, warn_count_thresh);
   RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << parm << " = " << warn_count_thresh_);
 
   parm = "~" + node_name + "/timeout_ms";
-  am::getParam<int>(nh_,parm, timeout_ms_, timeout_ms);
+  am::getParam<int>(parm, timeout_ms_, timeout_ms);
   RCLCPP_INFO_STREAM(nh_->get_logger(), nh_->get_name() << parm << " = " << timeout_ms_);
 
   min_ms_ = 1000;

@@ -19,7 +19,7 @@ AMSuperTest::AMSuperTest() : nh_(std::make_shared<rclcpp::Node>("am_super_test")
 {
   createPubsSubs();
 
-  am::getParam<std::string>(nh_, "~target_node_name", target_node_name_, nh_->get_name());
+  am::getParam<std::string>("~target_node_name", target_node_name_, nh_->get_name());
   if(target_node_name_[0] != '/')
   {
     target_node_name_= '/' + target_node_name_;

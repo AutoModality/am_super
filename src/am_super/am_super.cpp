@@ -54,6 +54,10 @@ class AMSuper
 {
   friend class AMSuperNode;
 
+protected:
+  /* manage logic for LifeCycle */
+  AMLifeCycleMediator life_cycle_mediator_;
+
 private:
   shared_ptr<AMLifeCycle> life_cycle_node_; 
 
@@ -84,8 +88,6 @@ private:
   /** manage logic for SuperState transitions */
   SuperStateMediator state_mediator_;
 
-  /* manage logic for LifeCycle */
-  AMLifeCycleMediator life_cycle_mediator_;
 
   /** Node behavior management.*/
   SuperNodeMediator node_mediator_;
@@ -913,7 +915,7 @@ public:
 // #ifdef TESTING
 // #else
 
-shared_ptr<rclcpp::Node> am::Node::node;
+shared_ptr<am::AMLifeCycle> am::Node::node;
 
 int main(int argc, char** argv)
 {

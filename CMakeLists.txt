@@ -68,9 +68,9 @@ ament_export_targets(super_libTargets HAS_LIBRARY_TARGET)
 ament_export_include_directories(include)
 ament_export_libraries(super_lib)
 
-#add_executable(am_super ${am_super_cpp_files})
-#target_link_libraries(am_super super_lib)
-#ament_target_dependencies(am_super ${dependencies})
+add_executable(am_super ${am_super_cpp_files})
+target_link_libraries(am_super super_lib)
+ament_target_dependencies(am_super ${dependencies})
 
 install(DIRECTORY include/
         DESTINATION include/

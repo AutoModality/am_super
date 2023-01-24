@@ -3,7 +3,7 @@
 
 #include <string_view>
 
-#include <rclcpp/rclcpp.hpp>
+#include <am_utils/am_ros2_utility.h>
 
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 
@@ -27,7 +27,7 @@ namespace am
  * https://automodality.atlassian.net/wiki/spaces/AMROS/pages/901546330/AM+Node+LifeCycle
  * 
  */
-class AMLifeCycle
+class AMLifeCycle : public rclcpp::Node
 {
   public:
     static constexpr std::string_view BROADCAST_NODE_NAME = "";
@@ -55,6 +55,10 @@ class AMLifeCycle
      * max_configure_seconds_ to allow startup error tolerance.*/
     rclcpp::Time configure_start_time_;
 
+    /** initialization - called by  constructors. 
+     */   
+    void initialize();
+
     void setState(const LifeCycleState state);
 
     /* if status is valid, then set this status to status */
@@ -76,35 +80,38 @@ class AMLifeCycle
     void error(std::string message, std::string error_code, bool forced = false);
     void configureStat(AMStat& stat, std::string name, std::string category="");
 
-  protected:
+  public:
     std::string node_name_;
 
     /**Maximum time errors will be ignored during configuration. */ 
     int configure_tolerance_s;
 
+    // std::shared_ptr<diagnostic_updater::Updater> updater_;
     diagnostic_updater::Updater updater_;
     AMStatList stats_list_;
 
-    rclcpp::Node::SharedPtr node_;
     rclcpp::TimerBase::SharedPtr heartbeat_timer_;
     rclcpp::Publisher<brain_box_msgs::msg::LifeCycleState>::SharedPtr state_pub_;
     rclcpp::Subscription<brain_box_msgs::msg::LifeCycleCommand>::SharedPtr lifecycle_sub_;
 
-    /**
-     * @brief Default constructor
-     */
-    AMLifeCycle(rclcpp::Node::SharedPtr node);
+    AMLifeCycle( 
+      const std::string & node_name,
+      const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+
+    AMLifeCycle(
+      const std::string & node_name,
+      const std::string & namespace_,
+      const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
     /**
      * @brief Virtual destructor
      */
     virtual ~AMLifeCycle();
 
+    /** Exactly like ros::param, but ROS_INFO's level showing the actual value assigned. 
+    */
     template<typename T>
-
-    /** Exactly like ros::param, but logs INFO level showing the actual value assigned. 
-     */
-    bool param(const std::string& param_name, T& param_val, const T& default_val) const;
+    bool param(const std::string& param_name, T& param_val, const T& default_val);
 
     //on* overriden by implementing node to do what is needed to satisfy the objective of the method
     //do* is called by the implementing node when the objective attempt has completed and status is to be reported

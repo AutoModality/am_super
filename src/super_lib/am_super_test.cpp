@@ -3,6 +3,8 @@
 
 #include <sstream>
 
+std::shared_ptr<rclcpp::Node> am::Node::node;
+
 AMSuperTest::AMSuperTest(string target_node_name) : nh_(std::make_shared<rclcpp::Node>(target_node_name))
 {
   createPubsSubs();

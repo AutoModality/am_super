@@ -4,6 +4,7 @@
 #define AM_SUPER_INCLUDE_AM_SUPER_STATE_MEDIATOR_H_
 
 #include <am_super/super_state.h>
+#include <am_utils/am_ros2_utility.h>
 
 namespace am
 {

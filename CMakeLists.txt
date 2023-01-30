@@ -17,13 +17,10 @@ if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
-
 set(dependencies
   am_utils
   brain_box_msgs
   builtin_interfaces
-  diagnostic_msgs
-  diagnostic_updater
   rclcpp
   rclpy
   rosbag2
@@ -42,10 +39,6 @@ include_directories(
 	include
 )
 
-file(GLOB super_lib_cpp_files
-    src/super_lib/*.cpp
-)
-
 file(GLOB cuda_cpp_files
     src/cuda/*.cpp
 )
@@ -58,31 +51,11 @@ file(GLOB SUPER_MEDIATOR_FILES
     src/am_super/*_mediator.cpp
 )
 
-add_library(super_lib
-  ${super_lib_cpp_files}
-)
-target_link_libraries(super_lib)
-
-ament_target_dependencies(super_lib ${dependencies})
-ament_export_targets(super_libTargets HAS_LIBRARY_TARGET)
-ament_export_include_directories(include)
-ament_export_libraries(super_lib)
-
-#add_executable(am_super ${am_super_cpp_files})
-#target_link_libraries(am_super super_lib)
-#ament_target_dependencies(am_super ${dependencies})
+add_executable(am_super ${am_super_cpp_files})
+ament_target_dependencies(am_super ${dependencies})
 
 install(DIRECTORY include/
         DESTINATION include/
-)
-
-install(
-  TARGETS super_lib
-  EXPORT super_libTargets
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
 )
 
 install(TARGETS
@@ -115,12 +88,11 @@ if(BUILD_TESTING)
     super_test/abort_to_disarming/abort_to_disarming_rostest.cpp
   )
 
-  target_link_libraries(abort_to_disarming super_lib)
-  ament_target_dependencies(abort_to_disarming am_utils ${dependencies})
+  target_link_libraries(abort_to_disarming)
+  ament_target_dependencies(abort_to_disarming ${dependencies})
   add_ros_test(super_test/abort_to_disarming/launch/abort_to_disarming.test.py TIMEOUT 120 ARGS "test_binary_dir:=${CMAKE_CURRENT_BINARY_DIR}")
 endif()
 
 ament_export_include_directories(include)
-ament_export_libraries(super_lib)
 ament_export_dependencies(${dependencies})
 ament_package()

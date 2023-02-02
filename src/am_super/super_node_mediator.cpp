@@ -9,8 +9,8 @@ namespace am
 /**
  * The state of the system as the supervisor sees it.*/
 
-SuperNodeMediator::SuperNodeMediator(const std::string& node_name): 
-  SUPER_NODE_NAME(node_name),
+SuperNodeMediator::SuperNodeMediator(rclcpp::Node::SharedPtr node, const std::string& node_name):
+  SUPER_NODE_NAME(node_name), node_(node),
   state_transitions_({
     { SuperState::BOOTING, {
     {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::CONFIGURE}}}},
@@ -81,7 +81,7 @@ SuperNodeMediator::SuperNodeInfo SuperNodeMediator::initializeManifestedNode(std
   nr.name = node_name;
   nr.pid = -1;
   nr.online = false;
-  nr.last_contact = ros::Time(0);
+  nr.last_contact = node_->now();
   nr.manifested = true;
   nr.state = LifeCycleState::UNCONFIGURED;
   nr.status = LifeCycleStatus::OK;
@@ -274,7 +274,7 @@ pair<bool, map<string, string>> SuperNodeMediator::allManifestedNodesCheck(
       failed_nodes.insert(pair<string, string>(node.name, error_message));
     }
   }    // for each node
-  return pair(success, failed_nodes);
+  return std::pair(success, failed_nodes);
 }
 
 void SuperNodeMediator::parseManifest(Supervisor& supervisor, string manifest)

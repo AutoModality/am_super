@@ -1,3 +1,4 @@
-
-platform:
-  actual: $(arg platform)
+am_super:
+  ros__parameters:
+    platform:
+      actual: farm-ng_amiga_mockup

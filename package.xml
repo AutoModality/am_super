@@ -22,5 +22,4 @@
   <depend>std_srvs</depend>
   <test_depend>rosunit</test_depend>
   <test_depend>code_coverage</test_depend>
-  <test_depend>am_rostest</test_depend>
 </package>

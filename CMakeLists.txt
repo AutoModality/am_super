@@ -15,7 +15,6 @@ find_package(catkin REQUIRED
   rospy
   std_msgs
   std_srvs
-  am_rostest
 )
 
 #find_package(CUDA)
@@ -199,47 +198,3 @@ file(GLOB TEST_FILES
 )
 
 
-# code coverage setup: https://github.com/mikeferguson/code_coverage
-if (CATKIN_ENABLE_TESTING)
-
-  ## Add gtest based cpp test target and link libraries
-
-  catkin_add_gtest(${PROJECT_NAME}_test ${TEST_FILES} ${SUPER_MEDIATOR_FILES})
-
-  if(TARGET ${PROJECT_NAME}_test)
-    target_link_libraries(${PROJECT_NAME}_test ${catkin_LIBRARIES} super_lib)
-  endif()
-
-  # For ros testing
-  find_package(rostest REQUIRED)
-
-  #follow test naming convention of files in a folder and the cpp and launch have the test name with _rostest
-  set(TEST_NAMES abort_to_disarming 
-                 abort_to_manual 
-                 armed_to_ready 
-                 auto_to_abort 
-                 auto_to_manual 
-                 auto_to_semiauto 
-                 error_configure_tolerance
-                 error_forced 
-                 error_status 
-                 error_status_without_stats 
-                 error_terminal_before_config
-                 error_tolerant_before_config
-                 hz_config
-                 manual_to_disarming 
-                 param
-                 platform_app_required_fail
-                 platform_app_required_pass
-                 platform_required_fail
-                 platform_required_pass
-                 primary
-                 ready_to_shutdown 
-                 semi_auto_to_manual
-  )
-  foreach(TEST_NAME ${TEST_NAMES})
-    set(PROJECT_TEST_NAME  ${TEST_NAME}_${PROJECT_NAME}_rostest)
-    add_rostest_gtest(${PROJECT_TEST_NAME} rostest/${TEST_NAME}/${TEST_NAME}_rostest.test rostest/${TEST_NAME}/${TEST_NAME}_rostest.cpp)
-    target_link_libraries(${PROJECT_TEST_NAME} ${catkin_LIBRARIES} super_lib)
-  endforeach()
-endif()

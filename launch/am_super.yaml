@@ -1,4 +1,5 @@
 am_super:
   ros__parameters:
+    manifest: am_mavros_bs
     platform:
       actual: farm-ng_amiga_mockup

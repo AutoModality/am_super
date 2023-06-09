@@ -513,6 +513,7 @@ private:
   {
     if(life_cycle_node_->getState() == LifeCycleState::INACTIVE && supervisor_.system_state == SuperState::READY) //if super lifecycle is currently inactive
     {
+      ROS_INFO_STREAM("Automatically activating am_super");
       sendLifeCycleCommand(node_mediator_.getNodeName(), LifeCycleCommand::ACTIVATE); 
     }
     else

@@ -41,6 +41,27 @@
 #include <cuda/cuda_utility_class.h>
 #endif
 
+#ifdef WIN32
+  #define COLOR_NORMAL ""
+  #define COLOR_RED ""
+  #define COLOR_GREEN ""
+  #define COLOR_YELLOW ""
+#else
+  #define COLOR_NORMAL "\033[0m"
+  #define COLOR_RED "\033[31m"
+  #define COLOR_BLUE "\033[34m"
+  #define COLOR_GREEN "\033[32m"
+  #define COLOR_YELLOW "\033[33m"
+#endif
+
+#undef ROS_INFO_STREAM
+#undef ROS_INFO_STREAM_THROTTLE 
+
+// Differentiate system state messages from others by blue console logs
+#define ROS_INFO_STREAM(stream) RCLCPP_INFO_STREAM(am::Node::node->get_logger(), COLOR_BLUE << stream << COLOR_NORMAL)
+#define ROS_INFO_STREAM_THROTTLE(duration, stream) RCLCPP_INFO_STREAM_THROTTLE(am::Node::node->get_logger(), *am::Node::node->get_clock(), (long)((duration) * 1000.0), COLOR_BLUE << stream << COLOR_NORMAL)
+
+
 using namespace std;
 
 namespace am
@@ -492,6 +513,7 @@ private:
   {
     if(life_cycle_node_->getState() == LifeCycleState::INACTIVE && supervisor_.system_state == SuperState::READY) //if super lifecycle is currently inactive
     {
+      ROS_INFO_STREAM("Automatically activating am_super");
       sendLifeCycleCommand(node_mediator_.getNodeName(), LifeCycleCommand::ACTIVATE); 
     }
     else

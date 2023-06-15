@@ -15,6 +15,7 @@ def generate_launch_description():
         package = 'am_super',
         name = 'am_super',
         executable = 'am_super',
+        emulate_tty=True,
         parameters = [config]
     )
     ld.add_action(node)

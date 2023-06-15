@@ -52,6 +52,7 @@
   #define COLOR_BLUE "\033[34m"
   #define COLOR_GREEN "\033[32m"
   #define COLOR_YELLOW "\033[33m"
+  #define COLOR_PURPLE "\033[35m"
 #endif
 
 #undef ROS_INFO_STREAM
@@ -551,8 +552,9 @@ private:
    */
   void setSystemState(SuperState state)
   {
-    ROS_INFO_STREAM(state_mediator_.stateToString(supervisor_.system_state) << " --> "
-                                                                            << state_mediator_.stateToString(state));
+    ROS_INFO_STREAM(COLOR_PURPLE << state_mediator_.stateToString(supervisor_.system_state) << " --> "
+                                                                            << state_mediator_.stateToString(state) 
+                                                                            << COLOR_RESET);
     bool legal = true;
     if(!node_mediator_.forceTransition(state))
       legal = state_mediator_.allowsTransition(supervisor_.system_state, state);

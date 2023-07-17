@@ -365,7 +365,8 @@ private:
         {
           supervisor_.status_error = true;
           ROS_INFO_STREAM( "Manifested node " << nr.name << " changed status to ERROR. Shutting down nodes... [JHRE]");
-          stopFlightPlan();
+          ROS_INFO_STREAM( "M--------------------");
+          //stopFlightPlan();
         }
       }
       if (nr.pid != pid)

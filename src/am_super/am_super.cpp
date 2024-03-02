@@ -210,22 +210,22 @@ public:
     /**
      * system status pub
      */
-    vstate_summary_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::VxState>(am_super_topics::SUPER_STATE, 1000);
-    system_state_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::SystemState>(am_topics::SYSTEM_STATE, 1000);
+    vstate_summary_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::VxState>(am_super_topics::SUPER_STATE, am::getSensorQoS(10));
+    system_state_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::SystemState>(am_topics::SYSTEM_STATE, am::getSensorQoS(10));
     /**Super
      * node lifecycle state pub. used to tell nodes to change their lifecycle state.
      */
-    lifecycle_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::LifeCycleCommand>(am_super_topics::NODE_LIFECYCLE, 100);
+    lifecycle_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::LifeCycleCommand>(am_super_topics::NODE_LIFECYCLE, am::getSensorQoS(1));
     /**
      * led control pub
      */
-    led_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::BlinkMCommand>(am::am_topics::LED_BLINK, 1000);
+    led_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::BlinkMCommand>(am::am_topics::LED_BLINK, am::getSensorQoS(1));
     /**
      * super status contains online naode list for gcs_comms
      */
-    super_status_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::Super2Status>(am_super_topics::SUPER_STATUS, 1000);
+    super_status_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::Super2Status>(am_super_topics::SUPER_STATUS, am::getSensorQoS(10));
 
-    flight_plan_deactivation_pub_ = am::Node::node->create_publisher<std_msgs::msg::Bool>(am_topics::CTRL_FLIGHTPLAN_ACTIVITY_CONTROL, 1000);
+    flight_plan_deactivation_pub_ = am::Node::node->create_publisher<std_msgs::msg::Bool>(am_topics::CTRL_FLIGHTPLAN_ACTIVITY_CONTROL, am::getSensorQoS(1));
 
     supervisor_.system_state = SuperState::BOOTING;
     supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::INIT;
@@ -246,7 +246,7 @@ public:
     /**
      * node status via LifeCycle
      */
-    node_state_sub_ = am::Node::node->create_subscription<brain_box_msgs::msg::LifeCycleState>(am_super_topics::LIFECYCLE_STATE, 100,
+    node_state_sub_ = am::Node::node->create_subscription<brain_box_msgs::msg::LifeCycleState>(am_super_topics::LIFECYCLE_STATE, am::getSensorQoS(1),
     		std::bind(&AMSuper::nodeStateCB, this, std::placeholders::_1));
 
     /**
@@ -261,7 +261,7 @@ public:
     diagnostics_sub = am::Node::node->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 100,
     		std::bind(&AMSuper::diagnosticsCB, this, std::placeholders::_1));
 
-    current_enu_sub = am::Node::node->create_subscription<nav_msgs::msg::Odometry>(am_topics::CTRL_VX_VEHICLE_CURRENTENU, 100,
+    current_enu_sub = am::Node::node->create_subscription<nav_msgs::msg::Odometry>(am_topics::CTRL_VX_VEHICLE_CURRENTENU, am::getSensorQoS(1),
     		std::bind(&AMSuper::currentENUCB, this, std::placeholders::_1));
    }
 
@@ -795,12 +795,11 @@ public:
    * Verify the basic requirements are being met:
    * - platform required matches actual platform
    */  
-  void onConfigure() override
+  bool onConfigure() override
   {
     if(am_super_ == nullptr)
     {
-      AMLifeCycle::onConfigure();
-      return;
+      return AMLifeCycle::onConfigure();
     }
 
     SuperNodeMediator::PlatformVariant required_platform;
@@ -817,11 +816,11 @@ public:
               << am_super_->node_mediator_.platformVariantToConfig(actual_platform)
               ;
       errorTerminal(message.str(),"NSK2"); //force failure since this is not recoverable
+      //ROS_ERROR_STREAM(message.str());
+      return false;
+      
     }
-    else
-    {
-      AMLifeCycle::onConfigure();
-    }
+    return AMLifeCycle::onConfigure();
   }
 
  /**

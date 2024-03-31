@@ -361,7 +361,7 @@ private:
     	ROS_INFO_STREAM( node_name << " changed status to = " << life_cycle_mediator_.statusToString(status) << " [09SI]");
         nr.status = status;
         nodes_changed = true;
-        if(nr.manifested && nr.status == LifeCycleStatus::ERROR)
+        if(nr.manifested && nr.status == LifeCycleStatus::ERROR && supervisor_.system_state != SuperState::BOOTING)
         {
           supervisor_.status_error = true;
           ROS_INFO_STREAM( "Manifested node " << nr.name << " changed status to ERROR. Shutting down nodes... [JHRE]");
@@ -511,10 +511,12 @@ private:
    */
   void checkForSystemStateTransition()
   {
-    if(life_cycle_node_->getState() == LifeCycleState::INACTIVE && supervisor_.system_state == SuperState::READY) //if super lifecycle is currently inactive
+    if(life_cycle_node_->getState() == LifeCycleState::INACTIVE && supervisor_.system_state == SuperState::READY) 
     {
-      ROS_INFO_STREAM("Automatically activating am_super");
-      sendLifeCycleCommand(node_mediator_.getNodeName(), LifeCycleCommand::ACTIVATE); 
+      // this is legacy code to ACTIVATE as soon as eeryone is online. this shouldn't happen until the operator starts the mission.
+      ROS_INFO_STREAM_THROTTLE(10, "Automatic activation disabled");
+      // ROS_INFO_STREAM("Automatically activating am_super");
+      // sendLifeCycleCommand(node_mediator_.getNodeName(), LifeCycleCommand::ACTIVATE); 
     }
     else
     {

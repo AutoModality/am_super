@@ -818,7 +818,6 @@ public:
               << am_super_->node_mediator_.platformVariantToConfig(actual_platform)
               ;
       errorTerminal(message.str(),"NSK2"); //force failure since this is not recoverable
-      //ROS_ERROR_STREAM(message.str());
       return false;
       
     }

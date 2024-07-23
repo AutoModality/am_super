@@ -315,7 +315,7 @@ private:
     
 	RCLCPP_INFO(am::Node::node->get_logger(), "Received Operator Command: %s sent '%i'",rmsg->node_name.c_str(),rmsg->command );
     
-    node_mediator_.setOperatorCommand(supervisor_, (OperatorCommand)rmsg->command);
+   // node_mediator_.setOperatorCommand(supervisor_, (OperatorCommand)rmsg->command);
     // TODO: topic name should come from vb_util_lib::topics.
     LOG_MSG("/operator/command", *rmsg,  SU_LOG_LEVEL);
   }

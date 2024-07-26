@@ -888,7 +888,25 @@ public:
     for (it = am_super_->supervisor_.nodes.begin(); it != am_super_->supervisor_.nodes.end(); it++)
     {
       SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
-      status_msg.nodes.push_back(nr.name);
+      status_msg.all.push_back(nr.name);
+
+      if (nr.manifested)
+      {
+        if (nr.online){
+          status_msg.man_onl.push_back(nr.name);
+        }
+        else{
+          status_msg.man_offl.push_back(nr.name);
+        }
+      }
+      else{
+        if (nr.online){
+          status_msg.unman_onl.push_back(nr.name);
+        }
+        else{
+          status_msg.unman_offl.push_back(nr.name);
+        }
+      }
     }
     LOG_MSG("/status/super", status_msg, 1);
     if (am_super_->super_status_pub_->get_subscription_count() > 0)

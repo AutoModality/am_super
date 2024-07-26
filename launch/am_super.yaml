@@ -2,4 +2,4 @@ am_super:
   ros__parameters:
     platform:
       actual: farm-ng_amiga_mockup
-    manifest: am_gps, am_mavros_bs
+    manifest: ouster_leveller, passage_feature_extractor, am_locator, gv_controller, logger, am_gps_sim, map_server, am_pilot, ground_detector, model_spawner, gv_ground_truth_node

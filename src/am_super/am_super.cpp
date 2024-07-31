@@ -124,22 +124,6 @@ private:
    */
   const int SU_LOG_LEVEL = 1;
 
-  //
-  // babysitters
-  //
-  const std::string NODE_BS_ALTIMETER = "can_node";  // TODO: replace with system global const
- 
-  typedef brain_box_msgs::msg::StampedAltimeter altimeter_bs_msg_type;
-  am::BabySitter<altimeter_bs_msg_type>* altimeter_bs_;
-  const std::string ALTIMETER_BS_TOPIC = "/sensor/distance/agl_lw";  // TODO: replace with system global const
-  const int ALTIMETER_HZ = 20;
-
-  const std::string NODE_BS_DJI = "dji_sdk";  // TODO: replace with system global const
-  typedef sensor_msgs::msg::Joy dji_bs_msg_type;
-  am::BabySitter<dji_bs_msg_type>* dji_bs_;
-  const std::string DJI_BS_TOPIC = "/dji_sdk/rc";  // TODO: replace with system global const
-  const int DJI_HZ = 50;
-
 #if CUDA_FLAG
   std::shared_ptr<am::CudaUtility> gpu_info_;
 #endif
@@ -155,7 +139,7 @@ public:
     ROS_INFO_STREAM( "node_timeout_s = " << node_timeout_s_);
 
     /*
-     * create initial node list from manifest and create babysitters as needed
+     * create initial node list from manifest
      */
     supervisor_.system_state = SuperState::OFF;
     // strip spaces from manifest param
@@ -170,7 +154,7 @@ public:
     // if a manifest has been specified
     if (!supervisor_.manifest.empty())
     {
-    	ROS_INFO_STREAM( "configuring nodes from manifest: " << manifest_param);
+    	ROS_INFO_STREAM( "configuring nodes from manifest");
       for (string& name : supervisor_.manifest)
       {
         // create a new node in the list for each name in manifest
@@ -178,21 +162,6 @@ public:
         supervisor_.nodes.insert(pair<string, SuperNodeMediator::SuperNodeInfo>(name, nr));
         ROS_INFO_STREAM( "  " << name);
 
-        // create babysitters based on hard coded node names
-        if (!name.compare(NODE_BS_ALTIMETER))
-        {
-          int altimeter_warn_ms, altimeter_error_ms;
-          calcBSTiming(ALTIMETER_HZ, altimeter_warn_ms, altimeter_error_ms);
-          altimeter_bs_ = new am::BabySitter<altimeter_bs_msg_type>(
-              am::Node::node, BagLogger::instance(), name, ALTIMETER_BS_TOPIC, altimeter_warn_ms, altimeter_error_ms);
-        }
-        else if (!name.compare(NODE_BS_DJI))
-        {
-          int dji_warn_ms, dji_error_ms;
-          calcBSTiming(DJI_HZ, dji_warn_ms, dji_error_ms);
-          dji_bs_ = new am::BabySitter<dji_bs_msg_type>(am::Node::node, BagLogger::instance(), name, DJI_BS_TOPIC, dji_warn_ms,
-                                                        dji_error_ms);
-        }
       }
     }
     else
@@ -207,34 +176,27 @@ public:
     gpu_info_ = std::make_shared<am::CudaUtility>(nh_);
 #endif
 
-    /**
-     * system status pub
-     */
+    // vehicle state: position, velocity, etc.
     vstate_summary_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::VxState>(am_super_topics::SUPER_STATE, am::getSensorQoS(10));
+
+    // system state: BOOTING, READY, AUTO, etc.
     system_state_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::SystemState>(am_topics::SYSTEM_STATE, am::getSensorQoS(10));
-    /**Super
-     * node lifecycle state pub. used to tell nodes to change their lifecycle state.
-     */
+
+    // lifecycle command: CONFIGURE, ACTIVATE, etc. - sent to all nodes to control lifecycle
     lifecycle_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::LifeCycleCommand>(am_super_topics::NODE_LIFECYCLE, am::getSensorQoS(1));
-    /**
-     * led control pub
-     */
+
+    // led blink rate
+    // TODO: remove since no longer supported?
     led_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::BlinkMCommand>(am::am_topics::LED_BLINK, am::getSensorQoS(1));
-    /**
-     * super status contains online naode list for gcs_comms
-     */
+    
+    // super state: manifest info
     super_status_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::Super2Status>(am_super_topics::SUPER_STATUS, am::getSensorQoS(10));
 
+    // ???
     flight_plan_deactivation_pub_ = am::Node::node->create_publisher<std_msgs::msg::Bool>(am_topics::CTRL_FLIGHTPLAN_ACTIVITY_CONTROL, am::getSensorQoS(1));
 
     supervisor_.system_state = SuperState::BOOTING;
     supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::INIT;
-
-    /**
-     * amros log control
-     */
-    log_control_sub_ = am::Node::node->create_subscription<brain_box_msgs::msg::LogControl>(am::am_topics::CTRL_LOG_CONTROL, 10,
-    		std::bind(&AMSuper::logControlCB, this, std::placeholders::_1));
 
     // startup bagfile - gets closed after frist log control command
     ROS_INFO_STREAM( "start logging to ST, level " << SU_LOG_LEVEL);
@@ -243,24 +205,27 @@ public:
 
     // subs should always come at the end
     
-    /**
-     * node status via LifeCycle
-     */
+    // amros log control
+    log_control_sub_ = am::Node::node->create_subscription<brain_box_msgs::msg::LogControl>(am::am_topics::CTRL_LOG_CONTROL, 10,
+    		std::bind(&AMSuper::logControlCB, this, std::placeholders::_1));
+
+    // lifecycle state: UNCONFIGURED, INACTIVE, etc. - sent by all lifecycle nodes periodically
     node_state_sub_ = am::Node::node->create_subscription<brain_box_msgs::msg::LifeCycleState>(am_super_topics::LIFECYCLE_STATE, am::getSensorQoS(1),
     		std::bind(&AMSuper::nodeStateCB, this, std::placeholders::_1));
 
-    /**
-     * commands from operator
-     */
+    // operator commands: ARM, DISARM, etc. - send by operator node
     operator_command_sub_ = am::Node::node->create_subscription<brain_box_msgs::msg::OperatorCommand>(am_super_topics::OPERATOR_COMMAND, 100,
     		std::bind(&AMSuper::operatorCommandCB, this, std::placeholders::_1));
 
+    // controller state: ???
     controller_state_sub = am::Node::node->create_subscription<brain_box_msgs::msg::ControllerState>(am_super_topics::CONTROLLER_STATE, 100,
     		std::bind(&AMSuper::controllerStateCB, this, std::placeholders::_1));
 
+    // dignostics: these are logged by am_super
     diagnostics_sub = am::Node::node->create_subscription<diagnostic_msgs::msg::DiagnosticArray>("/diagnostics", 100,
     		std::bind(&AMSuper::diagnosticsCB, this, std::placeholders::_1));
 
+    // currentENU: vehicle location from am_locator
     current_enu_sub = am::Node::node->create_subscription<nav_msgs::msg::Odometry>(am_topics::CTRL_VX_VEHICLE_CURRENTENU, am::getSensorQoS(1),
     		std::bind(&AMSuper::currentENUCB, this, std::placeholders::_1));
    }
@@ -313,14 +278,15 @@ private:
   {
     //const brain_box_msgs::OperatorCommand::ConstPtr& rmsg = event.getMessage();
     
-	RCLCPP_INFO(am::Node::node->get_logger(), "Received Operator Command: %s sent '%i'",rmsg->node_name.c_str(),rmsg->command );
+	  RCLCPP_INFO(am::Node::node->get_logger(), "Received Operator Command: %s sent '%i'",rmsg->node_name.c_str(),rmsg->command );
     
     node_mediator_.setOperatorCommand(supervisor_, (OperatorCommand)rmsg->command);
     // TODO: topic name should come from vb_util_lib::topics.
     LOG_MSG("/operator/command", *rmsg,  SU_LOG_LEVEL);
   }
+
   /**
-   * process state
+   * process state from lifecycle nodes
    * @param node_name_in
    * @param state
    * @param status
@@ -352,22 +318,24 @@ private:
       }
       if (nr.state != state)
       {
-    	ROS_INFO_STREAM( node_name << " changed state to = " << life_cycle_mediator_.stateToString(state) << " [38S8]");
+    	  ROS_INFO_STREAM( node_name << " changed state to = " << life_cycle_mediator_.stateToString(state) << " [38S8]");
         nr.state = state;
         nodes_changed = true;
       }
       if (nr.status != status)
       {
-    	ROS_INFO_STREAM( node_name << " changed status to = " << life_cycle_mediator_.statusToString(status) << " [09SI]");
+    	  ROS_INFO_STREAM( node_name << " changed status to = " << life_cycle_mediator_.statusToString(status) << " [09SI]");
         nr.status = status;
         nodes_changed = true;
         if(nr.manifested && nr.status == LifeCycleStatus::ERROR && supervisor_.system_state != SuperState::BOOTING)
         {
           supervisor_.status_error = true;
           ROS_INFO_STREAM( "Manifested node " << nr.name << " changed status to ERROR. Shutting down nodes... [JHRE]");
-          stopFlightPlan();
+          // TODO: put this back in somehow - need to rethink how am_super influsenes control
+          // stopFlightPlan();
         }
       }
+      // TODO: need to test the pid stuff - not sure if it is working
       if (nr.pid != pid)
       {
         //process id = 0 observed to be a node coming online. -1 appears to be offline
@@ -407,26 +375,27 @@ private:
       checkForSystemStateTransition();
     }
 
-    // cache flight controller state and check for state transition
-    if (!node_name.compare("flight_controller") && !subsystem.compare("FLIGHT_CONTROL"))
-    {
-      bool flt_ctrl_state_changed = false;
-      if (!value.compare("AUTO") && supervisor_.flt_ctrl_state != SuperNodeMediator::SuperFltCtrlState::AUTO)
-      {
-        supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::AUTO;
-        flt_ctrl_state_changed = true;
-      }
-      else if (!value.compare("HOLD") && supervisor_.flt_ctrl_state != SuperNodeMediator::SuperFltCtrlState::HOLD)
-      {
-        supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::HOLD;
-        flt_ctrl_state_changed = true;
-      }
-      if (flt_ctrl_state_changed)
-      {
-        RCLCPP_INFO_STREAM_THROTTLE(am::Node::node->get_logger(), *am::Node::node->get_clock(), 1.0, "flight status: " << value);
-        checkForSystemStateTransition();
-      }
-    }
+    // TODO: not sure if/how this should go back in
+    // // cache flight controller state and check for state transition
+    // if (!node_name.compare("flight_controller") && !subsystem.compare("FLIGHT_CONTROL"))
+    // {
+    //   bool flt_ctrl_state_changed = false;
+    //   if (!value.compare("AUTO") && supervisor_.flt_ctrl_state != SuperNodeMediator::SuperFltCtrlState::AUTO)
+    //   {
+    //     supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::AUTO;
+    //     flt_ctrl_state_changed = true;
+    //   }
+    //   else if (!value.compare("HOLD") && supervisor_.flt_ctrl_state != SuperNodeMediator::SuperFltCtrlState::HOLD)
+    //   {
+    //     supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::HOLD;
+    //     flt_ctrl_state_changed = true;
+    //   }
+    //   if (flt_ctrl_state_changed)
+    //   {
+    //     RCLCPP_INFO_STREAM_THROTTLE(am::Node::node->get_logger(), *am::Node::node->get_clock(), 1.0, "flight status: " << value);
+    //     checkForSystemStateTransition();
+    //   }
+    // }
   }
 
  
@@ -468,30 +437,30 @@ private:
     lifecycle_pub_->publish(msg);
   }
 
-  /**
-   * check if all manifested nodes are ready for configuration
-   * @param state
-   * @param status
-   * @return true if all manifested nodes are ready to become active
-   *
-   * This means:
-   * - all are online
-   * - all states are UNCONFIGURED or INACTIVE or ACTIVE
-   * - all statuses are not error
-   */
-  bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
-  {
-    pair<bool, map<string, string>> result = node_mediator_.allManifestedNodesCheck(supervisor_, check);
-    bool success = result.first;
-    if (!success)
-    {
-      for (const auto & [ node_name, error_message ] : result.second)
-      {
-        ROS_WARN_STREAM(error_message);
-      }
-    }
-    return success;
-  }
+  // /**
+  //  * check if all manifested nodes are ready for configuration
+  //  * @param state
+  //  * @param status
+  //  * @return true if all manifested nodes are ready to become active
+  //  *
+  //  * This means:
+  //  * - all are online
+  //  * - all states are UNCONFIGURED or INACTIVE or ACTIVE
+  //  * - all statuses are not error
+  //  */
+  // bool allManifestedNodesCheck(std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
+  // {
+  //   pair<bool, map<string, string>> result = node_mediator_.allManifestedNodesCheck(supervisor_, check);
+  //   bool success = result.first;
+  //   if (!success)
+  //   {
+  //     for (const auto & [ node_name, error_message ] : result.second)
+  //     {
+  //       ROS_WARN_STREAM(error_message);
+  //     }
+  //   }
+  //   return success;
+  // }
 
 
   /** Send signal to flight controller that flight is over. */
@@ -511,15 +480,14 @@ private:
    */
   void checkForSystemStateTransition()
   {
-    if(life_cycle_node_->getState() == LifeCycleState::INACTIVE && supervisor_.system_state == SuperState::READY) 
-    {
-      // this is legacy code to ACTIVATE as soon as eeryone is online. this shouldn't happen until the operator starts the mission.
-      ROS_INFO_STREAM_THROTTLE(10, "Automatic activation disabled");
-      // ROS_INFO_STREAM("Automatically activating am_super");
-      // sendLifeCycleCommand(node_mediator_.getNodeName(), LifeCycleCommand::ACTIVATE); 
-    }
-    else
-    {
+    // TODO: put this back in maybe when we enable ACTIVE
+    // if(life_cycle_node_->getState() == LifeCycleState::INACTIVE && supervisor_.system_state == SuperState::READY) //if super lifecycle is currently inactive
+    // {
+    //   ROS_INFO_STREAM("Automatically activating am_super");
+    //   sendLifeCycleCommand(node_mediator_.getNodeName(), LifeCycleCommand::ACTIVATE); 
+    // }
+    // else
+    // {
       
       SuperNodeMediator::TransitionInstructions transition_instructions = node_mediator_.transitionReady(supervisor_);
 
@@ -541,7 +509,7 @@ private:
           sendLifeCycleCommand(failed_node_name, command);
         }
       }      
-    }
+    // }
   }
 
   /**
@@ -888,7 +856,25 @@ public:
     for (it = am_super_->supervisor_.nodes.begin(); it != am_super_->supervisor_.nodes.end(); it++)
     {
       SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
-      status_msg.nodes.push_back(nr.name);
+      status_msg.all.push_back(nr.name);
+
+      if (nr.manifested)
+      {
+        if (nr.online){
+          status_msg.man_onl.push_back(nr.name);
+        }
+        else{
+          status_msg.man_offl.push_back(nr.name);
+        }
+      }
+      else{
+        if (nr.online){
+          status_msg.unman_onl.push_back(nr.name);
+        }
+        else{
+          status_msg.unman_offl.push_back(nr.name);
+        }
+      }
     }
     LOG_MSG("/status/super", status_msg, 1);
     if (am_super_->super_status_pub_->get_subscription_count() > 0)

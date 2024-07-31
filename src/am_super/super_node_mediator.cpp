@@ -12,39 +12,55 @@ namespace am
 SuperNodeMediator::SuperNodeMediator(rclcpp::Node::SharedPtr node, const std::string& node_name):
   SUPER_NODE_NAME(node_name), node_(node),
   state_transitions_({
-    { SuperState::BOOTING, {
-    {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::CONFIGURE}}}},
-  { SuperState::READY, {
-    {SuperState::ARMING, {SuperState::ARMING, SuperNodeMediator::checkReadyToArm, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::ARM}},
-    {SuperState::SHUTDOWN, {SuperState::SHUTDOWN, SuperNodeMediator::checkNodesShuttingDownOrFinalized, LifeCycleCommand::SHUTDOWN, OperatorCommand::SHUTDOWN}}
-  }},
-  {SuperState::ARMING, {
-    {SuperState::ARMED, {SuperState::ARMED, SuperNodeMediator::checkArmed, LifeCycleCommand::ACTIVATE}}}},
-  {SuperState::ARMED, {
-    {SuperState::AUTO, {SuperState::AUTO, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::LAUNCH}},
-    {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::CANCEL}}  
-  }},
-  {SuperState::AUTO, {
-    {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, StateTransition::NO_OPERATOR_COMMAND, ControllerState::COMPLETED}},
-    {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE, OperatorCommand::MANUAL}},
-    {SuperState::SEMI_AUTO, {SuperState::SEMI_AUTO, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::PAUSE}},
-    {SuperState::ABORT, {SuperState::ABORT, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::ABORT}}
-  }},
-  {SuperState::SEMI_AUTO, {
-    {SuperState::AUTO, {SuperState::AUTO, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::RESUME}},
-    {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE, OperatorCommand::MANUAL}}
-  }},
-  {SuperState::DISARMING, {
-    {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE}}
-  }},
-  {SuperState::ABORT, {
-    {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE, OperatorCommand::MANUAL}},
-    {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, StateTransition::NO_OPERATOR_COMMAND, ControllerState::COMPLETED}},
-  }},
-  {SuperState::MANUAL, {
-    {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkNodesActiveOrInactive, StateTransition::NO_LIFECYCLE_COMMAND, StateTransition::NO_OPERATOR_COMMAND, ControllerState::COMPLETED}},
-  }}
-})
+    // const std::map<SuperState, std::map<SuperState, StateTransition>> state_transitions_ ;
+    // StateTransition(SuperState _to_state = NO_SUPER_STATE, std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> _check = NULL,
+    //                 LifeCycleCommand _life_cycle_command = NO_LIFECYCLE_COMMAND, OperatorCommand _operator_command = NO_OPERATOR_COMMAND, 
+    //                 ControllerState _controller_state = NO_CONTROLLER_STATE)
+
+    { SuperState::BOOTING, { // from state
+      {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::CONFIGURE}} // to state
+    }},
+  
+  //   { SuperState::READY, {
+  //     {SuperState::ARMING, {SuperState::ARMING, SuperNodeMediator::checkReadyToArm, StateTransition::
+  //     , OperatorCommand::ARM}},
+  //     {SuperState::SHUTDOWN, {SuperState::SHUTDOWN, SuperNodeMediator::checkNodesShuttingDownOrFinalized, LifeCycleCommand::SHUTDOWN, OperatorCommand::SHUTDOWN}}
+  //   }},
+  // 
+  //   { SuperState::ARMING, {
+  //     {SuperState::ARMED, {SuperState::ARMED, SuperNodeMediator::checkArmed, LifeCycleCommand::ACTIVATE}}
+  //   }},
+  // 
+  //   { SuperState::ARMED, {
+  //     {SuperState::AUTO, {SuperState::AUTO, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::LAUNCH}},
+  //     {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::CANCEL}}  
+  //   }},
+  // 
+  //   { SuperState::AUTO, {
+  //     {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, StateTransition::NO_OPERATOR_COMMAND, ControllerState::COMPLETED}},
+  //     {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE, OperatorCommand::MANUAL}},
+  //     {SuperState::SEMI_AUTO, {SuperState::SEMI_AUTO, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::PAUSE}},
+  //     {SuperState::ABORT, {SuperState::ABORT, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::ABORT}}
+  //   }},
+  // 
+  //   { SuperState::SEMI_AUTO, {
+  //     {SuperState::AUTO, {SuperState::AUTO, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::RESUME}},
+  //     {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE, OperatorCommand::MANUAL}}
+  //   }},
+  // 
+  //   { SuperState::DISARMING, {
+  //     {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE}}
+  //   }},
+  // 
+  //   { SuperState::ABORT, {
+  //     {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE, OperatorCommand::MANUAL}},
+  //     {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, StateTransition::NO_OPERATOR_COMMAND, ControllerState::COMPLETED}},
+  //   }},
+  // 
+  //   {SuperState::MANUAL, {
+  //     {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkNodesActiveOrInactive, StateTransition::NO_LIFECYCLE_COMMAND, StateTransition::NO_OPERATOR_COMMAND, ControllerState::COMPLETED}},
+  //   }}
+  })
 {
 
 }
@@ -151,14 +167,16 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   { 
     StateTransition transition;
 
-    if(supervisor.status_error)
-    {
-      transition = getErrorTransition();
-    }
-    else
+    // TODO: put htis back in when we figure out how errors are going to work
+    // if(supervisor.status_error)
+    // {
+    //   transition = getErrorTransition();
+    // }
+    // else
     {
       transition = getStateTransition(supervisor);
     }
+
     // each state has a check method providing the logic that should cause transition (based on manifest nodes
     // lifecycle)
     // some transitions happen only when check fails (mostly to abort)

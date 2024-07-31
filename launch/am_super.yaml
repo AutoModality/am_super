@@ -2,4 +2,4 @@ am_super:
   ros__parameters:
     platform:
       actual: farm-ng_amiga_mockup
-    manifest: am_gps, am_mavros_bs, y3space_imu, logger, am_locator, amiga, am_ouster, am_pilot, ground_detector, vineyard, pcl_yolo_node_front_right, pcl_yolo_node_rear_right, pcl_yolo_node_rear_left, pcl_yolo_node_front_left
+    manifest: am_node_template

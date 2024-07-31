@@ -101,6 +101,7 @@ public:
    */
   struct StateTransition
   {
+    // TODO: casting a -1 as an enum of type uint8_t is problematic. would be better to just add the NO_* elements to the enums.
     static const SuperState NO_SUPER_STATE = (SuperState)-1;
     static const LifeCycleCommand NO_LIFECYCLE_COMMAND = (LifeCycleCommand)-1;
     static const OperatorCommand NO_OPERATOR_COMMAND = (OperatorCommand)-1;

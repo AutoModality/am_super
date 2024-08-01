@@ -372,6 +372,7 @@ private:
     if (nodes_changed)
     {
       reportSystemState();
+      ROS_INFO("processSTate");
       checkForSystemStateTransition();
     }
 
@@ -432,6 +433,7 @@ private:
   {
     ROS_DEBUG_STREAM("sending command: " << life_cycle_mediator_.commandToString(command) << " to " << node_name << " lifecycle");
     brain_box_msgs::msg::LifeCycleCommand msg;
+    msg.header.stamp = am::ClockNow();
     msg.node_name = node_name;
     msg.command = (brain_box_msgs::msg::LifeCycleCommand::_command_type)command;
     lifecycle_pub_->publish(msg);

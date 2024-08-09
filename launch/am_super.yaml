@@ -2,4 +2,4 @@ am_super:
   ros__parameters:
     platform:
       actual: farm-ng_amiga_mockup
-    manifest: am_gps, am_mavros_bs
+    manifest: am_node_template

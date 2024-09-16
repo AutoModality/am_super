@@ -332,7 +332,7 @@ private:
           supervisor_.status_error = true;
           ROS_INFO_STREAM( "Manifested node " << nr.name << " changed status to ERROR. Shutting down nodes... [JHRE]");
           // TODO: put this back in somehow - need to rethink how am_super influsenes control
-          // stopFlightPlan();
+          stopFlightPlan();
         }
       }
       // TODO: need to test the pid stuff - not sure if it is working
@@ -492,6 +492,11 @@ private:
     // {
       
       SuperNodeMediator::TransitionInstructions transition_instructions = node_mediator_.transitionReady(supervisor_);
+
+      ROS_WARN_STREAM("Transition Instructions: ready_for_transition=" << transition_instructions.ready_for_transition <<
+                      " new_state=" << (std::uint8_t)transition_instructions.new_state << 
+                      " resend_life_cycle_command= " << transition_instructions.resend_life_cycle_command <<
+                      "life_cycle_command=" << (std::uint8_t)transition_instructions.life_cycle_command);
 
       if (transition_instructions.ready_for_transition)
       {

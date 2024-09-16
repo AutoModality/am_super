@@ -20,21 +20,42 @@ SuperNodeMediator::SuperNodeMediator(rclcpp::Node::SharedPtr node, const std::st
     { SuperState::BOOTING, { // from state
       {SuperState::READY, {SuperState::READY, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::CONFIGURE}} // to state
     }},
+
+    
+    // FROM HARDIK SIDE:
   
-  //   { SuperState::READY, {
-  //     {SuperState::ARMING, {SuperState::ARMING, SuperNodeMediator::checkReadyToArm, StateTransition::
-  //     , OperatorCommand::ARM}},
-  //     {SuperState::SHUTDOWN, {SuperState::SHUTDOWN, SuperNodeMediator::checkNodesShuttingDownOrFinalized, LifeCycleCommand::SHUTDOWN, OperatorCommand::SHUTDOWN}}
-  //   }},
+    // { SuperState::READY, { // from state
+    //   {SuperState::AUTO, {SuperState::AUTO, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::LAUNCH}} // to state
+    // }},
+
+
+    // { SuperState::AUTO, {
+    //   READY -- everything worked, stop flight plan
+    //   ABORT -- something went wrong. stop flight plan
+
+
+    //   {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, StateTransition::NO_OPERATOR_COMMAND, ControllerState::COMPLETED}},
+    //   {SuperState::MANUAL, {SuperState::MANUAL, SuperNodeMediator::checkReadyToArm, LifeCycleCommand::DEACTIVATE, OperatorCommand::MANUAL}},
+    //   {SuperState::SEMI_AUTO, {SuperState::SEMI_AUTO, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::PAUSE}},
+    //   {SuperState::ABORT, {SuperState::ABORT, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::ABORT}}
+    // }},
+
+    // FROM BEFORE SIDE:
+
+  // { SuperState::READY, {
+  //   {SuperState::ARMING, {SuperState::ARMING, SuperNodeMediator::checkReadyToArm, StateTransition::
+  //   , OperatorCommand::ARM}},
+  //   {SuperState::SHUTDOWN, {SuperState::SHUTDOWN, SuperNodeMediator::checkNodesShuttingDownOrFinalized, LifeCycleCommand::SHUTDOWN, OperatorCommand::SHUTDOWN}}
   // 
+  // }},
   //   { SuperState::ARMING, {
   //     {SuperState::ARMED, {SuperState::ARMED, SuperNodeMediator::checkArmed, LifeCycleCommand::ACTIVATE}}
   //   }},
   // 
-  //   { SuperState::ARMED, {
-  //     {SuperState::AUTO, {SuperState::AUTO, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::LAUNCH}},
-  //     {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::CANCEL}}  
-  //   }},
+  // { SuperState::ARMED, {
+  //   {SuperState::AUTO, {SuperState::AUTO, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::LAUNCH}},
+  //   {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, OperatorCommand::CANCEL}}  
+  // }},
   // 
   //   { SuperState::AUTO, {
   //     {SuperState::DISARMING, {SuperState::DISARMING, SuperNodeMediator::checkArmed, StateTransition::NO_LIFECYCLE_COMMAND, StateTransition::NO_OPERATOR_COMMAND, ControllerState::COMPLETED}},

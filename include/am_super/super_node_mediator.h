@@ -161,7 +161,7 @@ public:
     /** List of node names that should receive the life_cycle_command */
     std::vector<string> failed_nodes;
     /** List of reasons nodes aren't transitioning */
-    std::vector<string> failed_nodes_reasons;
+    std::vector<pair<bool,string>> failed_nodes_reasons;
   };
 
   /** Returns the name of the node that is using the mediator */
@@ -243,6 +243,14 @@ public:
    * @return true if Lifecyle state equals ShuttingDown or Finalized */
   static bool checkNodesShuttingDownOrFinalized(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
 
+  /**
+   * @return true if the LifeCycleState is out of ACTIVE (ideally in UNCONFIGURED or INACTIVE) */
+  static bool checkErrorTransition(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
+
+  /**
+   * @return true if the super node is in LifeCycleStatus::ERROR, and in either BOOTING or AUTO for LifeCycleState */
+  static bool checkSuperError(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator);
+
 
   /** Reads the given manifest string, typically provided by a ROS param,
    * converts it to a vector or node names which will be assigned to the given
@@ -267,7 +275,7 @@ public:
      * @return a pair with overall success and a map containing any erroneous node names with message explaining why
      *
      */
-  pair<bool, map<string, string>> allManifestedNodesCheck(Supervisor& supervisor,
+  pair<bool, map<string, pair<bool, string>>> allManifestedNodesCheck(Supervisor& supervisor,
                                                           function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check);
 
   /**@return the number of nodes where online=true*/

@@ -29,18 +29,23 @@ struct SuperStateInfo
 const std::map<SuperState, SuperStateInfo> state_info_ = {
   { SuperState::OFF, { "OFF", { SuperState::BOOTING } } },
   { SuperState::BOOTING, { "BOOTING", { SuperState::READY, SuperState::SHUTDOWN } } },
-  { SuperState::READY, { "READY", { SuperState::ARMING, SuperState::SHUTDOWN } } },
-  { SuperState::ARMING, { "ARMING", { SuperState::ARMED, SuperState::READY } } },
-  { SuperState::ARMED, { "ARMED", { SuperState::AUTO, SuperState::DISARMING } } },
+  { SuperState::READY, { "READY", { SuperState::AUTO, SuperState::BOOTING} } },
   { SuperState::AUTO,
-    { "AUTO", { SuperState::DISARMING, SuperState::SEMI_AUTO, SuperState::HOLD, SuperState::ABORT, SuperState::MANUAL } } },
-  { SuperState::DISARMING, {"DISARMING", { SuperState::READY } } },
-  { SuperState::SEMI_AUTO,
-    { "SEMI_AUTO", { SuperState::AUTO, SuperState::HOLD, SuperState::ABORT, SuperState::MANUAL } } },
-  { SuperState::HOLD, { "HOLD", { SuperState::ABORT, SuperState::MANUAL } } },
-  { SuperState::ABORT, { "ABORT", { SuperState::DISARMING, SuperState::MANUAL } } },
-  { SuperState::MANUAL, { "MANUAL", { SuperState::DISARMING } } },
-  { SuperState::SHUTDOWN, { "SHUTDOWN", { SuperState::OFF } } },
+    { "AUTO", { SuperState::READY, SuperState::BOOTING } } },
+
+  // OLD ONES
+  // // { SuperState::READY, { "READY", { SuperState::ARMING, SuperState::SHUTDOWN } } },
+  // { SuperState::ARMING, { "ARMING", { SuperState::ARMED, SuperState::READY } } },
+  // { SuperState::ARMED, { "ARMED", { SuperState::AUTO, SuperState::DISARMING } } },
+  // // { SuperState::AUTO,
+  // //   { "AUTO", { SuperState::DISARMING, SuperState::SEMI_AUTO, SuperState::HOLD, SuperState::ABORT, SuperState::MANUAL } } },
+  // { SuperState::DISARMING, {"DISARMING", { SuperState::READY } } },
+  // { SuperState::SEMI_AUTO,
+  //   { "SEMI_AUTO", { SuperState::AUTO, SuperState::HOLD, SuperState::ABORT, SuperState::MANUAL } } },
+  // { SuperState::HOLD, { "HOLD", { SuperState::ABORT, SuperState::MANUAL } } },
+  // { SuperState::ABORT, { "ABORT", { SuperState::DISARMING, SuperState::MANUAL } } },
+  // { SuperState::MANUAL, { "MANUAL", { SuperState::DISARMING } } },
+  // { SuperState::SHUTDOWN, { "SHUTDOWN", { SuperState::OFF } } },
 };
 
 SuperStateMediator::SuperStateMediator()

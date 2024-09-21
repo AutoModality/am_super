@@ -31,11 +31,14 @@
 #include <super_lib/am_life_cycle.h>
 #include <super_lib/am_life_cycle_mediator.h>
 #include <super_lib/am_super_topics.h>
+#include <super_lib/am_stat_status.h>
 
 #include <vb_util_lib/bag_logger.h>
 #include <vb_util_lib/topics.h>
 #include <vb_util_lib/trace.h>
 #include <vb_util_lib/vb_main.h>
+
+#include <boost/range/adaptor/transformed.hpp>
 
 #if CUDA_FLAG
 #include <cuda/cuda_utility_class.h>
@@ -62,10 +65,114 @@
 #define ROS_INFO_STREAM_THROTTLE(duration, stream) RCLCPP_INFO_STREAM_THROTTLE(am::Node::node->get_logger(), *am::Node::node->get_clock(), (long)((duration) * 1000.0), COLOR_BLUE << stream << COLOR_NORMAL)
 
 
+std::ostream &operator << ( std::ostream& strm, SuperState ss )
+{
+  switch (ss)
+  {
+    case SuperState::OFF:
+      return strm << "OFF";
+    case SuperState::BOOTING:
+      return strm << "BOOTING";
+    case SuperState::READY:
+      return strm << "READY";
+    case SuperState::ARMING:
+      return strm << "ARMING";
+    case SuperState::ARMED:
+      return strm << "ARMED";
+    case SuperState::AUTO:
+      return strm << "AUTO";
+    case SuperState::DISARMING:
+      return strm << "DISARMING";
+    case SuperState::SEMI_AUTO:
+      return strm << "SEMI_AUTO";
+    case SuperState::HOLD:
+      return strm << "HOLD";
+    case SuperState::ABORT:
+      return strm << "ABORT";
+    case SuperState::MANUAL:
+      return strm << "MANUAL";
+    case SuperState::SHUTDOWN:
+      return strm << "SHUTDOWN";
+  }
+  return strm << "Unclear SuperState. Check ostream override.";
+}
+
 using namespace std;
 
 namespace am
 {
+
+std::ostream &operator << ( std::ostream& strm, LifeCycleState lcstate )
+{
+  switch (lcstate)
+  {
+    case LifeCycleState::INVALID:
+      return strm << "INVALID";
+    case LifeCycleState::UNCONFIGURED:
+      return strm << "UNCONFIGURED";
+    case LifeCycleState::INACTIVE:
+      return strm << "INACTIVE";
+    case LifeCycleState::ACTIVE:
+      return strm << "ACTIVE";
+    case LifeCycleState::FINALIZED:
+      return strm << "FINALIZED";
+    case LifeCycleState::CONFIGURING:
+      return strm << "CONFIGURING";
+    case LifeCycleState::CLEANING_UP:
+      return strm << "CLEANING_UP";
+    case LifeCycleState::SHUTTING_DOWN:
+      return strm << "SHUTTING_DOWN";
+    case LifeCycleState::ACTIVATING:
+      return strm << "ACTIVATING";
+    case LifeCycleState::DEACTIVATING:
+      return strm << "DEACTIVATING";
+    case LifeCycleState::ERROR_PROCESSING:
+      return strm << "ERROR_PROCESSING";
+  }
+  return strm << "Unclear LifeCycleState. Check ostream override.";
+}
+
+
+std::ostream &operator << ( std::ostream& strm, LifeCycleStatus lcstatus )
+{
+  switch (lcstatus)
+  {
+    case LifeCycleStatus::OK:
+      return strm << "OK";
+    case LifeCycleStatus::WARN:
+      return strm << "WARN";
+    case LifeCycleStatus::ERROR:
+      return strm << "ERROR";
+  }
+  return strm << "Unclear LifeCycleStatus. Check ostream override.";
+}
+
+
+std::ostream &operator << ( std::ostream& strm, LifeCycleCommand lccommand )
+{
+  switch (lccommand)
+  {
+    case LifeCycleCommand::CREATE:
+      return strm << "CREATE";
+    case LifeCycleCommand::CONFIGURE:
+      return strm << "CONFIGURE";
+    case LifeCycleCommand::CLEANUP:
+      return strm << "CLEANUP";
+    case LifeCycleCommand::ACTIVATE:
+      return strm << "ACTIVATE";
+    case LifeCycleCommand::DEACTIVATE:
+      return strm << "DEACTIVATE";
+    case LifeCycleCommand::SHUTDOWN:
+      return strm << "SHUTDOWN";
+    case LifeCycleCommand::DESTROY:
+      return strm << "DESTROY";
+    // case LifeCycleCommand::LAST_COMMAND:
+    //   return strm << "LAST_COMMAND";
+  }
+  return strm << "Unclear LifeCycleCommand. Check ostream override.";
+}
+
+
 /**
  *  AM supervisor class. aggregates system state and system health and manages node lifecycle.
  *
@@ -95,6 +202,7 @@ private:
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr flight_plan_deactivation_pub_;
   rclcpp::Subscription<brain_box_msgs::msg::LifeCycleState>::SharedPtr node_state_sub_;
   rclcpp::Subscription<brain_box_msgs::msg::OperatorCommand>::SharedPtr operator_command_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr fake_operator_command_sub_;
   rclcpp::Subscription<brain_box_msgs::msg::ControllerState>::SharedPtr controller_state_sub;
   rclcpp::Subscription<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostics_sub;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr current_enu_sub;
@@ -135,7 +243,7 @@ public:
 
     life_cycle_node_ = std::static_pointer_cast<AMLifeCycle>(am::Node::node);
 
-    am::getParam<double>("node_timeout_s", node_timeout_s_, 2.0);
+    am::getParam<double>("node_timeout_s", node_timeout_s_, 3.1);
     ROS_INFO_STREAM( "node_timeout_s = " << node_timeout_s_);
 
     /*
@@ -217,6 +325,9 @@ public:
     operator_command_sub_ = am::Node::node->create_subscription<brain_box_msgs::msg::OperatorCommand>(am_super_topics::OPERATOR_COMMAND, 100,
     		std::bind(&AMSuper::operatorCommandCB, this, std::placeholders::_1));
 
+    fake_operator_command_sub_ = am::Node::node->create_subscription<std_msgs::msg::Bool>(am_topics::CTRL_FLIGHTPLAN_ACTIVITY_CONTROL, 100,
+        std::bind(&AMSuper::fakeOperatorCommandCB, this, std::placeholders::_1));
+
     // controller state: ???
     controller_state_sub = am::Node::node->create_subscription<brain_box_msgs::msg::ControllerState>(am_super_topics::CONTROLLER_STATE, 100,
     		std::bind(&AMSuper::controllerStateCB, this, std::placeholders::_1));
@@ -228,6 +339,7 @@ public:
     // currentENU: vehicle location from am_locator
     current_enu_sub = am::Node::node->create_subscription<nav_msgs::msg::Odometry>(am_topics::CTRL_VX_VEHICLE_CURRENTENU, am::getSensorQoS(1),
     		std::bind(&AMSuper::currentENUCB, this, std::placeholders::_1));
+
    }
 
   ~AMSuper()
@@ -280,9 +392,25 @@ private:
     
 	  RCLCPP_INFO(am::Node::node->get_logger(), "Received Operator Command: %s sent '%i'",rmsg->node_name.c_str(),rmsg->command );
     
-    node_mediator_.setOperatorCommand(supervisor_, (OperatorCommand)rmsg->command);
-    // TODO: topic name should come from vb_util_lib::topics.
-    LOG_MSG("/operator/command", *rmsg,  SU_LOG_LEVEL);
+    // HARDIK:: Commenting this out as we are focused on the fake commands.
+    // node_mediator_.setOperatorCommand(supervisor_, (OperatorCommand)rmsg->command);
+    // // TODO: topic name should come from vb_util_lib::topics.
+    // LOG_MSG("/operator/command", *rmsg,  SU_LOG_LEVEL);
+  }
+
+  void fakeOperatorCommandCB(const std_msgs::msg::Bool::SharedPtr msg)
+  {
+    RCLCPP_INFO(am::Node::node->get_logger(), "Received FAKE Operator Command (actually flight_controller command): %i", msg->data);
+    if (msg->data == true)
+    {
+      node_mediator_.setOperatorCommand(supervisor_, OperatorCommand::LAUNCH);
+    }
+    else
+    {
+      node_mediator_.setOperatorCommand(supervisor_, OperatorCommand::CANCEL);
+    }
+    
+    LOG_MSG(am_topics::CTRL_FLIGHTPLAN_ACTIVITY_CONTROL, *msg, SU_LOG_LEVEL);
   }
 
   /**
@@ -431,7 +559,7 @@ private:
    */
   void sendLifeCycleCommand(const std::string_view& node_name, const LifeCycleCommand command)
   {
-    ROS_DEBUG_STREAM("sending command: " << life_cycle_mediator_.commandToString(command) << " to " << node_name << " lifecycle");
+    ROS_INFO_STREAM("sending command: " << life_cycle_mediator_.commandToString(command) << " to " << node_name << " lifecycle");
     brain_box_msgs::msg::LifeCycleCommand msg;
     msg.header.stamp = am::ClockNow();
     msg.node_name = node_name;
@@ -494,9 +622,9 @@ private:
       SuperNodeMediator::TransitionInstructions transition_instructions = node_mediator_.transitionReady(supervisor_);
 
       ROS_WARN_STREAM("Transition Instructions: ready_for_transition=" << transition_instructions.ready_for_transition <<
-                      " new_state=" << (std::uint8_t)transition_instructions.new_state << 
-                      " resend_life_cycle_command= " << transition_instructions.resend_life_cycle_command <<
-                      "life_cycle_command=" << (std::uint8_t)transition_instructions.life_cycle_command);
+                      " new_state=" << transition_instructions.new_state << 
+                      " resend_life_cycle_command=" << transition_instructions.resend_life_cycle_command <<
+                      " life_cycle_command=" << transition_instructions.life_cycle_command);
 
       if (transition_instructions.ready_for_transition)
       {
@@ -506,14 +634,22 @@ private:
       {
         LifeCycleCommand command = transition_instructions.life_cycle_command;
         std::string failed_nodes_string = boost::algorithm::join(transition_instructions.failed_nodes, ", ");
-        std::string failed_nodes_reasons_string = boost::algorithm::join(transition_instructions.failed_nodes_reasons, ", ");
+        auto printThePair = [](const auto& pair) { return pair.second + " (need_lifecycle_resend:" + std::to_string(pair.first) + ")"; };
+        std::string failed_nodes_reasons_string = boost::algorithm::join(transition_instructions.failed_nodes_reasons | boost::adaptors::transformed(printThePair), ", ");
         ROS_INFO_STREAM_THROTTLE(5,state_mediator_.stateToString(supervisor_.system_state)
                         << ": sending " << life_cycle_mediator_.commandToString(command) << " to "
                         << failed_nodes_string << " because " << failed_nodes_reasons_string);
 
+        int i = 0;
         for(string failed_node_name : transition_instructions.failed_nodes)
         {
-          sendLifeCycleCommand(failed_node_name, command);
+          // Only resend the LifeCycleCommand if we need it to be resent
+          // This is done to allow am_super to only care about the manifested nodes
+          if (transition_instructions.failed_nodes_reasons[i].first) 
+          {
+            sendLifeCycleCommand(failed_node_name, command);
+          }
+          i++;
         }
       }      
     // }
@@ -749,13 +885,30 @@ private:
 
 };
 
+
+
+class AMSuperNodeStats
+{
+  friend class AmSuperNode;
+
+
+public:
+  AMStatStatus statStatus = AMStatStatus("ss", "AMStatStatus");
+  AMSuperNodeStats(AMStatList &stat_list)
+  {
+    stat_list.add(&statStatus);
+  }
+};
+
+
 class AMSuperNode : public AMLifeCycle
 {
 private:
   shared_ptr<AMSuper> am_super_;
+  std::shared_ptr<AMSuperNodeStats> stats_;
 
 public:
-  AMSuperNode(const std::string & node_name) : AMLifeCycle(node_name)
+  AMSuperNode(const std::string & node_name) : AMLifeCycle(node_name), stats_(std::make_shared<AMSuperNodeStats>(stats_list_))
   {
   }
 
@@ -845,6 +998,14 @@ public:
         {
           nr.online = false;
           ROS_ERROR_STREAM("node timed out:" << nr.name);
+          if (nr.state == LifeCycleState::ACTIVE)
+          {
+            am_super_->sendLifeCycleCommand(nr.name, LifeCycleCommand::DEACTIVATE);
+          }
+          if (nr.state == LifeCycleState::INACTIVE)
+          {
+            am_super_->sendLifeCycleCommand(nr.name, LifeCycleCommand::CLEANUP);
+          }
           am_super_->reportSystemState();
         }
       }
@@ -898,11 +1059,23 @@ public:
       // if all manifested nodes aren't running, report as error
       ROS_ERROR_STREAM(ss.str());
       ROS_ERROR_STREAM("not online: " << am_super_->node_mediator_.manifestedNodesNotOnlineNamesList(am_super_->supervisor_));
+      // if && supervisor_.system_state != SuperState::BOOTING
+
+      if (am_super_->supervisor_.system_state != SuperState::BOOTING)
+      {
+        stats_->statStatus = 2;
+        am_super_->stopFlightPlan(); // This will keep sending until the all nodes are back, and that is ok for now
+      }
+
     }
     else
     {
       // if all manifested nodes are running, report as info
       ROS_INFO_STREAM_THROTTLE(am_super_->LOG_THROTTLE_S, ss.str());
+      if (am_super_->supervisor_.system_state == SuperState::BOOTING)
+      {
+        stats_->statStatus=0;
+      }
     }
 
     // log stats

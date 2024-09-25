@@ -355,7 +355,8 @@ bool SuperNodeMediator::lifeCycleNotYetImplemented(string node_name)
 bool SuperNodeMediator::checkReadyToArm(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
   ROS_INFO_STREAM("checkReadyToArm: " << nr.name << " is " << printLifeCycleState(nr.state));
-  return  nr.state == LifeCycleState::INACTIVE || (nr.state == LifeCycleState::ACTIVE && node_mediator.nodeNameIsSuper(nr.name));
+  // return  nr.state == LifeCycleState::INACTIVE || (nr.state == LifeCycleState::ACTIVE && node_mediator.nodeNameIsSuper(nr.name));
+  return  nr.state == LifeCycleState::INACTIVE;
 }
 
 bool SuperNodeMediator::checkArmed(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)

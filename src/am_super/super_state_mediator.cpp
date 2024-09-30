@@ -28,7 +28,7 @@ struct SuperStateInfo
 /**Registered constants for states mapping to values. */
 const std::map<SuperState, SuperStateInfo> state_info_ = {
   { SuperState::OFF, { "OFF", { SuperState::BOOTING } } },
-  { SuperState::BOOTING, { "BOOTING", { SuperState::READY, SuperState::SHUTDOWN } } },
+  { SuperState::BOOTING, { "BOOTING", { SuperState::BOOTING, SuperState::READY, SuperState::SHUTDOWN } } },
   { SuperState::READY, { "READY", { SuperState::AUTO, SuperState::BOOTING} } },
   { SuperState::AUTO,
     { "AUTO", { SuperState::READY, SuperState::BOOTING } } },

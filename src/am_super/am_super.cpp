@@ -301,7 +301,9 @@ public:
     super_status_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::Super2Status>(am_super_topics::SUPER_STATUS, am::getSensorQoS(10));
 
     // ???
-    flight_plan_deactivation_pub_ = am::Node::node->create_publisher<std_msgs::msg::Bool>(am_topics::CTRL_FLIGHTPLAN_ACTIVITY_CONTROL, am::getSensorQoS(1));
+    rclcpp::QoS qos_profile(1);
+    qos_profile.reliable();
+    flight_plan_deactivation_pub_ = am::Node::node->create_publisher<std_msgs::msg::Bool>(am_topics::CTRL_FLIGHTPLAN_ACTIVITY_CONTROL, qos_profile);
 
     supervisor_.system_state = SuperState::BOOTING;
     supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::INIT;
@@ -462,6 +464,7 @@ private:
           // TODO: put this back in somehow - need to rethink how am_super influsenes control
           stopFlightPlan();
         }
+        // if (nr.manifested && nr.status == LifeCycleStatus::ACTIVE)
       }
       // TODO: need to test the pid stuff - not sure if it is working
       if (nr.pid != pid)

@@ -234,10 +234,16 @@ private:
   bool offline_timer_running_ = false;
   rclcpp::Time offline_start_time_;  // start_timer from here 
   const rclcpp::Duration offline_allowance_ = am::toDuration(20.0);
+  bool reset_timer_running_ = false;
+  rclcpp::Time reset_start_time_;  // start_timer from here 
+  const rclcpp::Duration reset_allowance_ = am::toDuration(5.0); // How much time we give am_locator to lock in.
   bool reset_required_ = false;
   bool restart_required_ = false;
   bool offline_restart_required_ = false;
+  bool flight_plan_running_ = false;
   bool first_time_booted_ = false;
+  rclcpp::Time booting_start_time_ = am::Node::node->now();
+  const rclcpp::Duration booting_allowance_ = am::toDuration(20.0);
 
   /**
    * baglogger level
@@ -428,6 +434,9 @@ private:
 
   void fakeOperatorCommandCB(const std_msgs::msg::Bool::SharedPtr msg)
   {
+    // This is listening to see if the flight plan is running or not
+    flight_plan_running_ = msg->data;
+    
     if (supervisor_.start_fp_from_super_)
     {
       return;
@@ -514,6 +523,10 @@ private:
           }
           // Remove the node from the errored_nodes list
           supervisor_.errored_nodes_.erase(nr.name);
+          if (nr.name == "am_locator")
+          {
+            reset_timer_running_ = false;
+          }
         }
 
         nr.status = status;
@@ -526,10 +539,19 @@ private:
             // The node is not in the errored_nodes_ list, so it should be added
             supervisor_.errored_nodes_[nr.name] = true;
           }
+          if (nr.name == "am_locator")
+          {
+            if (!reset_timer_running_)
+            {
+              reset_start_time_ = am::Node::node->now();
+              reset_timer_running_ = true;
+            }
+          }
           supervisor_.status_error = true;
           ROS_INFO_STREAM( "Manifested node " << nr.name << " changed status to ERROR. Stopping Flight Plan... [JHRE]");
           // TODO: put this back in somehow - need to rethink how am_super influsenes control
           stopFlightPlan();
+	  node_mediator_.setOperatorCommand(supervisor_, OperatorCommand::CANCEL);
         }
         
 
@@ -683,6 +705,7 @@ private:
     msg.data = true; //false means deactivate
     flight_plan_deactivation_pub_->publish(msg);
     ROS_ERROR_STREAM( "Sending flight plan start command.");
+
   }
 
   /**
@@ -1119,6 +1142,7 @@ public:
       brain_box_msgs::msg::SystemState system_state_msg;
       system_state_msg.state = (uint8_t)am_super_->supervisor_.system_state;
       system_state_msg.state_string = am_super_->state_mediator_.stateToString(am_super_->supervisor_.system_state);
+      bool stuck_in_booting_too_long = (((am::Node::node->now() - am_super_->booting_start_time_) > am_super_->booting_allowance_) && (am_super_->supervisor_.errored_nodes_.size() > 0));
       if (am_super_->supervisor_.system_state == SuperState::BOOTING)
       {
         if (!am_super_->first_time_booted_)
@@ -1126,10 +1150,22 @@ public:
           if (am_super_->offline_restart_required_)
           {
             system_state_msg.state_string = "RESTART_OFFLINE";
+	    // system_state_msg.state_string = "RESTART";
+          }
+          else if (stuck_in_booting_too_long)
+          {
+            system_state_msg.state_string = "RESTART";
           }
           else
           {
-            system_state_msg.state_string = "BOOTING";
+            if (am_super_->flight_plan_running_)
+            {
+              system_state_msg.state_string = "RESET";
+            }
+            else // flight plan is NOT running
+            {
+              system_state_msg.state_string = "BOOTING";
+            }
           }
         }
 
@@ -1142,6 +1178,7 @@ public:
         else if (am_super_->offline_restart_required_)
         {
           system_state_msg.state_string = "RESTART_OFFLINE";
+	  // system_state_msg.state_string = "RESTART";
         }
         else if (am_super_->reset_required_)
         {
@@ -1237,7 +1274,8 @@ public:
           am_super_->offline_timer_running_ = true;
         }
         stats_->statStatus = 2;
-        am_super_->stopFlightPlan(); // This will keep sending until the all nodes are back, and that is ok for now
+        am_super_->node_mediator_.setOperatorCommand(am_super_->supervisor_, OperatorCommand::CANCEL);
+	      am_super_->stopFlightPlan(); // This will keep sending until the all nodes are back, and that is ok for now
       }
 
     }
@@ -1266,9 +1304,12 @@ public:
       rclcpp::Time time_now = am::Node::node->now();
       if ((time_now - am_super_->offline_start_time_) > am_super_->offline_allowance_)
       {
-       ROS_WARN_STREAM("Offline timer is: " << (time_now - am_super_->offline_start_time_).seconds());
+        ROS_WARN_STREAM("Offline timer is: " << (time_now - am_super_->offline_start_time_).seconds());
       //  ROS_WARN_STREAM((time_now - am_super_->offline_start_time_).seconds());
         am_super_->offline_restart_required_ = true;
+	// This should already have been done when the offline first happened (about 30 lines above)
+	// am_super_->node_mediator_.setOperatorCommand(am_super_->supervisor_, OperatorCommand::CANCEL);
+	// am_super_->stopFlightPlan();
       }
       else
       {
@@ -1331,15 +1372,49 @@ public:
       am_super_->restart_required_ = false;
       for (auto node : am_super_->supervisor_.errored_nodes_)
       {
-        if (node.first == "am_locator" || node.first == "am_pilot")
+        // if (node.first == "am_locator" || node.first == "am_pilot")
+        if (node.first == "am_locator")
         {
-          am_super_->reset_required_ = true;
-          super_errored_msg.reset_nodes.push_back(node.first);
+          // if (!am_super_->flight_plan_running_ && ((am::Node::node->now() - am_super_->reset_start_time_) < am_super_->reset_allowance_))
+          // {
+          //   am_super_->reset_required_ = false;
+          //   // super_errored_msg.reset_nodes.push_back(node.first);
+          // }
+          // else
+          // {
+
+            // If it has been more than 5 seconds of trying, then remove the command to automatically try and launch the flight plan.
+            if (!am_super_->flight_plan_running_)
+            {
+              if ((am::Node::node->now() - am_super_->reset_start_time_) > am_super_->reset_allowance_) // We have exceeded our allowance
+              {
+                // Turn off the activate command
+                am_super_->node_mediator_.setOperatorCommand(am_super_->supervisor_, OperatorCommand::CANCEL);
+                am_super_->reset_required_ = true;
+              }
+              // else: you have 5 seconds to get it running
+            }
+            else
+            {
+              // So the flight plan IS running
+              am_super_->reset_required_ = true;
+              super_errored_msg.reset_nodes.push_back(node.first);
+              am_super_->node_mediator_.setOperatorCommand(am_super_->supervisor_, OperatorCommand::CANCEL);
+              am_super_->stopFlightPlan();
+            }
+
+
+
+
+          // }
         }
+        
         else
         {
           am_super_->restart_required_ = true;
           super_errored_msg.restart_nodes.push_back(node.first);
+          am_super_->node_mediator_.setOperatorCommand(am_super_->supervisor_, OperatorCommand::CANCEL);
+          am_super_->stopFlightPlan();
         }
       }
 

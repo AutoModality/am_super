@@ -9,6 +9,8 @@
 #include <sstream>
 #include <string>
 #include <unistd.h>
+#include <vb_util_lib/transformer.h>
+
 
 namespace am
 {
@@ -89,6 +91,13 @@ private:
     std::vector<am::CpuInfo> cpu_infos_old_;
 
     std::vector<am::GpuInfo> gpu_infos_;
+
+
+
+    /*ROS Infrastructure Checking tools*/
+    std::shared_ptr<am::Transformer> transformer_;
+    rclcpp::TimerBase::SharedPtr timer_;
+    void timerCB();
 };
 }
 

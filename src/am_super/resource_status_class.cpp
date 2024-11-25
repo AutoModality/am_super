@@ -1,9 +1,15 @@
+
+
 #include <am_super/resource_status_class.h>
 
 namespace am
 {
 ResourceStatus::ResourceStatus()
 {
+    transformer_ = std::make_shared<am::Transformer>();
+
+    timer_ = am::Node::node->create_wall_timer(am::toDuration(1.0), std::bind(&ResourceStatus::timerCB, this));
+
     cpu_cnt_ =  getCPUCoresCount();
 }   
 
@@ -278,5 +284,33 @@ void ResourceStatus::print()
     }
 
     ROS_INFO("%s", msg.c_str());
+}
+
+
+
+void ResourceStatus::timerCB()
+{
+    rclcpp::node_interfaces::NodeGraphInterface::SharedPtr node_graph = am::Node::node->get_node_graph_interface();
+
+    std::vector<std::string> running_nodes = node_graph->get_node_names();
+
+    std::unordered_map<std::string, int> string_count;
+
+    // Count occurrences of each string
+    for (const std::string& str : running_nodes) 
+    {
+        string_count[str]++;
+    }
+
+    // Collect strings that appear more than once
+    for (const auto& [str, count] : string_count) 
+    {
+        if (count > 1) 
+        {
+            ROS_ERROR("Found a duplicate Node: %s", str.c_str());
+        }
+    }
+
+    
 }
 }

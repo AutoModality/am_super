@@ -8,6 +8,10 @@ ResourceStatus::ResourceStatus()
 {
     transformer_ = std::make_shared<am::Transformer>();
 
+    transform_list_.push_back(std::make_pair("base_link","Asset_Frame"));
+    transform_list_.push_back(std::make_pair("base_link","ouster_FLU"));
+    transform_list_.push_back(std::make_pair("base_link","Asset_ENU"));
+
     timer_ = am::Node::node->create_wall_timer(am::toDuration(1.0), std::bind(&ResourceStatus::timerCB, this));
 
     cpu_cnt_ =  getCPUCoresCount();
@@ -311,6 +315,16 @@ void ResourceStatus::timerCB()
         }
     }
 
+
+    //Transform check
+    for(std::pair<std::string, std::string> &tf_str : transform_list_)
+    {
+        geometry_msgs::msg::TransformStamped transform;
+        if(!transformer_->getTransform(tf_str.first, tf_str.second, transform, 1.0, false))
+        {
+            ROS_ERROR("Transform tree is broken: %s, %s", tf_str.first.c_str(), tf_str.second.c_str());
+        }
+    }
     
 }
 }

@@ -92,10 +92,9 @@ private:
 
     std::vector<am::GpuInfo> gpu_infos_;
 
-
-
     /*ROS Infrastructure Checking tools*/
     std::shared_ptr<am::Transformer> transformer_;
+    std::vector<std::pair<std::string, std::string>> transform_list_;
     rclcpp::TimerBase::SharedPtr timer_;
     void timerCB();
 };

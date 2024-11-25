@@ -30,6 +30,7 @@ set(dependencies
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_library(PROCPS_LIBRARY procps REQUIRED)
 
 foreach(Dependency IN ITEMS ${dependencies})
   find_package(${Dependency} REQUIRED)
@@ -51,7 +52,8 @@ file(GLOB SUPER_MEDIATOR_FILES
     src/am_super/*_mediator.cpp
 )
 
-add_executable(am_super ${am_super_cpp_files})
+add_executable(am_super ${am_super_cpp_files} src/am_super/system_status_class.cpp)
+target_link_libraries(am_super ${PROCPS_LIBRARY})
 ament_target_dependencies(am_super ${dependencies})
 
 install(DIRECTORY include/

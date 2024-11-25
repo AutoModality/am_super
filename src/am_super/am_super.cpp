@@ -13,6 +13,7 @@
 #include <am_super/super_state.h>
 #include <am_super/super_state_mediator.h>
 #include <am_super/super_node_mediator.h>
+#include <am_super/system_status_class.h>
 
 #include <brain_box_msgs/msg/blink_m_command.hpp>
 #include <brain_box_msgs/msg/life_cycle_state.hpp>
@@ -207,6 +208,9 @@ private:
   rclcpp::Subscription<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostics_sub;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr current_enu_sub;
 
+  rclcpp::TimerBase::SharedPtr system_check_timer_;
+
+
   rclcpp::Subscription<brain_box_msgs::msg::LogControl>::SharedPtr log_control_sub_;
   BagLogger::BagLoggerLevel log_level_;
 
@@ -221,6 +225,8 @@ private:
 
   /** The current state of the system. */
   SuperNodeMediator::Supervisor supervisor_;
+
+  std::shared_ptr<am::SystemStatus> system_status_;
 
   /**
    * amount of time in seconds without hearing from a node that will cause it to go offline
@@ -240,6 +246,8 @@ public:
   AMSuper() : node_mediator_(am::Node::node, SuperNodeMediator::nodeNameStripped(am::Node::node->get_name()))
   {
     ROS_INFO_STREAM( am::Node::node->get_name());
+
+    system_status_ = std::make_shared<am::SystemStatus>();
 
     life_cycle_node_ = std::static_pointer_cast<AMLifeCycle>(am::Node::node);
 
@@ -342,6 +350,9 @@ public:
     current_enu_sub = am::Node::node->create_subscription<nav_msgs::msg::Odometry>(am_topics::CTRL_VX_VEHICLE_CURRENTENU, am::getSensorQoS(1),
     		std::bind(&AMSuper::currentENUCB, this, std::placeholders::_1));
 
+
+    system_check_timer_ = am::Node::node->create_wall_timer(am::toDuration(1.0), std::bind(&AMSuper::statusTimerCB, this));
+
    }
 
   ~AMSuper()
@@ -353,6 +364,14 @@ public:
   }
 
 private:
+
+  void statusTimerCB()
+  {
+    system_status_->updateInfos();
+    system_status_->print();
+  }
+
+
   /**
    * process LifeCycleState messages from nodes
    *

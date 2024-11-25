@@ -13,7 +13,7 @@
 #include <am_super/super_state.h>
 #include <am_super/super_state_mediator.h>
 #include <am_super/super_node_mediator.h>
-#include <am_super/system_status_class.h>
+#include <am_super/resource_status_class.h>
 
 #include <brain_box_msgs/msg/blink_m_command.hpp>
 #include <brain_box_msgs/msg/life_cycle_state.hpp>
@@ -226,7 +226,7 @@ private:
   /** The current state of the system. */
   SuperNodeMediator::Supervisor supervisor_;
 
-  std::shared_ptr<am::SystemStatus> system_status_;
+  std::shared_ptr<am::ResourceStatus> resource_status_;
 
   /**
    * amount of time in seconds without hearing from a node that will cause it to go offline
@@ -247,7 +247,7 @@ public:
   {
     ROS_INFO_STREAM( am::Node::node->get_name());
 
-    system_status_ = std::make_shared<am::SystemStatus>();
+    resource_status_ = std::make_shared<am::ResourceStatus>();
 
     life_cycle_node_ = std::static_pointer_cast<AMLifeCycle>(am::Node::node);
 
@@ -367,8 +367,8 @@ private:
 
   void statusTimerCB()
   {
-    system_status_->updateInfos();
-    system_status_->print();
+    resource_status_->updateInfos();
+    resource_status_->print();
   }
 
 

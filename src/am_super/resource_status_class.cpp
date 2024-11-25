@@ -1,18 +1,18 @@
-#include <am_super/system_status_class.h>
+#include <am_super/resource_status_class.h>
 
 namespace am
 {
-SystemStatus::SystemStatus()
+ResourceStatus::ResourceStatus()
 {
     cpu_cnt_ =  getCPUCoresCount();
 }   
 
-SystemStatus::~SystemStatus()
+ResourceStatus::~ResourceStatus()
 {
     
 }
 
-int SystemStatus::getCPUCoresCount()
+int ResourceStatus::getCPUCoresCount()
 {
     std::ifstream file("/proc/stat");
     if (!file.is_open()) {
@@ -34,7 +34,7 @@ int SystemStatus::getCPUCoresCount()
     return coreCount;
 }
 
-am::CpuInfo SystemStatus::parseCpuLine(const std::string& line) 
+am::CpuInfo ResourceStatus::parseCpuLine(const std::string& line) 
 {
     am::CpuInfo info = {0, 0, 0, 0, 0, 0, 0, 0, 0};
     std::istringstream iss(line);
@@ -47,7 +47,7 @@ am::CpuInfo SystemStatus::parseCpuLine(const std::string& line)
     return info;
 }
 
-void SystemStatus::updateInfos()
+void ResourceStatus::updateInfos()
 {
     getMemoryInfo();
     if(cpu_cnt_ < 0)
@@ -85,7 +85,7 @@ void SystemStatus::updateInfos()
 }
 
 
-am::MemoryInfo& SystemStatus::getMemoryInfo()
+am::MemoryInfo& ResourceStatus::getMemoryInfo()
 {
     mi = {0, 0, 0};
     std::ifstream file("/proc/meminfo");
@@ -121,7 +121,7 @@ am::MemoryInfo& SystemStatus::getMemoryInfo()
     return mi;
 }
 
-void SystemStatus::getGPUInfo(std::vector<am::GpuInfo> &gpu_infos)
+void ResourceStatus::getGPUInfo(std::vector<am::GpuInfo> &gpu_infos)
 {
     gpu_infos.clear();
     // Execute the nvidia-smi command and read the output directly
@@ -146,7 +146,7 @@ void SystemStatus::getGPUInfo(std::vector<am::GpuInfo> &gpu_infos)
     while (std::getline(iss, line)) 
     {
 
-        ROS_INFO(GREEN "%s" COLOR_RESET, line.c_str());
+        //ROS_INFO(GREEN "%s" COLOR_RESET, line.c_str());
         std::istringstream lineStream(line);
         am::GpuInfo gpu_info;
         // Parse memory used and free values
@@ -176,7 +176,7 @@ void SystemStatus::getGPUInfo(std::vector<am::GpuInfo> &gpu_infos)
 }
 
 
-void SystemStatus::getCPUInfo(std::vector<am::CpuInfo> &infos)
+void ResourceStatus::getCPUInfo(std::vector<am::CpuInfo> &infos)
 {
     std::ifstream file("/proc/stat");
     if (!file.is_open()) {
@@ -199,7 +199,7 @@ void SystemStatus::getCPUInfo(std::vector<am::CpuInfo> &infos)
     file.close();
 }
 
-am::CpuInfo SystemStatus::getCPUInfo()
+am::CpuInfo ResourceStatus::getCPUInfo()
 {
     if(cpu_cnt_ < 0)
     {
@@ -231,7 +231,7 @@ am::CpuInfo SystemStatus::getCPUInfo()
     return cpu_info;
 }
 
-double SystemStatus::calculateCpuLoad(const am::CpuInfo &ci, const am::CpuInfo &ci_old)
+double ResourceStatus::calculateCpuLoad(const am::CpuInfo &ci, const am::CpuInfo &ci_old)
 {
     unsigned long long totalDiff = ci.total - ci_old.total;
     unsigned long long idleDiff = (ci.idle + ci.iowait) - (ci_old.idle + ci_old.iowait);
@@ -241,7 +241,7 @@ double SystemStatus::calculateCpuLoad(const am::CpuInfo &ci, const am::CpuInfo &
     return cpu_usage_;
 }
 
-double SystemStatus::getUpTime()
+double ResourceStatus::getUpTime()
 {
     std::ifstream file("/proc/uptime");
     if (!file.is_open()) {
@@ -257,7 +257,7 @@ double SystemStatus::getUpTime()
     return uptime_seconds_;
 }
 
-void SystemStatus::print()
+void ResourceStatus::print()
 {
     ROS_INFO("MemoryInfo---> Total: %ld MB, Free: %ld MB, Used: %ld MB, Available: %ld MB", (mi.total / 1024), (mi.free / 1024), (mi.used / 1024), (mi.available / 1024));
 

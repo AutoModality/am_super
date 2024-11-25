@@ -52,7 +52,7 @@ file(GLOB SUPER_MEDIATOR_FILES
     src/am_super/*_mediator.cpp
 )
 
-add_executable(am_super ${am_super_cpp_files} src/am_super/system_status_class.cpp)
+add_executable(am_super ${am_super_cpp_files} src/am_super/resource_status_class.cpp)
 target_link_libraries(am_super ${PROCPS_LIBRARY})
 ament_target_dependencies(am_super ${dependencies})
 

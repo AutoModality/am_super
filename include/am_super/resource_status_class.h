@@ -1,5 +1,5 @@
-#ifndef AM_SUPER_INCLUDE_SYSTEM_STATUS_CLASS_H_
-#define AM_SUPER_INCLUDE_SYSTEM_STATUS_CLASS_H_
+#ifndef AM_SUPER_INCLUDE_RESOURCE_STATUS_CLASS_H_
+#define AM_SUPER_INCLUDE_RESOURCE_STATUS_CLASS_H_
 
 #include <iostream>
 #include <am_utils/am_ros2_utility.h>
@@ -43,12 +43,12 @@ struct CpuInfo
     unsigned long long total;
 };
 
-class SystemStatus
+class ResourceStatus
 {
 public:
-    SystemStatus();
+    ResourceStatus();
 
-    ~SystemStatus();
+    ~ResourceStatus();
 
     am::MemoryInfo& getMemoryInfo();
 
@@ -92,4 +92,4 @@ private:
 };
 }
 
-#endif /*AM_SUPER_INCLUDE_SYSTEM_STATUS_CLASS_H_*/
+#endif /*AM_SUPER_INCLUDE_RESOURCE_STATUS_CLASS_H_*/

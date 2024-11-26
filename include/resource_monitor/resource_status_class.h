@@ -1,5 +1,5 @@
-#ifndef AM_SUPER_INCLUDE_RESOURCE_STATUS_CLASS_H_
-#define AM_SUPER_INCLUDE_RESOURCE_STATUS_CLASS_H_
+#ifndef AM_SUPER_INCLUDE_RESOURCE_MONITOR_RESOURCE_STATUS_CLASS_H_
+#define AM_SUPER_INCLUDE_RESOURCE_MONITOR_RESOURCE_STATUS_CLASS_H_
 
 #include <iostream>
 #include <am_utils/am_ros2_utility.h>
@@ -10,6 +10,8 @@
 #include <string>
 #include <unistd.h>
 #include <vb_util_lib/transformer.h>
+#include <resource_monitor/resource_monitor_stats.h>
+#include <std_msgs/msg/int32.hpp>
 
 
 namespace am
@@ -21,6 +23,7 @@ struct MemoryInfo
     unsigned long free;
     unsigned long used;
     unsigned long available;
+    int used_percent;
 };
 
 struct GpuInfo
@@ -48,7 +51,7 @@ struct CpuInfo
 class ResourceStatus
 {
 public:
-    ResourceStatus();
+    ResourceStatus(std::shared_ptr<am::ResourceMonitorStats> stats);
 
     ~ResourceStatus();
 
@@ -68,8 +71,23 @@ public:
 
     void print();
 
+    std::shared_ptr<am::ResourceMonitorStats> getStats();
+
+     // AMLifeCycle passthrus
+    bool onConfigure();
+    bool onCleanup();
+    void heartbeatCB();
+
 private:
     
+    std::shared_ptr<am::ResourceMonitorStats> stats_;
+
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr status_sub_;
+    rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr stat_sub_;
+
+    void statusCB(const std_msgs::msg::Int32::SharedPtr msg);
+    void statCB(const std_msgs::msg::Int32::SharedPtr msg);
+
     int getCPUCoresCount();
 
     am::CpuInfo parseCpuLine(const std::string &line);
@@ -100,4 +118,4 @@ private:
 };
 }
 
-#endif /*AM_SUPER_INCLUDE_RESOURCE_STATUS_CLASS_H_*/
+#endif /*AM_SUPER_INCLUDE_RESOURCE_MONITOR_RESOURCE_STATUS_CLASS_H_*/

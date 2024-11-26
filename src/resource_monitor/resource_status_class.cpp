@@ -1,10 +1,10 @@
 
 
-#include <am_super/resource_status_class.h>
+#include <resource_monitor/resource_status_class.h>
 
 namespace am
 {
-ResourceStatus::ResourceStatus()
+ResourceStatus::ResourceStatus(std::shared_ptr<am::ResourceMonitorStats> stats) : stats_(stats)
 {
     transformer_ = std::make_shared<am::Transformer>();
 
@@ -21,6 +21,41 @@ ResourceStatus::~ResourceStatus()
 {
     
 }
+
+std::shared_ptr<am::ResourceMonitorStats> ResourceStatus::getStats()
+{
+    return stats_;
+}
+
+bool ResourceStatus::onConfigure()
+{
+    status_sub_ = am::Node::node->create_subscription<std_msgs::msg::Int32>(std::string(am::Node::node->get_name()) + "/status", 100, std::bind(&ResourceStatus::statusCB, this, std::placeholders::_1));
+    stat_sub_ = am::Node::node->create_subscription<std_msgs::msg::Int32>(std::string(am::Node::node->get_name()) + "/stat", 100, std::bind(&ResourceStatus::statCB, this, std::placeholders::_1));
+    
+    return true;
+}
+
+bool ResourceStatus::onCleanup()
+{
+    status_sub_.reset();
+    stat_sub_.reset();
+    return true;
+}
+
+void ResourceStatus::statusCB(const std_msgs::msg::Int32::SharedPtr msg)
+{
+    stats_->statStatus = msg->data;
+}
+
+void ResourceStatus::statCB(const std_msgs::msg::Int32::SharedPtr msg)
+{
+
+}
+
+void ResourceStatus::heartbeatCB()
+{
+}
+
 
 int ResourceStatus::getCPUCoresCount()
 {
@@ -81,11 +116,20 @@ void ResourceStatus::updateInfos()
         getCPUInfo(cpu_infos_old_);
         is_first_time_ = false;
     }
-
+    double avg_load = 0.0;
     for(int i = 0; i < cpu_infos_.size(); i++)
     {
-        cpu_loads_[i] = calculateCpuLoad(cpu_infos_[i], cpu_infos_old_[i]);
+        double load = calculateCpuLoad(cpu_infos_[i], cpu_infos_old_[i]);
+        avg_load+=load;
+        cpu_loads_[i] = load;
     }
+
+    if(cpu_cnt_ > 0)
+    {
+        avg_load = avg_load/cpu_cnt_;
+        stats_->cpu_stats = (avg_load > 80.0?100:50);
+    }
+    
 
     uptime_seconds_ = getUpTime();
 
@@ -127,6 +171,8 @@ am::MemoryInfo& ResourceStatus::getMemoryInfo()
 
     // Calculate used memory
     mi.used = mi.total - mi.free;
+    mi.used_percent = (mi.used / mi.total) * 100;
+    stats_->ram_stats = (mi.used_percent > 80?100:50);
     file.close();
     return mi;
 }
@@ -180,6 +226,7 @@ void ResourceStatus::getGPUInfo(std::vector<am::GpuInfo> &gpu_infos)
         gpu_info.temp = gpuTemperature;
         gpu_info.mem_free = memoryFree;
         gpu_info.mem_used = memoryUsed;
+        stats_->gpu_stats = (gpu_info.util_percent>90?100:50);
 
         gpu_infos.push_back(gpu_info);
     }
@@ -307,24 +354,33 @@ void ResourceStatus::timerCB()
     }
 
     // Collect strings that appear more than once
+    bool node_check = true;
     for (const auto& [str, count] : string_count) 
     {
         if (count > 1) 
         {
             ROS_ERROR("Found a duplicate Node: %s", str.c_str());
+            node_check = false;
         }
     }
+    stats_->node_stats = (node_check?50:100);
 
 
     //Transform check
+    bool tf_check = true;
     for(std::pair<std::string, std::string> &tf_str : transform_list_)
     {
         geometry_msgs::msg::TransformStamped transform;
         if(!transformer_->getTransform(tf_str.first, tf_str.second, transform, 1.0, false))
         {
-            ROS_ERROR("Transform tree is broken: %s, %s", tf_str.first.c_str(), tf_str.second.c_str());
+            //ROS_ERROR("Transform tree is broken: %s, %s", tf_str.first.c_str(), tf_str.second.c_str());
+            tf_check = false;
         }
     }
+    stats_->tf_stats = (tf_check?50:100);
+
+    //Resource Check
+    updateInfos();
     
 }
 }

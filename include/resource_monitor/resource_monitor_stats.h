@@ -16,11 +16,11 @@ public:
     AMStatStatus statStatus = AMStatStatus("ss", "AMStatStatus");
 
 
-    AMStat tf_stats = AMStat("tf_s", "Transform Stats", 1, 2, 80, 100);
-    AMStat node_stats = AMStat("n_s", "Nodes Stats", 1, 2, 80, 100);
-    AMStat cpu_stats = AMStat("cpu_s", "CPU Stats", 1, 2, 80, 100);
-    AMStat gpu_stats = AMStat("gpu_s", "GPU Stats", 1, 2, 80, 100);
-    AMStat ram_stats = AMStat("ram_s", "RAM Stats", 1, 2, 80, 100);
+    AMStat tf_stats = AMStat("tf_s", "Transform Stats", 1, 2, 80, 99);
+    AMStat node_stats = AMStat("n_s", "Nodes Stats", 1, 2, 80, 99);
+    AMStat cpu_stats = AMStat("cpu_s", "CPU Stats", 1, 2, 80, 99);
+    AMStat gpu_stats = AMStat("gpu_s", "GPU Stats", 1, 2, 80, 99);
+    AMStat ram_stats = AMStat("ram_s", "RAM Stats", 1, 2, 80, 99);
 
     ResourceMonitorStats(AMStatList &stat_list)
     {

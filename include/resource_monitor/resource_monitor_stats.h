@@ -21,6 +21,11 @@ public:
     AMStat cpu_stats = AMStat("cpu_s", "CPU Stats", 1, 2, 80, 99);
     AMStat gpu_stats = AMStat("gpu_s", "GPU Stats", 1, 2, 80, 99);
     AMStat ram_stats = AMStat("ram_s", "RAM Stats", 1, 2, 80, 99);
+    AMStat lidar_ip = AMStat("lidar_ip_s", "Lidar IP Stats", 1, 2, 80, 99);
+    AMStat fl_ip = AMStat("fl_s", "FL IP Stats", 1, 2, 80, 99);
+    AMStat fr_ip = AMStat("fr_s", "FR IP Stats", 1, 2, 80, 99);
+    AMStat rl_ip = AMStat("rl_s", "RL IP Stats", 1, 2, 80, 99);
+    AMStat rr_ip = AMStat("rr_s", "RR IP Stats", 1, 2, 80, 99);
 
     ResourceMonitorStats(AMStatList &stat_list)
     {
@@ -30,6 +35,11 @@ public:
         stat_list.add(&gpu_stats);
         stat_list.add(&cpu_stats);
         stat_list.add(&ram_stats);
+        stat_list.add(&lidar_ip);
+        stat_list.add(&fl_ip);
+        stat_list.add(&fr_ip);
+        stat_list.add(&rl_ip);
+        stat_list.add(&rr_ip);
     }
 };
 

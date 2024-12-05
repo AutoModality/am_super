@@ -1,6 +1,11 @@
 
 
 #include <resource_monitor/resource_status_class.h>
+#include <cstdlib>
+#include <cstring>      // For memset
+#include <sys/socket.h> // For socket functions
+#include <arpa/inet.h>  // For inet_addr and sockaddr_in
+#include <unistd.h>     // For close
 
 namespace am
 {
@@ -11,6 +16,15 @@ ResourceStatus::ResourceStatus(std::shared_ptr<am::ResourceMonitorStats> stats) 
     transform_list_.push_back(std::make_pair("base_link","Asset_Frame"));
     transform_list_.push_back(std::make_pair("base_link","ouster_FLU"));
     transform_list_.push_back(std::make_pair("base_link","Asset_ENU"));
+
+    ip_addresses_["192.168.1.55"] = std::string("lidar");
+    ip_addresses_["192.168.1.10"] = std::string("front_left");
+    ip_addresses_["192.168.1.20"] = std::string("front_right");
+    ip_addresses_["192.168.1.30"] = std::string("rear_right");
+    ip_addresses_["192.168.1.40"] = std::string("rear_left");
+
+    
+
 
     timer_ = am::Node::node->create_wall_timer(am::toDuration(1.0), std::bind(&ResourceStatus::timerCB, this));
 
@@ -256,6 +270,46 @@ void ResourceStatus::getCPUInfo(std::vector<am::CpuInfo> &infos)
     file.close();
 }
 
+bool ResourceStatus::isReachable(const std::string &ip_address, int port, int timeoutSec)
+{
+    /*std::string command = std::string("ping -c 1 ") + ip_address + std::string(" >/dev/null 2>&1");
+
+    int result = std::system(command.c_str());
+
+    return result == 0;*/
+
+    int sockfd;
+    struct sockaddr_in serverAddr;
+    
+    // Create a socket
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0) {
+        std::cerr << "Error: Cannot create socket\n";
+        return false;
+    }
+
+    // Set socket timeout
+    struct timeval timeout;
+    timeout.tv_sec = timeoutSec;
+    timeout.tv_usec = 0;
+    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
+    setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
+
+    // Set up the server address struct
+    memset(&serverAddr, 0, sizeof(serverAddr));
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(port);
+    serverAddr.sin_addr.s_addr = inet_addr(ip_address.c_str());
+
+    // Attempt to connect
+    bool reachable = (connect(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == 0);
+
+    // Close the socket
+    close(sockfd);
+
+    return reachable;
+}
+
 am::CpuInfo ResourceStatus::getCPUInfo()
 {
     if(cpu_cnt_ < 0)
@@ -350,6 +404,10 @@ void ResourceStatus::timerCB()
     // Count occurrences of each string
     for (const std::string& str : running_nodes) 
     {
+        if(str.find("plugin_name") != std::string::npos)
+        {
+            continue;
+        }
         string_count[str]++;
     }
 
@@ -378,6 +436,49 @@ void ResourceStatus::timerCB()
         }
     }
     stats_->tf_stats = (tf_check?50:100);
+
+
+    //IP Address Check
+    stats_->lidar_ip = 50;
+    stats_->fl_ip = 50;
+    stats_->fr_ip = 50;
+    stats_->rl_ip = 50;
+    stats_->rr_ip = 50;
+
+    std::map<std::string, std::string>::iterator it = ip_addresses_.begin();
+    for(; it != ip_addresses_.end(); ++it)
+    {
+        
+        if(!isReachable(it->first))
+        {
+            //THE DEVICE CANNOT BE REACHED
+            if(it->second == "lidar")
+            {
+                stats_->lidar_ip = 100;
+                ROS_ERROR("Lidar is not reachable");
+            }   
+            if(it->second == "front_left")
+            {
+                stats_->fl_ip = 100;
+                ROS_ERROR("Front Left Camera is not reachable");
+            }      
+            if(it->second == "front_right")
+            {
+                stats_->fr_ip = 100;
+                ROS_ERROR("Front Right Camera is not reachable");
+            }  
+            if(it->second == "rear_right")
+            {
+                stats_->rr_ip = 100;
+                ROS_ERROR("Rear Right Camera is not reachable");
+            }      
+            if(it->second == "rear_left")
+            {
+                stats_->rl_ip = 100;
+                ROS_ERROR("Rear Left Camera is not reachable");
+            }   
+        }
+    }
 
     //Resource Check
     updateInfos();

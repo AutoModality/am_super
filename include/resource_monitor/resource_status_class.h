@@ -71,6 +71,8 @@ public:
 
     void print();
 
+    bool isReachable(const std::string &ipAddress, int port = 80, int timeoutSec = 1);
+
     std::shared_ptr<am::ResourceMonitorStats> getStats();
 
      // AMLifeCycle passthrus
@@ -109,6 +111,8 @@ private:
     std::vector<am::CpuInfo> cpu_infos_old_;
 
     std::vector<am::GpuInfo> gpu_infos_;
+
+    std::map<std::string, std::string> ip_addresses_; //IPAddress, Name
 
     /*ROS Infrastructure Checking tools*/
     std::shared_ptr<am::Transformer> transformer_;

@@ -12,18 +12,7 @@ ResourceStatus::ResourceStatus(std::shared_ptr<am::ResourceMonitorStats> stats) 
 {
     transformer_ = std::make_shared<am::Transformer>();
 
-    transform_list_.push_back(std::make_pair("base_link","Asset_Frame"));
-    transform_list_.push_back(std::make_pair("base_link","ouster_FLU"));
-    transform_list_.push_back(std::make_pair("base_link","Asset_ENU"));
-
-    ip_addresses_["192.168.1.55"] = std::string("lidar");
-    ip_addresses_["192.168.1.10"] = std::string("front_left");
-    ip_addresses_["192.168.1.20"] = std::string("front_right");
-    ip_addresses_["192.168.1.30"] = std::string("rear_right");
-    ip_addresses_["192.168.1.40"] = std::string("rear_left");
-
-    
-
+    getParams();
 
     timer_ = am::Node::node->create_wall_timer(am::toDuration(1.0), std::bind(&ResourceStatus::timerCB, this));
 
@@ -35,6 +24,50 @@ ResourceStatus::~ResourceStatus()
     
 }
 
+void ResourceStatus::getParams()
+{
+
+    //getting the ip sensor parameters
+    int counter = 0;
+    am::getParam<int>("ip_sensor_cnt", counter, counter);
+    for(int i = 0; i < counter; i++)
+    {
+        std::string ip_check_str = "ip_sensor_" + std::to_string(i);
+        std::string ip_address = "";
+        std::string sensor_name = "";
+        am::getParam<std::string>(ip_check_str + std::string(".ip_address") , ip_address, ip_address);
+        am::getParam<std::string>(ip_check_str + std::string(".name") , sensor_name, sensor_name);
+        if(ip_address == "" || sensor_name == "")
+        {
+            ROS_ERROR("ip sensor %d has configuration issues: ip: %s and name: %s", i, ip_address.c_str(), sensor_name.c_str());
+            continue;
+        }
+
+        ip_addresses_[ip_address] = sensor_name;
+        ROS_INFO(GREEN "IP Sensor[%s] is configured as %s" COLOR_RESET, ip_address.c_str(), sensor_name.c_str());
+    }   
+
+    //getting the transform list
+    counter = 0;
+    am::getParam<int>("transform_cnt", counter, counter);
+    for(int i = 0; i < counter; i++)
+    {
+        std::string transform_str = "transform_" + std::to_string(i);
+        std::string src = "";
+        std::string target = "";
+        am::getParam<std::string>(transform_str + std::string(".source") , src, src);
+        am::getParam<std::string>(transform_str + std::string(".target") , target, target);
+
+        if(src == "" || target == "")
+        {
+            ROS_ERROR("transform %d has configuration issues: source: %s and target: %s", i, src.c_str(), target.c_str());
+            continue;
+        }
+        transform_list_.push_back(std::make_pair(src, target));
+        ROS_INFO(GREEN "Transform check is set between source %s and target %s" COLOR_RESET, src.c_str(), target.c_str());
+    }
+}
+
 std::shared_ptr<am::ResourceMonitorStats> ResourceStatus::getStats()
 {
     return stats_;
@@ -43,6 +76,7 @@ std::shared_ptr<am::ResourceMonitorStats> ResourceStatus::getStats()
 bool ResourceStatus::onConfigure()
 {
     status_sub_ = am::Node::node->create_subscription<std_msgs::msg::Int32>(std::string(am::Node::node->get_name()) + "/status", 100, std::bind(&ResourceStatus::statusCB, this, std::placeholders::_1));
+    
     stat_sub_ = am::Node::node->create_subscription<std_msgs::msg::Int32>(std::string(am::Node::node->get_name()) + "/stat", 100, std::bind(&ResourceStatus::statCB, this, std::placeholders::_1));
     
     return true;
@@ -359,9 +393,7 @@ void ResourceStatus::print()
     ROS_INFO("%s", msg.c_str());
 }
 
-
-
-void ResourceStatus::timerCB()
+void ResourceStatus::checkNodeNames()
 {
     rclcpp::node_interfaces::NodeGraphInterface::SharedPtr node_graph = am::Node::node->get_node_graph_interface();
 
@@ -390,9 +422,10 @@ void ResourceStatus::timerCB()
         }
     }
     stats_->node_stats = (node_check?50:100);
+}
 
-
-    //Transform check
+void ResourceStatus::checkTransforms()
+{
     bool tf_check = true;
     for(std::pair<std::string, std::string> &tf_str : transform_list_)
     {
@@ -404,15 +437,16 @@ void ResourceStatus::timerCB()
         }
     }
     stats_->tf_stats = (tf_check?50:100);
+}
 
-
-
+void ResourceStatus::checkSensorIPs()
+{
     //todo: this should be static and checked once or should be passed as argument depending on the architecture: for sim env this is false
     bool ips_should_exists = false;
     std::vector<std::string> sub_nets_add = getInetAddresses();
     for(const std::string &ip : sub_nets_add)
     {   
-        ROS_INFO("subnet: %s", ip.c_str());
+        //ROS_INFO("subnet: %s", ip.c_str());
         if(ip == "192.168.1.1")
         {
             ips_should_exists = true;
@@ -463,9 +497,6 @@ void ResourceStatus::timerCB()
             }
         }
     }
-    //Resource Check
-    updateInfos();
-    
 }
 
 
@@ -534,5 +565,24 @@ std::vector<std::string> ResourceStatus::getInetAddresses()
     }
 
     return inetAddresses;
+}
+
+/*
+    Timer Callback: this is where everything is updated
+ */
+void ResourceStatus::timerCB()
+{
+    //Checking the repeated node name
+    checkNodeNames();
+
+    //Transform check
+    checkTransforms();
+
+    //sensor ip check
+    checkSensorIPs();
+    
+    //Resource Check
+    updateInfos();
+    
 }
 }

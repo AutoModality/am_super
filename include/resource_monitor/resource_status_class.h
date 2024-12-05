@@ -73,6 +73,8 @@ public:
 
     bool isReachable(const std::string &ipAddress);
 
+    void getParams();
+
     std::unordered_set<std::string> getActiveIPs(const std::string& subnet = "192.168.1.0/24");
 
     std::shared_ptr<am::ResourceMonitorStats> getStats();
@@ -130,6 +132,12 @@ private:
     rclcpp::TimerBase::SharedPtr timer_;
     
     void timerCB();
+
+    void checkNodeNames();
+
+    void checkTransforms();
+
+    void checkSensorIPs();
 };
 }
 

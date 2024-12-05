@@ -10,7 +10,7 @@ int main(int argc, char** argv)
     rclcpp::init(argc, argv);
 
     // create the AMLifeCycle object with stats and assign it to the AMNode singleton
-    std::shared_ptr<am::ResourceMonitorNode> am_node = std::make_shared<am::ResourceMonitorNode>("resource_minitor");
+    std::shared_ptr<am::ResourceMonitorNode> am_node = std::make_shared<am::ResourceMonitorNode>("resource_monitor");
     std::shared_ptr<am::ResourceMonitorStats> stats = std::make_shared<am::ResourceMonitorStats>(am_node->stats_list_);    
     am::Node::node = am_node;
 

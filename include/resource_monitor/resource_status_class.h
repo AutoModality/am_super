@@ -71,13 +71,19 @@ public:
 
     void print();
 
-    bool isReachable(const std::string &ipAddress, int port = 80, int timeoutSec = 1);
+    bool isReachable(const std::string &ipAddress);
+
+    std::unordered_set<std::string> getActiveIPs(const std::string& subnet = "192.168.1.0/24");
 
     std::shared_ptr<am::ResourceMonitorStats> getStats();
 
+    std::vector<std::string> getInetAddresses();
+
      // AMLifeCycle passthrus
     bool onConfigure();
+
     bool onCleanup();
+    
     void heartbeatCB();
 
 private:
@@ -85,9 +91,11 @@ private:
     std::shared_ptr<am::ResourceMonitorStats> stats_;
 
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr status_sub_;
+
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr stat_sub_;
 
     void statusCB(const std_msgs::msg::Int32::SharedPtr msg);
+    
     void statCB(const std_msgs::msg::Int32::SharedPtr msg);
 
     int getCPUCoresCount();
@@ -116,8 +124,11 @@ private:
 
     /*ROS Infrastructure Checking tools*/
     std::shared_ptr<am::Transformer> transformer_;
+
     std::vector<std::pair<std::string, std::string>> transform_list_;
+    
     rclcpp::TimerBase::SharedPtr timer_;
+    
     void timerCB();
 };
 }

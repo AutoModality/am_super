@@ -2,10 +2,9 @@
 
 #include <resource_monitor/resource_status_class.h>
 #include <cstdlib>
-#include <cstring>      // For memset
-#include <sys/socket.h> // For socket functions
-#include <arpa/inet.h>  // For inet_addr and sockaddr_in
-#include <unistd.h>     // For close
+#include <cstdio>   // For popen and fgets
+#include <memory>   // For std::unique_ptr
+#include <regex>    // For std::regex
 
 namespace am
 {
@@ -270,44 +269,13 @@ void ResourceStatus::getCPUInfo(std::vector<am::CpuInfo> &infos)
     file.close();
 }
 
-bool ResourceStatus::isReachable(const std::string &ip_address, int port, int timeoutSec)
+bool ResourceStatus::isReachable(const std::string &ip_address)
 {
-    /*std::string command = std::string("ping -c 1 ") + ip_address + std::string(" >/dev/null 2>&1");
+    std::string command = std::string("ping -c 1 ") + ip_address + std::string(" >/dev/null 2>&1");
 
     int result = std::system(command.c_str());
 
-    return result == 0;*/
-
-    int sockfd;
-    struct sockaddr_in serverAddr;
-    
-    // Create a socket
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) {
-        std::cerr << "Error: Cannot create socket\n";
-        return false;
-    }
-
-    // Set socket timeout
-    struct timeval timeout;
-    timeout.tv_sec = timeoutSec;
-    timeout.tv_usec = 0;
-    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout, sizeof(timeout));
-    setsockopt(sockfd, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout, sizeof(timeout));
-
-    // Set up the server address struct
-    memset(&serverAddr, 0, sizeof(serverAddr));
-    serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port = htons(port);
-    serverAddr.sin_addr.s_addr = inet_addr(ip_address.c_str());
-
-    // Attempt to connect
-    bool reachable = (connect(sockfd, (struct sockaddr*)&serverAddr, sizeof(serverAddr)) == 0);
-
-    // Close the socket
-    close(sockfd);
-
-    return reachable;
+    return result == 0;
 }
 
 am::CpuInfo ResourceStatus::getCPUInfo()
@@ -438,50 +406,133 @@ void ResourceStatus::timerCB()
     stats_->tf_stats = (tf_check?50:100);
 
 
+
+    //todo: this should be static and checked once or should be passed as argument depending on the architecture: for sim env this is false
+    bool ips_should_exists = false;
+    std::vector<std::string> sub_nets_add = getInetAddresses();
+    for(const std::string &ip : sub_nets_add)
+    {   
+        ROS_INFO("subnet: %s", ip.c_str());
+        if(ip == "192.168.1.1")
+        {
+            ips_should_exists = true;
+        }
+    } 
+
     //IP Address Check
     stats_->lidar_ip = 50;
     stats_->fl_ip = 50;
     stats_->fr_ip = 50;
     stats_->rl_ip = 50;
     stats_->rr_ip = 50;
-
-    std::map<std::string, std::string>::iterator it = ip_addresses_.begin();
-    for(; it != ip_addresses_.end(); ++it)
+    //Only if you have the subnet
+    if(ips_should_exists)
     {
-        
-        if(!isReachable(it->first))
+        std::unordered_set<std::string> available_ips = getActiveIPs();
+        std::map<std::string, std::string>::iterator it = ip_addresses_.begin();
+        for(; it != ip_addresses_.end(); ++it)
         {
             //THE DEVICE CANNOT BE REACHED
-            if(it->second == "lidar")
+            if(available_ips.find(it->first) == available_ips.end())
             {
-                stats_->lidar_ip = 100;
-                ROS_ERROR("Lidar is not reachable");
-            }   
-            if(it->second == "front_left")
-            {
-                stats_->fl_ip = 100;
-                ROS_ERROR("Front Left Camera is not reachable");
-            }      
-            if(it->second == "front_right")
-            {
-                stats_->fr_ip = 100;
-                ROS_ERROR("Front Right Camera is not reachable");
-            }  
-            if(it->second == "rear_right")
-            {
-                stats_->rr_ip = 100;
-                ROS_ERROR("Rear Right Camera is not reachable");
-            }      
-            if(it->second == "rear_left")
-            {
-                stats_->rl_ip = 100;
-                ROS_ERROR("Rear Left Camera is not reachable");
-            }   
+                if(it->second == "lidar")
+                {
+                    stats_->lidar_ip = 100;
+                    ROS_ERROR("Lidar is not reachable");
+                }   
+                if(it->second == "front_left")
+                {
+                    stats_->fl_ip = 100;
+                    ROS_ERROR("Front Left Camera is not reachable");
+                }      
+                if(it->second == "front_right")
+                {
+                    stats_->fr_ip = 100;
+                    ROS_ERROR("Front Right Camera is not reachable");
+                }  
+                if(it->second == "rear_right")
+                {
+                    stats_->rr_ip = 100;
+                    ROS_ERROR("Rear Right Camera is not reachable");
+                }      
+                if(it->second == "rear_left")
+                {
+                    stats_->rl_ip = 100;
+                    ROS_ERROR("Rear Left Camera is not reachable");
+                }
+            }
         }
     }
-
     //Resource Check
     updateInfos();
     
+}
+
+
+// Function to execute the nmap command and capture the output
+std::unordered_set<std::string> ResourceStatus::getActiveIPs(const std::string& subnet) 
+{
+    std::unordered_set<std::string> activeIPs;
+    std::string command = "nmap -sn " + subnet;
+
+    // Open a pipe to execute the command and read its output
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
+    if (!pipe) {
+        std::cerr << "Error: Failed to run nmap command.\n";
+        return activeIPs;
+    }
+
+    // Read the command output line by line
+    char buffer[128];
+    std::string line;
+    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) 
+    {
+        line = buffer;
+        // Check if the line contains "Nmap scan report for", indicating a live IP
+        if (line.find("Nmap scan report for") != std::string::npos) 
+        {
+            std::string ip = line.substr(line.find_last_of(' ') + 1);
+            ip.erase(ip.find('\n'));  // Remove the newline character
+            activeIPs.insert(ip);
+        }
+    }
+
+    return activeIPs;
+}
+
+
+// Function to execute ifconfig and extract inet addresses
+std::vector<std::string> ResourceStatus::getInetAddresses() 
+{
+    std::vector<std::string> inetAddresses;
+    std::string command = "ifconfig";
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
+    
+    if (!pipe) {
+        std::cerr << "Error: Failed to run ifconfig command.\n";
+        return inetAddresses;
+    }
+
+    char buffer[256];
+    std::string output;
+
+    // Read the entire output of ifconfig
+    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr) {
+        output += buffer;
+    }
+
+    // Regular expression to match inet (IPv4) addresses
+    std::regex inetRegex(R"(inet\s+(\d+\.\d+\.\d+\.\d+))");
+    std::smatch match;
+
+    // Search for inet addresses in the output
+    auto begin = output.cbegin();
+    auto end = output.cend();
+    while (std::regex_search(begin, end, match, inetRegex)) {
+        inetAddresses.push_back(match[1]);
+        begin = match.suffix().first;  // Move to the next match
+    }
+
+    return inetAddresses;
 }
 }

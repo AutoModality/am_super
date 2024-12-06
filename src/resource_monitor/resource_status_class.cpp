@@ -274,22 +274,30 @@ am::GpuInfo ResourceStatus::getGPUInfo()
         const std::string typeSuffix = "/type";
         const std::string tempSuffix = "/temp";
 
-        for (int i = 0; i < 10; ++i) { // Check up to 10 thermal zones
+        bool found_gpu_file = false;
+        for (int i = 0; i < 10; ++i)
+        { // Check up to 10 thermal zones
             try {
-                std::string typePath = baseThermalPath + "thermal_zone" + std::to_string(i) + typeSuffix;
-                ROS_INFO("Type file: %s", typePath.c_str());
-                std::string type = readFile(typePath);
-                if (type.find("GPU") != std::string::npos) 
-                { // Look for the GPU thermal zone
-                    std::string tempPath = baseThermalPath + "thermal_zone" + std::to_string(i) + tempSuffix;
-                    std::string tempStr = readFile(tempPath);
-                    gpu_info.temp = std::stoi(tempStr) / 1000; // Convert millidegrees to degrees Celsius
-                }
-            } catch (...) {
+                    std::string typePath = baseThermalPath + "thermal_zone" + std::to_string(i) + typeSuffix;
+                    ROS_INFO("Type file: %s", typePath.c_str());
+                    if(!boost::filesystem::exists(typePath))
+                    {
+                        continue;
+                    }
+                    std::string type = readFile(typePath);
+                    if (type.find("GPU") != std::string::npos) 
+                    { // Look for the GPU thermal zone
+                        found_gpu_file = true;
+                        std::string tempPath = baseThermalPath + "thermal_zone" + std::to_string(i) + tempSuffix;
+                        std::string tempStr = readFile(tempPath);
+                        gpu_info.temp = std::stoi(tempStr) / 1000; // Convert millidegrees to degrees Celsius
+                        break;
+                    }
+            } catch (...) 
+            {
                 // Ignore errors and continue checking other zones
             }
         }
-        throw std::runtime_error("Error: GPU thermal zone not found.");
 
         return gpu_info;
     }

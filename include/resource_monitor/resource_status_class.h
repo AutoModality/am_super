@@ -121,6 +121,8 @@ private:
 
     double uptime_seconds_;
 
+    bool ip_check_ {false};
+
     bool is_first_time_ {true};
 
     std::vector<double> cpu_loads_;

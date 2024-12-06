@@ -14,8 +14,16 @@ ResourceStatus::ResourceStatus(std::shared_ptr<am::ResourceMonitorStats> stats) 
     transformer_ = std::make_shared<am::Transformer>();
 
     sub_nets_add_ = getInetAddresses();
-    
 
+    for(const std::string &ip : sub_nets_add_)
+    {   
+        //ROS_INFO("subnet: %s", ip.c_str());
+        if(ip == "192.168.1.1")
+        {
+            ip_check_ = true;
+        }
+    }
+    
     getParams();
 
     timer_ = am::Node::node->create_wall_timer(am::toDuration(1.0), std::bind(&ResourceStatus::timerCB, this));
@@ -384,7 +392,7 @@ void ResourceStatus::getCPUInfo(std::vector<am::CpuInfo> &infos)
 
 bool ResourceStatus::isReachable(const std::string &ip_address)
 {
-    std::string command = std::string("ping -c 1 ") + ip_address + std::string(" >/dev/null 2>&1");
+    std::string command = std::string("ping -c 1 -W 0.2 ") + ip_address + std::string(" >/dev/null 2>&1");
 
     int result = std::system(command.c_str());
 
@@ -516,18 +524,7 @@ void ResourceStatus::checkTransforms()
 }
 
 void ResourceStatus::checkSensorIPs()
-{
-    //todo: this should be static and checked once or should be passed as argument depending on the architecture: for sim env this is false
-    bool ips_should_exists = false;
-    
-    for(const std::string &ip : sub_nets_add_)
-    {   
-        //ROS_INFO("subnet: %s", ip.c_str());
-        if(ip == "192.168.1.1")
-        {
-            ips_should_exists = true;
-        }
-    } 
+{  
 
     //IP Address Check
     stats_->lidar_ip = 50;
@@ -536,15 +533,15 @@ void ResourceStatus::checkSensorIPs()
     stats_->rl_ip = 50;
     stats_->rr_ip = 50;
     //Only if you have the subnet
-    if(ips_should_exists)
+    if(ip_check_)
     {
-        std::unordered_set<std::string> available_ips = getActiveIPs();
         std::map<std::string, std::string>::iterator it = ip_addresses_.begin();
         for(; it != ip_addresses_.end(); ++it)
         {
-            //THE DEVICE CANNOT BE REACHED
-            if(available_ips.find(it->first) == available_ips.end())
+            
+            if(!isReachable(it->first))
             {
+                //THE DEVICE CANNOT BE REACHED
                 if(it->second == "lidar")
                 {
                     stats_->lidar_ip = 100;
@@ -569,7 +566,7 @@ void ResourceStatus::checkSensorIPs()
                 {
                     stats_->rl_ip = 100;
                     ROS_ERROR("Rear Left Camera is not reachable");
-                }
+                }   
             }
         }
     }

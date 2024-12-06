@@ -277,6 +277,7 @@ am::GpuInfo ResourceStatus::getGPUInfo()
         for (int i = 0; i < 10; ++i) { // Check up to 10 thermal zones
             try {
                 std::string typePath = baseThermalPath + "thermal_zone" + std::to_string(i) + typeSuffix;
+                ROS_INFO("Type file: %s", typePath.c_str());
                 std::string type = readFile(typePath);
                 if (type.find("GPU") != std::string::npos) 
                 { // Look for the GPU thermal zone

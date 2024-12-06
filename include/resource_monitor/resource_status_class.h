@@ -12,6 +12,8 @@
 #include <vb_util_lib/transformer.h>
 #include <resource_monitor/resource_monitor_stats.h>
 #include <std_msgs/msg/int32.hpp>
+#include <sys/statvfs.h> // For statvfs
+#include <iomanip>       // For std::setprecision
 
 
 namespace am
@@ -30,9 +32,7 @@ struct GpuInfo
 {
     std::string gpu_name;
     int temp;
-    int mem_used;
-    int mem_free;
-    int util_percent;
+    int load_percent;
 };
 
 struct CpuInfo 
@@ -48,6 +48,13 @@ struct CpuInfo
     unsigned long long total;
 };
 
+struct DiskInfo {
+    unsigned long long totalSpace;  // Total space in bytes
+    unsigned long long availableSpace; // Available space in bytes (matches `df`)
+    unsigned long long usedSpace;   // Used space in bytes
+    double percentUsed;             // Percentage used
+};
+
 class ResourceStatus
 {
 public:
@@ -59,9 +66,11 @@ public:
 
     am::CpuInfo getCPUInfo();
 
-    void getGPUInfo(std::vector<am::GpuInfo> &gpu_infos);
+    am::GpuInfo getGPUInfo();
 
     void getCPUInfo(std::vector<am::CpuInfo> &infos);
+
+    DiskInfo getDiskInfo(const std::string& path = "/");
 
     double calculateCpuLoad(const am::CpuInfo &ci, const am::CpuInfo &ci_old);
 
@@ -102,6 +111,8 @@ private:
 
     int getCPUCoresCount();
 
+    std::string readFile(const std::string& path);
+
     am::CpuInfo parseCpuLine(const std::string &line);
 
     int cpu_cnt_= -1;
@@ -120,7 +131,7 @@ private:
 
     std::vector<am::CpuInfo> cpu_infos_old_;
 
-    std::vector<am::GpuInfo> gpu_infos_;
+    am::GpuInfo gpu_info_;
 
     std::map<std::string, std::string> ip_addresses_; //IPAddress, Name
 

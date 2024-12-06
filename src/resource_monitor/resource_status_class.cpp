@@ -5,6 +5,7 @@
 #include <cstdio>   // For popen and fgets
 #include <memory>   // For std::unique_ptr
 #include <regex>    // For std::regex
+#include <boost/filesystem.hpp>
 
 namespace am
 {
@@ -182,7 +183,26 @@ void ResourceStatus::updateInfos()
 
     cpu_infos_old_ = cpu_infos_;
 
-    getGPUInfo(gpu_infos_);
+    gpu_info_ = getGPUInfo();
+    stats_->gpu_stats = 50;
+    ROS_INFO("GPU Load Percent: %d , Temp: %d", gpu_info_.load_percent, gpu_info_.temp);
+    if(gpu_info_.load_percent > 90)
+    {
+        stats_->gpu_stats = 100;
+        ROS_ERROR("GPU Issues: LOAD Percent: %d, Temp: %d", gpu_info_.load_percent, gpu_info_.temp);
+    }
+
+
+    //check the drive stats
+    stats_->drive_stats = 50;
+    am::DiskInfo disk_info = getDiskInfo();
+    if(disk_info.percentUsed > 98.0)
+    {
+        stats_->drive_stats = 100;
+        int coef = 1024*1024;
+        ROS_ERROR("Disk total: %lld MB, available: %lld MB, used: %lld MB, percentage: %f", (disk_info.totalSpace/coef), (disk_info.availableSpace/coef), (disk_info.usedSpace/coef), disk_info.percentUsed);
+    }
+    
 }
 
 
@@ -224,21 +244,69 @@ am::MemoryInfo& ResourceStatus::getMemoryInfo()
     return mi;
 }
 
-void ResourceStatus::getGPUInfo(std::vector<am::GpuInfo> &gpu_infos)
+// Function to read the content of a file
+std::string ResourceStatus::readFile(const std::string& path) 
 {
-    gpu_infos.clear();
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        throw std::runtime_error("Error: Unable to open file " + path);
+    }
+
+    std::string content;
+    std::getline(file, content);
+    file.close();
+    return content;
+}
+
+am::GpuInfo ResourceStatus::getGPUInfo()
+{
+    am::GpuInfo gpu_info;
+
+    // "/sys/devices/gpu.0/load" exists only in Jetpack
+    //in contrast, nvidia-smi only exists in amd64 architure
+    const std::string loadPath = "/sys/devices/gpu.0/load";
+    if (boost::filesystem::exists(loadPath))
+    {
+        std::string loadStr = readFile(loadPath);
+        gpu_info.load_percent = std::stoi(loadStr) / 1000; // Convert to percentage
+
+        const std::string baseThermalPath = "/sys/class/thermal/";
+        const std::string typeSuffix = "/type";
+        const std::string tempSuffix = "/temp";
+
+        for (int i = 0; i < 10; ++i) { // Check up to 10 thermal zones
+            try {
+                std::string typePath = baseThermalPath + "thermal_zone" + std::to_string(i) + typeSuffix;
+                std::string type = readFile(typePath);
+                if (type.find("GPU") != std::string::npos) 
+                { // Look for the GPU thermal zone
+                    std::string tempPath = baseThermalPath + "thermal_zone" + std::to_string(i) + tempSuffix;
+                    std::string tempStr = readFile(tempPath);
+                    gpu_info.temp = std::stoi(tempStr) / 1000; // Convert millidegrees to degrees Celsius
+                }
+            } catch (...) {
+                // Ignore errors and continue checking other zones
+            }
+        }
+        throw std::runtime_error("Error: GPU thermal zone not found.");
+
+        return gpu_info;
+    }
+
+
     // Execute the nvidia-smi command and read the output directly
     const std::string command = "nvidia-smi --query-gpu=name,utilization.gpu,temperature.gpu,memory.used,memory.free --format=csv,nounits,noheader";
     FILE* pipe = popen(command.c_str(), "r");
     if (!pipe) 
     {
         ROS_ERROR("Error: Unable to execute nvidia-smi. Ensure it's installed and available in PATH.");
-        return;
+        return gpu_info;
     }
 
     char buffer[128];
     std::ostringstream result;
-    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) {
+    while (fgets(buffer, sizeof(buffer), pipe) != nullptr) 
+    {
         result << buffer;
     }
     pclose(pipe);
@@ -248,10 +316,8 @@ void ResourceStatus::getGPUInfo(std::vector<am::GpuInfo> &gpu_infos)
     std::string line;
     while (std::getline(iss, line)) 
     {
-
         //ROS_INFO(GREEN "%s" COLOR_RESET, line.c_str());
         std::istringstream lineStream(line);
-        am::GpuInfo gpu_info;
         // Parse memory used and free values
         std::string gpuName;
         int gpuUtilization, gpuTemperature, memoryUsed, memoryFree;
@@ -269,14 +335,15 @@ void ResourceStatus::getGPUInfo(std::vector<am::GpuInfo> &gpu_infos)
         lineStream >> memoryFree;
 
         gpu_info.gpu_name = gpuName;
-        gpu_info.util_percent = gpuUtilization;
+        gpu_info.load_percent = gpuUtilization;
         gpu_info.temp = gpuTemperature;
-        gpu_info.mem_free = memoryFree;
-        gpu_info.mem_used = memoryUsed;
-        stats_->gpu_stats = (gpu_info.util_percent>90?100:50);
-
-        gpu_infos.push_back(gpu_info);
+        
+        return gpu_info;
     }
+
+
+    
+    return gpu_info;
 }
 
 
@@ -385,10 +452,7 @@ void ResourceStatus::print()
     ROS_INFO("UpTime: %f", uptime_seconds_);
 
     msg = "";
-    for(int i = 0; i < gpu_infos_.size(); i++)
-    {
-        msg += gpu_infos_[i].gpu_name + ": Temp[C] = " + std::to_string(gpu_infos_[i].temp) + ", Used[%]: " + std::to_string(gpu_infos_[i].util_percent);
-    }
+    msg += "GPU: Temp[C] = " + std::to_string(gpu_info_.temp) + ", Used[%]: " + std::to_string(gpu_info_.load_percent);
 
     ROS_INFO("%s", msg.c_str());
 }
@@ -565,6 +629,25 @@ std::vector<std::string> ResourceStatus::getInetAddresses()
     }
 
     return inetAddresses;
+}
+
+
+// Function to get disk usage information
+DiskInfo ResourceStatus::getDiskInfo(const std::string& path) 
+{
+    struct statvfs stat;
+
+    if (statvfs(path.c_str(), &stat) != 0) {
+        throw std::runtime_error("Error: Unable to get disk information for " + path);
+    }
+
+    DiskInfo info;
+    info.totalSpace = stat.f_blocks * stat.f_frsize;      // Total blocks * block size
+    info.availableSpace = stat.f_bavail * stat.f_frsize;  // Available blocks * block size
+    info.usedSpace = info.totalSpace - info.availableSpace;
+    info.percentUsed = (info.usedSpace * 100.0) / info.totalSpace;
+
+    return info;
 }
 
 /*

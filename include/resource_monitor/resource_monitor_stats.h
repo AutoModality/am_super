@@ -21,6 +21,7 @@ public:
     AMStat cpu_stats = AMStat("cpu_s", "CPU Stats", 1, 2, 80, 99);
     AMStat gpu_stats = AMStat("gpu_s", "GPU Stats", 1, 2, 80, 99);
     AMStat ram_stats = AMStat("ram_s", "RAM Stats", 1, 2, 80, 99);
+    AMStat drive_stats = AMStat("drive_s", "Drive Stats", 1, 2, 80, 99);
     AMStat lidar_ip = AMStat("lidar_ip_s", "Lidar IP Stats", 1, 2, 80, 99);
     AMStat fl_ip = AMStat("fl_s", "FL IP Stats", 1, 2, 80, 99);
     AMStat fr_ip = AMStat("fr_s", "FR IP Stats", 1, 2, 80, 99);
@@ -35,6 +36,7 @@ public:
         stat_list.add(&gpu_stats);
         stat_list.add(&cpu_stats);
         stat_list.add(&ram_stats);
+        stat_list.add(&drive_stats);
         stat_list.add(&lidar_ip);
         stat_list.add(&fl_ip);
         stat_list.add(&fr_ip);

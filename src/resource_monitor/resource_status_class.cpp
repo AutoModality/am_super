@@ -14,6 +14,7 @@ ResourceStatus::ResourceStatus(std::shared_ptr<am::ResourceMonitorStats> stats) 
     transformer_ = std::make_shared<am::Transformer>();
 
     sub_nets_add_ = getInetAddresses();
+    
 
     getParams();
 

@@ -13,6 +13,8 @@ ResourceStatus::ResourceStatus(std::shared_ptr<am::ResourceMonitorStats> stats) 
 {
     transformer_ = std::make_shared<am::Transformer>();
 
+    sub_nets_add_ = getInetAddresses();
+
     getParams();
 
     timer_ = am::Node::node->create_wall_timer(am::toDuration(1.0), std::bind(&ResourceStatus::timerCB, this));
@@ -516,8 +518,8 @@ void ResourceStatus::checkSensorIPs()
 {
     //todo: this should be static and checked once or should be passed as argument depending on the architecture: for sim env this is false
     bool ips_should_exists = false;
-    std::vector<std::string> sub_nets_add = getInetAddresses();
-    for(const std::string &ip : sub_nets_add)
+    
+    for(const std::string &ip : sub_nets_add_)
     {   
         //ROS_INFO("subnet: %s", ip.c_str());
         if(ip == "192.168.1.1")

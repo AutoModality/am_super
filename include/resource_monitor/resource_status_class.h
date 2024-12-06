@@ -133,6 +133,8 @@ private:
 
     am::GpuInfo gpu_info_;
 
+    std::vector<std::string> sub_nets_add_;
+
     std::map<std::string, std::string> ip_addresses_; //IPAddress, Name
 
     /*ROS Infrastructure Checking tools*/

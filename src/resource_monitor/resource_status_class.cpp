@@ -21,6 +21,7 @@ ResourceStatus::ResourceStatus(std::shared_ptr<am::ResourceMonitorStats> stats) 
         if(ip == "192.168.1.1")
         {
             ip_check_ = true;
+            ROS_INFO("Resource Monitor: looking for sensors on 192.168.1.1");
         }
     }
     
@@ -196,7 +197,7 @@ void ResourceStatus::updateInfos()
 
     gpu_info_ = getGPUInfo();
     stats_->gpu_stats = 50;
-    ROS_INFO("GPU Load Percent: %d , Temp: %d", gpu_info_.load_percent, gpu_info_.temp);
+    //ROS_INFO("GPU Load Percent: %d , Temp: %d", gpu_info_.load_percent, gpu_info_.temp);
     if(gpu_info_.load_percent > 90)
     {
         stats_->gpu_stats = 100;
@@ -290,7 +291,7 @@ am::GpuInfo ResourceStatus::getGPUInfo()
         { // Check up to 10 thermal zones
             try {
                     std::string typePath = baseThermalPath + "thermal_zone" + std::to_string(i) + typeSuffix;
-                    ROS_INFO("Type file: %s", typePath.c_str());
+                    //ROS_INFO("Type file: %s", typePath.c_str());
                     if(!boost::filesystem::exists(typePath))
                     {
                         continue;

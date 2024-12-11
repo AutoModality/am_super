@@ -11,6 +11,13 @@ namespace am
 {
 ResourceStatus::ResourceStatus(std::shared_ptr<am::ResourceMonitorStats> stats) : stats_(stats)
 {
+
+    sys_rep_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::SystemReport>(system_status_topic_,1);
+
+    log_ctrl_sub_ = am::Node::node->create_subscription<brain_box_msgs::msg::LogControl>("/ctrl/log_control", 1, std::bind(&ResourceStatus::logCtrlCB, this, std::placeholders::_1));
+
+    level_ = BagLogger::OFF;
+    
     transformer_ = std::make_shared<am::Transformer>();
 
     sub_nets_add_ = getInetAddresses();
@@ -35,6 +42,42 @@ ResourceStatus::ResourceStatus(std::shared_ptr<am::ResourceMonitorStats> stats) 
 ResourceStatus::~ResourceStatus()
 {
     
+}
+
+void ResourceStatus::logCtrlCB(const brain_box_msgs::msg::LogControl::SharedPtr msg)
+{
+    if (msg->enable)
+	  {
+		  ROS_INFO_STREAM(am::Node::node->get_name() << ": start logging to RS, level " << (int)msg->level);
+		  BagLogger::instance()->startLogging("RS", msg->level);
+		  enabled_ = true;
+		  switch (msg->level)
+		  {
+		  case 1:
+			  level_ = BagLogger::NORM;
+			  break;
+		  case 2:
+			  level_ = BagLogger::FINE;
+			  break;
+		  case 3:
+			  level_ = BagLogger::EXTRA;
+			  break;
+		  case 4:
+			  level_ = BagLogger::ALL;
+			  break;
+		  default:
+			  level_ = BagLogger::OFF;
+			  break;
+		  }
+	  }
+	  else
+	  {
+		  ROS_INFO_STREAM(am::Node::node->get_name() << ": stop logging");
+		  BagLogger::instance()->stopLogging();
+		  enabled_ = false;
+		  level_ = BagLogger::OFF;
+
+	  }
 }
 
 void ResourceStatus::getParams()
@@ -152,14 +195,19 @@ am::CpuInfo ResourceStatus::parseCpuLine(const std::string& line)
     return info;
 }
 
-void ResourceStatus::updateInfos()
+void ResourceStatus::updateInfos(brain_box_msgs::msg::SystemReport &sys_report)
 {
     getMemoryInfo();
+    sys_report.mem_free_percentage = (float)(100 - mi.used_percent);
+    sys_report.mem_total_mb = (float)mi.total;
+    sys_report.mem_used_percentage = (float)mi.used_percent;
+    sys_report.cores_count = cpu_cnt_;
     if(cpu_cnt_ < 0)
     {
         cpu_cnt_ = getCPUCoresCount();
         if(cpu_cnt_ < 0)
         {
+            sys_report.error_msg += ", Cannot get CPU count";
             ROS_ERROR("Cannot get CPU count");
             return;
         }
@@ -182,20 +230,25 @@ void ResourceStatus::updateInfos()
         double load = calculateCpuLoad(cpu_infos_[i], cpu_infos_old_[i]);
         avg_load+=load;
         cpu_loads_[i] = load;
+        sys_report.cpu_percent_cores.push_back(load);
     }
 
     if(cpu_cnt_ > 0)
     {
         avg_load = avg_load/cpu_cnt_;
+        sys_report.cpu_percent_total = avg_load;
         stats_->cpu_stats = (avg_load > 80.0?100:50);
     }
     
 
     uptime_seconds_ = getUpTime();
+    sys_report.uptime_seconds = uptime_seconds_;
 
     cpu_infos_old_ = cpu_infos_;
 
     gpu_info_ = getGPUInfo();
+    sys_report.gpu_used_percentage = (float)gpu_info_.load_percent;
+    sys_report.gpu_temp = (float)gpu_info_.temp;
     stats_->gpu_stats = 50;
     //ROS_INFO("GPU Load Percent: %d , Temp: %d", gpu_info_.load_percent, gpu_info_.temp);
     if(gpu_info_.load_percent > 90)
@@ -207,11 +260,14 @@ void ResourceStatus::updateInfos()
 
     //check the drive stats
     stats_->drive_stats = 50;
+    int coef = 1024*1024;
     am::DiskInfo disk_info = getDiskInfo();
+    sys_report.hd_used_percentage = disk_info.percentUsed;
+    sys_report.hd_used = (float)(disk_info.usedSpace/coef);
     if(disk_info.percentUsed > 98.0)
     {
         stats_->drive_stats = 100;
-        int coef = 1024*1024;
+        
         ROS_ERROR("Disk total: %lld MB, available: %lld MB, used: %lld MB, percentage: %f", (disk_info.totalSpace/coef), (disk_info.availableSpace/coef), (disk_info.usedSpace/coef), disk_info.percentUsed);
     }
     
@@ -478,11 +534,12 @@ void ResourceStatus::print()
     ROS_INFO("%s", msg.c_str());
 }
 
-void ResourceStatus::checkNodeNames()
+void ResourceStatus::checkNodeNames(brain_box_msgs::msg::SystemReport &sys_report)
 {
     rclcpp::node_interfaces::NodeGraphInterface::SharedPtr node_graph = am::Node::node->get_node_graph_interface();
 
     std::vector<std::string> running_nodes = node_graph->get_node_names();
+    sys_report.nodes = running_nodes;
 
     std::unordered_map<std::string, int> string_count;
 
@@ -497,36 +554,48 @@ void ResourceStatus::checkNodeNames()
     }
 
     // Collect strings that appear more than once
+    std::string error_msg = "";
     bool node_check = true;
     for (const auto& [str, count] : string_count) 
     {
         if (count > 1) 
         {
-            ROS_ERROR("Found a duplicate Node: %s", str.c_str());
-            node_check = false;
+            error_msg += " Found a duplicate Node: " + str;
+            ROS_ERROR("%s", error_msg.c_str());
+            sys_report.error_msg += error_msg;
         }
     }
     stats_->node_stats = (node_check?50:100);
 }
 
-void ResourceStatus::checkTransforms()
+void ResourceStatus::checkTransforms(brain_box_msgs::msg::SystemReport &sys_report)
 {
     bool tf_check = true;
     for(std::pair<std::string, std::string> &tf_str : transform_list_)
     {
         geometry_msgs::msg::TransformStamped transform;
+        brain_box_msgs::msg::TransformStatus tf_status_msg;
+        tf_status_msg.source = tf_str.first;
+        tf_status_msg.target = tf_str.second;
+        tf_status_msg.status = brain_box_msgs::msg::TransformStatus::CONNECTED;
         if(!transformer_->getTransform(tf_str.first, tf_str.second, transform, 1.0, false))
         {
+            std::string error_msg = std::string(", Transform tree is broken between: ") + tf_str.first + " and " + tf_str.second;
             //ROS_ERROR("Transform tree is broken: %s, %s", tf_str.first.c_str(), tf_str.second.c_str());
             tf_check = false;
+            tf_status_msg.status = brain_box_msgs::msg::TransformStatus::DISCONNECTED;
+            sys_report.error_msg += error_msg;
         }
+
+        sys_report.tf_tree_status.push_back(tf_status_msg);
     }
     stats_->tf_stats = (tf_check?50:100);
 }
 
-void ResourceStatus::checkSensorIPs()
+void ResourceStatus::checkSensorIPs(brain_box_msgs::msg::SystemReport &sys_report)
 {  
 
+    
     //IP Address Check
     stats_->lidar_ip = 50;
     stats_->fl_ip = 50;
@@ -539,36 +608,53 @@ void ResourceStatus::checkSensorIPs()
         std::map<std::string, std::string>::iterator it = ip_addresses_.begin();
         for(; it != ip_addresses_.end(); ++it)
         {
-            
+            brain_box_msgs::msg::IPSensorStatus ip_sensor_msg; 
+            ip_sensor_msg.ip = it->first;
+            ip_sensor_msg.alias= it->second;
+            ip_sensor_msg.status = brain_box_msgs::msg::IPSensorStatus::CONNECTED;  
             if(!isReachable(it->first))
             {
+                ip_sensor_msg.status = brain_box_msgs::msg::IPSensorStatus::DISCONNECTED;  
+                std::string error_msg;
                 //THE DEVICE CANNOT BE REACHED
                 if(it->second == "lidar")
                 {
+                    
                     stats_->lidar_ip = 100;
-                    ROS_ERROR("Lidar is not reachable");
+                    error_msg = " Lidar is not reachable";
+                    sys_report.error_msg += error_msg;
+                    ROS_ERROR("%s", error_msg.c_str());
                 }   
                 if(it->second == "front_left")
                 {
                     stats_->fl_ip = 100;
-                    ROS_ERROR("Front Left Camera is not reachable");
+                    error_msg = " Front Left is not reachable";
+                    sys_report.error_msg += error_msg;
+                    ROS_ERROR("%s", error_msg.c_str());
                 }      
                 if(it->second == "front_right")
                 {
                     stats_->fr_ip = 100;
-                    ROS_ERROR("Front Right Camera is not reachable");
+                    error_msg = " Front Right is not reachable";
+                    sys_report.error_msg += error_msg;
+                    ROS_ERROR("%s", error_msg.c_str());
                 }  
                 if(it->second == "rear_right")
                 {
                     stats_->rr_ip = 100;
-                    ROS_ERROR("Rear Right Camera is not reachable");
+                    error_msg = " Rear Right Left is not reachable";
+                    sys_report.error_msg += error_msg;
+                    ROS_ERROR("%s", error_msg.c_str());
                 }      
                 if(it->second == "rear_left")
                 {
                     stats_->rl_ip = 100;
-                    ROS_ERROR("Rear Left Camera is not reachable");
+                    error_msg = " Rear Left is not reachable";
+                    sys_report.error_msg += error_msg;
+                    ROS_ERROR("%s", error_msg.c_str());
                 }   
             }
+            sys_report.ip_sensors.push_back(ip_sensor_msg);
         }
     }
 }
@@ -665,17 +751,25 @@ DiskInfo ResourceStatus::getDiskInfo(const std::string& path)
  */
 void ResourceStatus::timerCB()
 {
+
+    brain_box_msgs::msg::SystemReport sr_msg;
+    sr_msg.header.stamp = am::ClockNow();
+
     //Checking the repeated node name
-    checkNodeNames();
+    checkNodeNames(sr_msg);
 
     //Transform check
-    checkTransforms();
+    checkTransforms(sr_msg);
 
     //sensor ip check
-    checkSensorIPs();
+    checkSensorIPs(sr_msg);
     
     //Resource Check
-    updateInfos();
+    updateInfos(sr_msg);
+
+    sys_rep_pub_->publish(sr_msg);
+
+    LOG_MSG(system_status_topic_, sr_msg, 2);
     
 }
 }

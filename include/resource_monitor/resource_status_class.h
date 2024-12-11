@@ -14,7 +14,10 @@
 #include <std_msgs/msg/int32.hpp>
 #include <sys/statvfs.h> // For statvfs
 #include <iomanip>       // For std::setprecision
-
+#include <brain_box_msgs/msg/system_report.hpp>
+#include <vb_util_lib/bag_logger.h>
+#include <vb_util_lib/vb_main.h>
+#include <brain_box_msgs/msg/log_control.hpp>
 
 namespace am
 {
@@ -76,7 +79,7 @@ public:
 
     double getUpTime();
 
-    void updateInfos();
+    void updateInfos(brain_box_msgs::msg::SystemReport &sys_report);
 
     void print();
 
@@ -105,9 +108,15 @@ private:
 
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr stat_sub_;
 
+    rclcpp::Subscription<brain_box_msgs::msg::LogControl>::SharedPtr log_ctrl_sub_;
+
+    rclcpp::Publisher<brain_box_msgs::msg::SystemReport>::SharedPtr sys_rep_pub_;
+
     void statusCB(const std_msgs::msg::Int32::SharedPtr msg);
     
     void statCB(const std_msgs::msg::Int32::SharedPtr msg);
+
+    void logCtrlCB(const brain_box_msgs::msg::LogControl::SharedPtr msg);
 
     int getCPUCoresCount();
 
@@ -125,7 +134,13 @@ private:
 
     bool is_first_time_ {true};
 
+    BagLogger::BagLoggerLevel  level_;
+
+    bool enabled_ {false};
+
     std::vector<double> cpu_loads_;
+
+    std::string system_status_topic_ = "/resource_status";
 
     am::MemoryInfo mi;
 
@@ -148,11 +163,11 @@ private:
     
     void timerCB();
 
-    void checkNodeNames();
+    void checkNodeNames(brain_box_msgs::msg::SystemReport &sys_report);
 
-    void checkTransforms();
+    void checkTransforms(brain_box_msgs::msg::SystemReport &sys_report);
 
-    void checkSensorIPs();
+    void checkSensorIPs(brain_box_msgs::msg::SystemReport &sys_report);
 };
 }
 

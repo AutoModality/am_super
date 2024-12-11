@@ -212,6 +212,7 @@ private:
   rclcpp::Subscription<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostics_sub;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr current_enu_sub;
 
+
   rclcpp::Subscription<brain_box_msgs::msg::LogControl>::SharedPtr log_control_sub_;
   BagLogger::BagLoggerLevel log_level_;
 
@@ -374,6 +375,8 @@ public:
     current_enu_sub = am::Node::node->create_subscription<nav_msgs::msg::Odometry>(am_topics::CTRL_VX_VEHICLE_CURRENTENU, am::getSensorQoS(1),
     		std::bind(&AMSuper::currentENUCB, this, std::placeholders::_1));
 
+
+
    }
 
   ~AMSuper()
@@ -385,6 +388,8 @@ public:
   }
 
 private:
+
+
   /**
    * process LifeCycleState messages from nodes
    *

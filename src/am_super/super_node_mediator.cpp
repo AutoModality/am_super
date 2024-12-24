@@ -234,7 +234,13 @@ SuperNodeMediator::StateTransition SuperNodeMediator::getStateTransition(const S
         ROS_ERROR_STREAM("GetStateTransition: Processing an operator command | " << printOperatorCommand(supervisor.last_op_command_received) << " vs " << printOperatorCommand(transition.operator_command));
         return transition;
       }
-    } 
+    }
+    // else if (transition.operator_command == OperatorCommand::LAUNCH && supervisor.start_fp_from_super_)
+    // {
+    //   // Allows for the mission to be started automatically if the anove parameter is set to true.
+    //   ROS_ERROR_STREAM("GetStateTransition: Allowing automatic launch command without operator when blue light is achieved.");
+    //   return transition;
+    // }
     else if(transitionHasControllerState(transition))
     {
       if(supervisor.last_controller_state_received == transition.controller_state)
@@ -275,12 +281,13 @@ bool SuperNodeMediator::transitionIsValid(const StateTransition& transition)
   return transition.to_state != StateTransition::NO_SUPER_STATE; 
 }
 
-SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Supervisor supervisor)
+SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Supervisor& supervisor)
 {
   // required default state is junk and should not be consulted since not ready
   TransitionInstructions transition_instructions;
   transition_instructions.ready_for_transition = false;
   transition_instructions.resend_life_cycle_command = false;
+  transition_instructions.error_transition = false;
 
   // Hardik: shortcircuit if we have am_super in error
   // if (supervisor.nodes.at(SUPER_NODE_NAME).status == LifeCycleStatus::ERROR)
@@ -290,68 +297,104 @@ SuperNodeMediator::TransitionInstructions SuperNodeMediator::transitionReady(Sup
   //   return transition_instructions;
   // }
 
+  // // Come out of error when looking for the next transition if nothing is in error
+  // if (supervisor.status_error && supervisor.errored_nodes_.size() == 0)
+  // {
+  //   ROS_WARN_STREAM("Removing the status_error_ !!");
+  //   supervisor.status_error = false;
+  // }
 
-  bool are_in_error = false;
-  for (pair<string, SuperNodeInfo> nodePair : supervisor.nodes)
+
+      // pair<bool,map<string,pair<bool, string>>> check_results = allManifestedNodesCheck(supervisor, transition.check);
+  // Simplified logic that shortcuts getting any other transition.
+  ROS_WARN_STREAM("For some reason status_error is true here? : " << supervisor.status_error);
+  if (supervisor.status_error)
   {
-    SuperNodeInfo node = nodePair.second;
-    if (node.status == LifeCycleStatus::ERROR)
+
+    if (supervisor.errored_nodes_.size()==0 && allManifestedNodesCheck(supervisor, getErrorTransition().check).first)
     {
-      are_in_error = true;
-      transition_instructions.ready_for_transition = true;
-      transition_instructions.new_state = getErrorTransition().to_state;
-      transition_instructions.resend_life_cycle_command = true;
-      // if (supervisor.system_state == SuperState::READY)
-      // {
-      //   transition_instructions.life_cycle_command = LifeCycleCommand::CLEANUP;
-      // }
-      // else if (supervisor.system_state == SuperState::AUTO)
-      // {
-      //   transition_instructions.life_cycle_command = LifeCycleCommand::DEACTIVATE; 
-      // }
-      // return transition_instructions;
-      break;
-    }
-  }
-
-  if (are_in_error)
-  {
-    bool active_true = false;
-    bool inactive_true = false;
-
-    for (pair<string, SuperNodeInfo> nodePair : supervisor.nodes)
-    {
-      SuperNodeInfo node = nodePair.second;
-      // If things are active, make sure they come down inactive
-      // If things are inactive, then make sure they come down to Unconfingured
-
-      if (node.state == LifeCycleState::ACTIVE)
-      {
-        active_true = true;
-      }
-      if (node.state == LifeCycleState::INACTIVE)
-      {
-        inactive_true = true;
-      }
-
-    }
-
-    if (active_true)
-    {
-      transition_instructions.life_cycle_command = LifeCycleCommand::DEACTIVATE;
-    }
-    else if (inactive_true)
-    {
-      transition_instructions.life_cycle_command = LifeCycleCommand::CLEANUP;
+      // TransitionInstructions pseudo_transition;
+      // pseudo_transition.ready_for_transition = false;
+      // pesudo_transition.resend_life_cycle_command = false;
+      // pseudo_transition.error_transition = false;
+      // pseudo_transition.new_state = getErrorTransition().to_state;
+      // if ()
+      ROS_WARN_STREAM("Removing the status_error_ !!");
+      supervisor.status_error = false;
     }
     else
     {
-      // This technically should not happen....?
-      transition_instructions.life_cycle_command = LifeCycleCommand::CONFIGURE;
+      // assert(supervisor.errored_nodes_.size() > 0);
+      transition_instructions.ready_for_transition = true;
+      transition_instructions.new_state = getErrorTransition().to_state;
+      transition_instructions.error_transition = true;
+      return transition_instructions;
     }
-    return transition_instructions;
-    
   }
+  
+
+  // // bool are_in_error = false;
+  // for (pair<string, SuperNodeInfo> nodePair : supervisor.nodes)
+  // {
+  //   SuperNodeInfo node = nodePair.second;
+  //   if (node.status == LifeCycleStatus::ERROR)
+  //   {
+  //     transition_instructions.ready_for_transition = true;
+  //     // are_in_error = true;
+  //     supervisor.status_error = true;
+  //     transition_instructions.new_state = getErrorTransition().to_state;
+  //     transition_instructions.resend_life_cycle_command = true;
+  //     // if (supervisor.system_state == SuperState::READY)
+  //     // {
+  //     //   transition_instructions.life_cycle_command = LifeCycleCommand::CLEANUP;
+  //     // }
+  //     // else if (supervisor.system_state == SuperState::AUTO)
+  //     // {
+  //     //   transition_instructions.life_cycle_command = LifeCycleCommand::DEACTIVATE; 
+  //     // }
+  //     // return transition_instructions;
+  //     break;
+  //   }
+  // }
+
+  // if (are_in_error)
+  // {
+  //   bool active_true = false;
+  //   bool inactive_true = false;
+
+  //   for (pair<string, SuperNodeInfo> nodePair : supervisor.nodes)
+  //   {
+  //     SuperNodeInfo node = nodePair.second;
+  //     // If things are active, make sure they come down inactive
+  //     // If things are inactive, then make sure they come down to Unconfingured
+
+  //     if (node.state == LifeCycleState::ACTIVE)
+  //     {
+  //       active_true = true;
+  //     }
+  //     if (node.state == LifeCycleState::INACTIVE)
+  //     {
+  //       inactive_true = true;
+  //     }
+
+  //   }
+
+  //   if (active_true)
+  //   {
+  //     transition_instructions.life_cycle_command = LifeCycleCommand::DEACTIVATE;
+  //   }
+  //   else if (inactive_true)
+  //   {
+  //     transition_instructions.life_cycle_command = LifeCycleCommand::CLEANUP;
+  //   }
+  //   else
+  //   {
+  //     // This technically should not happen....?
+  //     transition_instructions.life_cycle_command = LifeCycleCommand::CONFIGURE;
+  //   }
+  //   return transition_instructions;
+    
+  // }
 
 
 
@@ -443,7 +486,8 @@ bool SuperNodeMediator::checkNodesShuttingDownOrFinalized(SuperNodeMediator::Sup
 
 bool SuperNodeMediator::checkErrorTransition(SuperNodeMediator::SuperNodeInfo& nr, SuperNodeMediator& node_mediator)
 {
-  return nr.state != LifeCycleState::ACTIVE;
+  return nr.state == LifeCycleState::INACTIVE;
+  // return nr.state != LifeCycleState::ACTIVE;
   // return nr.state == LifeCycleState::UNCONFIGURED | nr.state == LifeCycleState::INACTIVE;
 }
 
@@ -490,6 +534,20 @@ bool SuperNodeMediator::checkSuperError(SuperNodeMediator::SuperNodeInfo& nr, Su
 
 }
 
+
+// bool SuperNodeMediator::allManifestedBackToInactiveCheck(Supervisor& supervisor)
+// {
+//   for (auto nodePair : supervisor.nodes)
+//   {
+//     SuperNodeInfo node = nodePair.second;
+
+//     if (node.manifested)
+//     {
+
+//     }
+//   }
+// }
+
 // This does the check function on all manifested nodes.
 pair<bool, map<string, pair<bool, string>>> SuperNodeMediator::allManifestedNodesCheck(
     Supervisor& supervisor, std::function<bool(SuperNodeMediator::SuperNodeInfo&, SuperNodeMediator&)> check)
@@ -526,6 +584,7 @@ pair<bool, map<string, pair<bool, string>>> SuperNodeMediator::allManifestedNode
         ROS_WARN_STREAM("hardik-allManifestedNodesCheck: 1.3");
         string_view node_state = life_cycle_mediator.stateToString(node.state);
         error_message = "[2OQ0] check failed: node in wrong state " + node.name + ": " + string(node_state);
+        ROS_WARN_STREAM(error_message);
         success = false;
         need_lifecycle_resend = true;
       }

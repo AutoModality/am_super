@@ -73,6 +73,10 @@ public:
     /** manifest node (generated from manifest param) */
     std::vector<string> manifest;
 
+    /** Errored out nodes*/
+    // The second part of the pair does not matter
+    std::unordered_map<std::string, bool> errored_nodes_;
+
     /**
      * Overall state of the system, cumulative of the nodes
      * and super together.
@@ -93,6 +97,10 @@ public:
 
     /** Signals if any of the manifested nodes status errored */
     bool status_error = false;
+
+    /** Allows supervisor to start the FP automatically when ready */
+    bool start_fp_from_super_ = false;
+
   };
 
   /**Encapsulates properties and methods that relate to the transition of states
@@ -155,6 +163,9 @@ public:
     /** if True, then command should be sent.  if ready_for_transition=true, then this is false*/
     bool resend_life_cycle_command;
 
+    /** If this is an error transition, then we want to handle their lifecycles accordingly */
+    bool error_transition;
+
     /** The command that notifies nodes to continue processing so the state can transition*/
     LifeCycleCommand life_cycle_command;
 
@@ -199,7 +210,7 @@ public:
    * @param supervisor is in charge of knowing the state of the system
    * @return pair with the boolean indicating transition is ready and the optional state if ready.
    */
-  SuperNodeMediator::TransitionInstructions transitionReady(Supervisor supervisor);
+  SuperNodeMediator::TransitionInstructions transitionReady(Supervisor& supervisor);
 
   /** 
    * FIXME: currently public for unit testing

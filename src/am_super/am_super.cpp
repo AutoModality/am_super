@@ -8,6 +8,7 @@
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <std_msgs/msg/int16.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include "std_msgs/msg/int32_multi_array.hpp"
 
 #include <am_super/baby_sitter.h>
 #include <am_super/super_state.h>
@@ -20,6 +21,7 @@
 #include <brain_box_msgs/msg/operator_command.hpp>
 #include <brain_box_msgs/msg/stamped_altimeter.hpp>
 #include <brain_box_msgs/msg/super2_status.hpp>
+#include <brain_box_msgs/msg/super2_error_nodes.hpp>
 #include <brain_box_msgs/msg/vx_state.hpp>
 #include <brain_box_msgs/msg/system_state.hpp>
 #include <brain_box_msgs/msg/controller_state.hpp>
@@ -197,12 +199,15 @@ private:
   rclcpp::Publisher<brain_box_msgs::msg::VxState>::SharedPtr vstate_summary_pub_;
   rclcpp::Publisher<brain_box_msgs::msg::SystemState>::SharedPtr system_state_pub_;
   rclcpp::Publisher<brain_box_msgs::msg::Super2Status>::SharedPtr super_status_pub_;
+  rclcpp::Publisher<brain_box_msgs::msg::Super2ErrorNodes>::SharedPtr super_errored_pub_;
   rclcpp::Publisher<brain_box_msgs::msg::BlinkMCommand>::SharedPtr led_pub_;
   /** stops the flight plan when SHUTDOWN state */
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr flight_plan_deactivation_pub_;
+  rclcpp::Publisher<std_msgs::msg::Int32MultiArray>::SharedPtr set_gpio_pin_pub_;
   rclcpp::Subscription<brain_box_msgs::msg::LifeCycleState>::SharedPtr node_state_sub_;
   rclcpp::Subscription<brain_box_msgs::msg::OperatorCommand>::SharedPtr operator_command_sub_;
   rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr fake_operator_command_sub_;
+  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr ui_operator_command_sub_;
   rclcpp::Subscription<brain_box_msgs::msg::ControllerState>::SharedPtr controller_state_sub;
   rclcpp::Subscription<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr diagnostics_sub;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr current_enu_sub;
@@ -226,6 +231,19 @@ private:
    * amount of time in seconds without hearing from a node that will cause it to go offline
    */
   double node_timeout_s_;
+  bool offline_timer_running_ = false;
+  rclcpp::Time offline_start_time_;  // start_timer from here 
+  const rclcpp::Duration offline_allowance_ = am::toDuration(20.0);
+  bool reset_timer_running_ = false;
+  rclcpp::Time reset_start_time_;  // start_timer from here 
+  const rclcpp::Duration reset_allowance_ = am::toDuration(5.0); // How much time we give am_locator to lock in.
+  bool reset_required_ = false;
+  bool restart_required_ = false;
+  bool offline_restart_required_ = false;
+  bool flight_plan_running_ = false;
+  bool first_time_booted_ = false;
+  rclcpp::Time booting_start_time_ = am::Node::node->now();
+  const rclcpp::Duration booting_allowance_ = am::toDuration(20.0);
 
   /**
    * baglogger level
@@ -245,6 +263,9 @@ public:
 
     am::getParam<double>("node_timeout_s", node_timeout_s_, 3.1);
     ROS_INFO_STREAM( "node_timeout_s = " << node_timeout_s_);
+
+    am::getParam<bool>("start_fp_from_super", supervisor_.start_fp_from_super_, false);
+    ROS_INFO_STREAM("start_fp_from_super = " << supervisor_.start_fp_from_super_);
 
     /*
      * create initial node list from manifest
@@ -287,7 +308,7 @@ public:
     // vehicle state: position, velocity, etc.
     vstate_summary_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::VxState>(am_super_topics::SUPER_STATE, am::getSensorQoS(10));
 
-    // system state: BOOTING, READY, AUTO, etc.
+    // system state: BOOTING, READY, AUTO, etc. ("/system/state")
     system_state_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::SystemState>(am_topics::SYSTEM_STATE, am::getSensorQoS(10));
 
     // lifecycle command: CONFIGURE, ACTIVATE, etc. - sent to all nodes to control lifecycle
@@ -300,10 +321,17 @@ public:
     // super state: manifest info
     super_status_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::Super2Status>(am_super_topics::SUPER_STATUS, am::getSensorQoS(10));
 
+    // super state: errored_nodes info
+    super_errored_pub_ = am::Node::node->create_publisher<brain_box_msgs::msg::Super2ErrorNodes>("/super/errored_nodes", am::getSensorQoS(10));
+
+
     // ???
     rclcpp::QoS qos_profile(1);
     qos_profile.reliable();
     flight_plan_deactivation_pub_ = am::Node::node->create_publisher<std_msgs::msg::Bool>(am_topics::CTRL_FLIGHTPLAN_ACTIVITY_CONTROL, qos_profile);
+
+    // Tractor Light
+    set_gpio_pin_pub_ = am::Node::node->create_publisher<std_msgs::msg::Int32MultiArray>("/set_gpio_pin", 1);
 
     supervisor_.system_state = SuperState::BOOTING;
     supervisor_.flt_ctrl_state = SuperNodeMediator::SuperFltCtrlState::INIT;
@@ -329,6 +357,10 @@ public:
 
     fake_operator_command_sub_ = am::Node::node->create_subscription<std_msgs::msg::Bool>(am_topics::CTRL_FLIGHTPLAN_ACTIVITY_CONTROL, 100,
         std::bind(&AMSuper::fakeOperatorCommandCB, this, std::placeholders::_1));
+
+    ui_operator_command_sub_ = am::Node::node->create_subscription<std_msgs::msg::Bool>("/ui_operator_cmd", 100,
+        std::bind(&AMSuper::uiOperatorCommandCB, this, std::placeholders::_1));
+
 
     // controller state: ???
     controller_state_sub = am::Node::node->create_subscription<brain_box_msgs::msg::ControllerState>(am_super_topics::CONTROLLER_STATE, 100,
@@ -402,8 +434,16 @@ private:
 
   void fakeOperatorCommandCB(const std_msgs::msg::Bool::SharedPtr msg)
   {
+    // This is listening to see if the flight plan is running or not
+    flight_plan_running_ = msg->data;
+    
+    if (supervisor_.start_fp_from_super_)
+    {
+      return;
+    }
+    
     RCLCPP_INFO(am::Node::node->get_logger(), "Received FAKE Operator Command (actually flight_controller command): %i", msg->data);
-    if (msg->data == true)
+    if (msg->data == true && !supervisor_.start_fp_from_super_) // We don't want this to be receieved if we are starting the fp elsewhere
     {
       node_mediator_.setOperatorCommand(supervisor_, OperatorCommand::LAUNCH);
     }
@@ -413,6 +453,25 @@ private:
     }
     
     LOG_MSG(am_topics::CTRL_FLIGHTPLAN_ACTIVITY_CONTROL, *msg, SU_LOG_LEVEL);
+  }
+
+  void uiOperatorCommandCB(const std_msgs::msg::Bool::SharedPtr msg)
+  {
+    if (!supervisor_.start_fp_from_super_)
+    {
+      return;
+    }
+
+    RCLCPP_INFO(am::Node::node->get_logger(), "Received UI Operator Command: %i", msg->data);
+    if (msg->data == true)
+    {
+      node_mediator_.setOperatorCommand(supervisor_, OperatorCommand::LAUNCH);
+    }
+    else
+    {
+      node_mediator_.setOperatorCommand(supervisor_, OperatorCommand::CANCEL);
+      stopFlightPlan();
+    }
   }
 
   /**
@@ -435,7 +494,7 @@ private:
     // search for the node in the list
     bool nodes_changed = false;
     map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
-    it = supervisor_.nodes.find(node_name);
+    it = supervisor_.nodes.find(node_name); // This specifically only reacts to the specific node experiencing the callback
     if (it != supervisor_.nodes.end())
     {
       // if we get here, the node is already in our list
@@ -455,15 +514,47 @@ private:
       if (nr.status != status)
       {
     	  ROS_INFO_STREAM( node_name << " changed status to = " << life_cycle_mediator_.statusToString(status) << " [09SI]");
+        if (nr.manifested && nr.status == LifeCycleStatus::ERROR)
+        {
+          // This means we have now Come OUT of error
+          if (supervisor_.errored_nodes_.find(nr.name) == supervisor_.errored_nodes_.end())
+          {
+            ROS_ERROR_STREAM("We should never be here. Node " << nr.name << " was in the errored_nodes_ list incorrectly");
+          }
+          // Remove the node from the errored_nodes list
+          supervisor_.errored_nodes_.erase(nr.name);
+          if (nr.name == "am_locator")
+          {
+            reset_timer_running_ = false;
+          }
+        }
+
         nr.status = status;
         nodes_changed = true;
-        if(nr.manifested && nr.status == LifeCycleStatus::ERROR && supervisor_.system_state != SuperState::BOOTING)
+        // if(nr.manifested && nr.status == LifeCycleStatus::ERROR && supervisor_.system_state != SuperState::BOOTING)
+        if(nr.manifested && status == LifeCycleStatus::ERROR)
         {
+          if (supervisor_.errored_nodes_.find(nr.name) == supervisor_.errored_nodes_.end())
+          {
+            // The node is not in the errored_nodes_ list, so it should be added
+            supervisor_.errored_nodes_[nr.name] = true;
+          }
+          if (nr.name == "am_locator")
+          {
+            if (!reset_timer_running_)
+            {
+              reset_start_time_ = am::Node::node->now();
+              reset_timer_running_ = true;
+            }
+          }
           supervisor_.status_error = true;
-          ROS_INFO_STREAM( "Manifested node " << nr.name << " changed status to ERROR. Shutting down nodes... [JHRE]");
+          ROS_INFO_STREAM( "Manifested node " << nr.name << " changed status to ERROR. Stopping Flight Plan... [JHRE]");
           // TODO: put this back in somehow - need to rethink how am_super influsenes control
           stopFlightPlan();
+	  node_mediator_.setOperatorCommand(supervisor_, OperatorCommand::CANCEL);
         }
+        
+
         // if (nr.manifested && nr.status == LifeCycleStatus::ACTIVE)
       }
       // TODO: need to test the pid stuff - not sure if it is working
@@ -481,6 +572,8 @@ private:
         nr.pid = pid;
         nodes_changed = true;
       }
+
+
       nr.last_contact = last_contact;
     }
     else
@@ -605,6 +698,16 @@ private:
     ROS_ERROR_STREAM( "Sending flight plan kill command.");
   }
 
+  /** Send signal to flight controller that flight can be started. */
+  void startFlightPlan()
+  {
+    std_msgs::msg::Bool msg;
+    msg.data = true; //false means deactivate
+    flight_plan_deactivation_pub_->publish(msg);
+    ROS_ERROR_STREAM( "Sending flight plan start command.");
+
+  }
+
   /**
    * check for state transition based upon current state and values of member fields.
    * Will call to modify the system state if transition is necessary. Will also call
@@ -654,8 +757,30 @@ private:
           }
           i++;
         }
-      }      
-    // }
+      }
+      if (transition_instructions.error_transition)
+      {
+        ROS_WARN_STREAM("ERROR TRANSITION LIFECYCLE COMMANDS");
+        // For each node in the manifest, we must bring it back down to INACTIVE
+        // If it was in error, we want to bring it down, clean it up, and then bring it back up to INACTIVE
+        map<string, SuperNodeMediator::SuperNodeInfo>::iterator it;
+        for (it = supervisor_.nodes.begin(); it != supervisor_.nodes.end(); it++)
+        {
+          SuperNodeMediator::SuperNodeInfo& nr = (*it).second;
+
+          if (nr.state == LifeCycleState::ACTIVE || nr.state == LifeCycleState::DEACTIVATING)
+          {
+            sendLifeCycleCommand(nr.name, LifeCycleCommand::DEACTIVATE);
+          }
+          else if (nr.state == LifeCycleState::UNCONFIGURED || nr.state == LifeCycleState::CONFIGURING)
+          {
+            sendLifeCycleCommand(nr.name, LifeCycleCommand::CONFIGURE);
+          }
+
+
+        }
+
+      }
   }
 
   /**
@@ -686,11 +811,21 @@ private:
       
       reportSystemState();
 
-      sendLEDMessage();
+      // sendLEDMessage();
+      sendTractorLightMessage();
 
       brain_box_msgs::msg::VxState state_msg;
       state_msg.state = (uint8_t)supervisor_.system_state;
       vstate_summary_pub_->publish(state_msg);
+
+      if (state == SuperState::AUTO && supervisor_.start_fp_from_super_)
+      {
+        startFlightPlan();
+      }
+      if (state == SuperState::READY && !first_time_booted_)
+      {
+        first_time_booted_ = true;
+      }
     }
   }
 
@@ -827,6 +962,29 @@ private:
     }
 
     sendLEDMessage(r, g, b, rate);
+  }
+
+  // Subject to State
+  void sendTractorLightMessage()
+  {
+    // TODO: This should only be if we are on tractor, where the light is connected to the orin
+    // Otherwise we risk changing values on the pin unecessarily.
+    std_msgs::msg::Int32MultiArray msg;
+
+    int32_t gpio_pin_number = 13;
+    int32_t light_value = 0; // 0 is off, 1 is on
+
+    if (supervisor_.system_state == SuperState::AUTO)
+    {
+      light_value = 1;
+    }
+    else
+    {
+      light_value = 0;
+    }
+
+    msg.data = {gpio_pin_number, light_value};
+    set_gpio_pin_pub_->publish(msg);
   }
 
   /**
@@ -984,6 +1142,49 @@ public:
       brain_box_msgs::msg::SystemState system_state_msg;
       system_state_msg.state = (uint8_t)am_super_->supervisor_.system_state;
       system_state_msg.state_string = am_super_->state_mediator_.stateToString(am_super_->supervisor_.system_state);
+      bool stuck_in_booting_too_long = (((am::Node::node->now() - am_super_->booting_start_time_) > am_super_->booting_allowance_) && (am_super_->supervisor_.errored_nodes_.size() > 0));
+      if (am_super_->supervisor_.system_state == SuperState::BOOTING)
+      {
+        if (!am_super_->first_time_booted_)
+        {
+          if (am_super_->offline_restart_required_)
+          {
+            system_state_msg.state_string = "RESTART_OFFLINE";
+	    // system_state_msg.state_string = "RESTART";
+          }
+          else if (stuck_in_booting_too_long)
+          {
+            system_state_msg.state_string = "RESTART";
+          }
+          else
+          {
+            if (am_super_->flight_plan_running_)
+            {
+              system_state_msg.state_string = "RESET";
+            }
+            else // flight plan is NOT running
+            {
+              system_state_msg.state_string = "BOOTING";
+            }
+          }
+        }
+
+        // Check if we need a reset or a restart, and overwrite accordingly.
+        // if (am_super_->offline_restart_required_ || am_super_->restart_required_)
+        else if (am_super_->restart_required_)
+        {
+          system_state_msg.state_string = "RESTART";
+        }
+        else if (am_super_->offline_restart_required_)
+        {
+          system_state_msg.state_string = "RESTART_OFFLINE";
+	  // system_state_msg.state_string = "RESTART";
+        }
+        else if (am_super_->reset_required_)
+        {
+          system_state_msg.state_string = "RESET";
+        }
+      }
       am_super_->system_state_pub_->publish(system_state_msg);
     }
 
@@ -1047,7 +1248,7 @@ public:
         }
       }
     }
-    LOG_MSG("/status/super", status_msg, 1);
+    LOG_MSG("/super/status", status_msg, 1);
     if (am_super_->super_status_pub_->get_subscription_count() > 0)
     {
       am_super_->super_status_pub_->publish(status_msg);
@@ -1064,10 +1265,17 @@ public:
       ROS_ERROR_STREAM("not online: " << am_super_->node_mediator_.manifestedNodesNotOnlineNamesList(am_super_->supervisor_));
       // if && supervisor_.system_state != SuperState::BOOTING
 
-      if (am_super_->supervisor_.system_state != SuperState::BOOTING)
+      // if (am_super_->supervisor_.system_state != SuperState::BOOTING)
+      if (true) // Seeing if we need this if statement at all.
       {
+        if (!am_super_->offline_timer_running_)
+        {
+          am_super_->offline_start_time_ = am::Node::node->now();
+          am_super_->offline_timer_running_ = true;
+        }
         stats_->statStatus = 2;
-        am_super_->stopFlightPlan(); // This will keep sending until the all nodes are back, and that is ok for now
+        am_super_->node_mediator_.setOperatorCommand(am_super_->supervisor_, OperatorCommand::CANCEL);
+	      am_super_->stopFlightPlan(); // This will keep sending until the all nodes are back, and that is ok for now
       }
 
     }
@@ -1075,11 +1283,159 @@ public:
     {
       // if all manifested nodes are running, report as info
       ROS_INFO_STREAM_THROTTLE(am_super_->LOG_THROTTLE_S, ss.str());
+
+      // This should be in any state, if all nodes come back online
+      if (am_super_->offline_timer_running_)
+      {
+        am_super_->offline_timer_running_ = false;
+      }
+
       if (am_super_->supervisor_.system_state == SuperState::BOOTING)
       {
         stats_->statStatus=0;
+
       }
     }
+
+    // Call for an restart if you can't see a node up at this time.
+    if (am_super_->offline_timer_running_)
+    {
+      // Check if we need to restart things
+      rclcpp::Time time_now = am::Node::node->now();
+      if ((time_now - am_super_->offline_start_time_) > am_super_->offline_allowance_)
+      {
+        ROS_WARN_STREAM("Offline timer is: " << (time_now - am_super_->offline_start_time_).seconds());
+      //  ROS_WARN_STREAM((time_now - am_super_->offline_start_time_).seconds());
+        am_super_->offline_restart_required_ = true;
+	// This should already have been done when the offline first happened (about 30 lines above)
+	// am_super_->node_mediator_.setOperatorCommand(am_super_->supervisor_, OperatorCommand::CANCEL);
+	// am_super_->stopFlightPlan();
+      }
+      else
+      {
+        am_super_->offline_restart_required_ = false;
+      }
+    }
+    else
+    {
+      am_super_->offline_restart_required_ = false;
+    }
+
+    // std_msgs/Header header
+    // uint8 num_manifested_nodes
+    // uint8 num_errored_nodes
+    // string[] reset_nodes
+    // string[] restart_nodes
+    brain_box_msgs::msg::Super2ErrorNodes super_errored_msg;
+    super_errored_msg.num_manifested_nodes = am_super_->supervisor_.manifest.size();
+    super_errored_msg.num_errored_nodes = am_super_->supervisor_.errored_nodes_.size();
+    if (am_super_->supervisor_.manifest.size() != am_super_->node_mediator_.manifestedNodesOnlineCount(am_super_->supervisor_))
+    {
+      super_errored_msg.offline_nodes.push_back(am_super_->node_mediator_.manifestedNodesNotOnlineNamesList(am_super_->supervisor_));
+    }
+    
+    // Let's look at the errored_nodes_ and see if we need to call for a reset or a restart from there.
+    // Reset nodes: am_locator, am_pilot
+    // Restart nodes: anything else
+    if (am_super_->supervisor_.errored_nodes_.size()>0)
+    {
+      // If either of reset nodes are in there, you have to ask for a reset
+      // if(am_super_->supervisor_.errored_nodes_.find("am_locator") != am_super_->supervisor_.errored_nodes_.end() || 
+      //   am_super_->supervisor_.errored_nodes_.find("am_pilot") != am_super_->supervisor_.errored_nodes_.end())
+      // {
+      //   am_super_->reset_required_ = true;
+      // }
+      // // Remove the reset request if they are BOTH out of error, which is the negation of the above statement
+
+
+      /* Approach 2*/
+      // if(am_super_->supervisor_.errored_nodes_.find("am_locator") != am_super_->supervisor_.errored_nodes_.end())
+      // {
+      //   am_super_->reset_required_ = true;
+      // } 
+      // else if (am_super_->supervisor_.errored_nodes_.find("am_pilot") != am_super_->supervisor_.errored_nodes_.end())
+      // {
+      //   am_super_->reset_required_ = true;
+      // }
+      // else 
+      // {
+      //   am_super_->reset_required_ = false;
+        
+      //   // But if we are here then there is something ELSE in the error condition, which means we need a restart
+      //   am_super_->restart_required_ = true;
+      // }
+
+      
+
+      /* Approach 3 */
+      am_super_->reset_required_ = false;
+      am_super_->restart_required_ = false;
+      for (auto node : am_super_->supervisor_.errored_nodes_)
+      {
+        // if (node.first == "am_locator" || node.first == "am_pilot")
+        if (node.first == "am_locator")
+        {
+          // if (!am_super_->flight_plan_running_ && ((am::Node::node->now() - am_super_->reset_start_time_) < am_super_->reset_allowance_))
+          // {
+          //   am_super_->reset_required_ = false;
+          //   // super_errored_msg.reset_nodes.push_back(node.first);
+          // }
+          // else
+          // {
+
+            // If it has been more than 5 seconds of trying, then remove the command to automatically try and launch the flight plan.
+            if (!am_super_->flight_plan_running_)
+            {
+              if ((am::Node::node->now() - am_super_->reset_start_time_) > am_super_->reset_allowance_) // We have exceeded our allowance
+              {
+                // Turn off the activate command
+                am_super_->node_mediator_.setOperatorCommand(am_super_->supervisor_, OperatorCommand::CANCEL);
+                am_super_->reset_required_ = true;
+              }
+              // else: you have 5 seconds to get it running
+            }
+            else
+            {
+              // So the flight plan IS running
+              am_super_->reset_required_ = true;
+              super_errored_msg.reset_nodes.push_back(node.first);
+              am_super_->node_mediator_.setOperatorCommand(am_super_->supervisor_, OperatorCommand::CANCEL);
+              am_super_->stopFlightPlan();
+            }
+
+
+
+
+          // }
+        }
+        
+        else
+        {
+          am_super_->restart_required_ = true;
+          super_errored_msg.restart_nodes.push_back(node.first);
+          am_super_->node_mediator_.setOperatorCommand(am_super_->supervisor_, OperatorCommand::CANCEL);
+          am_super_->stopFlightPlan();
+        }
+      }
+
+    }
+    else
+    {
+      // If there are no errored nodes you are good to go
+      am_super_->reset_required_ = false;
+      am_super_->restart_required_ = false;
+    }
+
+    LOG_MSG("/super/errored_nodes", super_errored_msg, 1);
+    if (am_super_->super_errored_pub_->get_subscription_count() > 0)
+    {
+      am_super_->super_errored_pub_->publish(super_errored_msg);
+    }
+    // rclcpp::Publisher<brain_box_msgs::msg::Super2ErrorNodes>::SharedPtr super_errored_pub_;
+
+
+
+
 
     // log stats
     fstream newfile;
